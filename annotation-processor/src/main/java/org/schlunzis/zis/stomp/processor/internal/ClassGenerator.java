@@ -19,7 +19,7 @@ public class ClassGenerator {
         try (var out = builderFile.openWriter()) {
             out.write("package " + publisher.packageName() + ";\n");
             out.write("\n");
-            out.write("import org.schlunzis.zis.stomp.StompClient;\n");
+            out.write("import org.schlunzis.zis.stomp.client.StompClient;\n");
             for (String importName : publisher.imports()) {
                 out.write("import " + importName + ";\n");
             }
