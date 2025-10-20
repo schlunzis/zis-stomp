@@ -26,4 +26,4 @@ jobs:
           cache: "maven"
       - name: Build and Test
         run: |
-          ./mvnw clean verify
+          ./mvnw clean verify --batch-mode
