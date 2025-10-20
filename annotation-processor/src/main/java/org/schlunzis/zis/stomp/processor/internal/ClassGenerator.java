@@ -1,4 +1,4 @@
-package org.schlunzis.zis.stomp.processor;
+package org.schlunzis.zis.stomp.processor.internal;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;

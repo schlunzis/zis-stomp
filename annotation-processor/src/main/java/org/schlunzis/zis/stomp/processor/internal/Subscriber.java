@@ -1,4 +1,4 @@
-package org.schlunzis.zis.stomp.processor;
+package org.schlunzis.zis.stomp.processor.internal;
 
 public record Subscriber(
         String topic,

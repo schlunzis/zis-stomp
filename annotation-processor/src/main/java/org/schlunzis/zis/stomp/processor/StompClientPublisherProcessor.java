@@ -2,6 +2,9 @@ package org.schlunzis.zis.stomp.processor;
 
 import org.schlunzis.zis.stomp.client.StompPublisher;
 import org.schlunzis.zis.stomp.client.Topic;
+import org.schlunzis.zis.stomp.processor.internal.ClassGenerator;
+import org.schlunzis.zis.stomp.processor.internal.Publisher;
+import org.schlunzis.zis.stomp.processor.internal.Subscriber;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;

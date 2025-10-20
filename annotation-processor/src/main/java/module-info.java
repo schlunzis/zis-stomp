@@ -7,4 +7,6 @@ module org.schlunzis.stomp.client.annotation.processor {
     requires java.compiler;
 
     provides Processor with StompClientPublisherProcessor;
+
+    exports org.schlunzis.zis.stomp.processor;
 }
