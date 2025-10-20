@@ -27,11 +27,14 @@ jobs:
       - name: Start Mock Server
         run: |
           cd test/mock-server
-          ./mvnw -B -DskipTests spring-boot:run &
+          nohup ../../mvnw -B -DskipTests spring-boot:run > mock-server.log 2>&1 &
+          echo $! > mock-server.pid
           sleep 10
       - name: Build and Test
         run: |
           ./mvnw clean verify --batch-mode
       - name: Stop Mock Server
         run: |
-          pkill -f 'java -cp .*mock-server.*'
+          cd test/mock-server
+          kill "$(cat mock-server.pid)" || true
+          rm mock-server.pid || true

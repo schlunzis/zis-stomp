@@ -50,6 +50,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
+                <configuration>
+                    <mainClass>org.schlunzis.zis.stomp.mock_server.TestApplication</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
