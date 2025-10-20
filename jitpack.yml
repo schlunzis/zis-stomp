@@ -1,4 +1,4 @@
-jdk:
-  - openjdk25
+before-install:
+  - sdk install java 25-tem
 install:
   - ./mvnw clean install -DskipTests --batch-mode
