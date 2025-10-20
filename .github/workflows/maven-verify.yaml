@@ -24,6 +24,14 @@ jobs:
           java-version: "25"
           distribution: 'temurin'
           cache: "maven"
+      - name: Start Mock Server
+        run: |
+          cd test/mock-server
+          ./mvnw -B -DskipTests spring-boot:run &
+          sleep 10
       - name: Build and Test
         run: |
           ./mvnw clean verify --batch-mode
+      - name: Stop Mock Server
+        run: |
+          pkill -f 'java -cp .*mock-server.*'
