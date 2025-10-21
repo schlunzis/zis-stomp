@@ -6,16 +6,19 @@
     <parent>
         <groupId>org.schlunzis.zis.stomp</groupId>
         <artifactId>zis-stomp-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>annotation-processor</artifactId>
+
+    <name>Ze Impressive Schwifty STOMP Annotation Processor</name>
+    <description>Annotation processor to generate STOMP publisher.</description>
 
     <dependencies>
         <dependency>
             <groupId>org.schlunzis.zis.stomp</groupId>
             <artifactId>client</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
 
