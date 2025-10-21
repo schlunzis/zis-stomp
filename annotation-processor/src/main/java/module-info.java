@@ -9,7 +9,7 @@ import javax.annotation.processing.Processor;
  *
  * @since 1.0.0
  */
-module org.schlunzis.stomp.client.annotation.processor {
+module org.schlunzis.stomp.annotation.processor {
     requires org.schlunzis.zis.stomp.client;
     requires java.compiler;
 
