@@ -12,16 +12,26 @@ import java.util.ServiceLoader;
 
 /**
  * Builder for {@link StompClient}.
+ *
+ * @see StompClient#builder()
+ * @since 1.0.0
  */
 public final class StompClientBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(StompClientBuilder.class);
+
     @Nullable
     private URI endpoint;
     private final List<Object> subscribers = new ArrayList<>();
     @Nullable
     private MessageConverter messageConverter;
 
+    /**
+     * Creates a new STOMP client builder.
+     *
+     * @see StompClient#builder()
+     * @since 1.0.0
+     */
     StompClientBuilder() {
 
     }
@@ -33,6 +43,7 @@ public final class StompClientBuilder {
      *
      * @param endpoint the STOMP endpoint URI
      * @return the builder instance
+     * @since 1.0.0
      */
     public StompClientBuilder endpoint(URI endpoint) {
         this.endpoint = endpoint;
@@ -47,6 +58,7 @@ public final class StompClientBuilder {
      *
      * @param subscribers the subscriber instances
      * @return the builder instance
+     * @since 1.0.0
      */
     public StompClientBuilder subscribers(List<Object> subscribers) {
         this.subscribers.addAll(subscribers);
@@ -55,14 +67,15 @@ public final class StompClientBuilder {
 
     /**
      * Sets the message converter to be used by the client. If not set, the builder will attempt to
-     * find a suitable message converter via ServiceLoader.
+     * find a suitable message converter via a ServiceLoader.
      * <p>
-     * It will first look for Jackson 3's ObjectMapper, then for Jackson 2's ObjectMapper. If one of them is found,
+     * It will first look for a Jackson 3 ObjectMapper, then for a Jackson 2 ObjectMapper. If one of them is found,
      * a corresponding MessageConverter will be created. If none is found, a {@link StringMessageConverter} will be
      * used.
      *
      * @param messageConverter the message converter
      * @return the builder instance
+     * @since 1.0.0
      */
     public StompClientBuilder messageConverter(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
@@ -74,8 +87,9 @@ public final class StompClientBuilder {
      *
      * @return the STOMP client
      * @throws IllegalStateException if the endpoint is not set
+     * @since 1.0.0
      */
-    public StompClient build() {
+    public StompClient build() throws IllegalStateException {
         if (endpoint == null) {
             throw new IllegalStateException("Endpoint must be set");
         }

@@ -12,12 +12,13 @@ import java.util.function.Consumer;
  * To create an instance of a STOMP client, use the {@link #builder()} method to obtain a {@link StompClientBuilder}.
  * To disconnect and release resources, call the {@link #close()} method.
  * <p>
- * You may also consider using the {@link StompSubscriber} annotation to define classes that are automatically
+ * You may also consider using the {@link StompSubscriber} annotation to define classes that can be
  * registered as subscribers to STOMP destinations, and {@link StompPublisher} annotation to define publisher interfaces
  * that can be used to send messages to STOMP destinations.
  *
  * @see StompSubscriber
  * @see StompPublisher
+ * @since 1.0.0
  */
 public sealed interface StompClient
         extends AutoCloseable
@@ -29,6 +30,7 @@ public sealed interface StompClient
      * The builder must be provided with an endpoint URI before building the client.
      *
      * @return a new instance of {@link StompClientBuilder}
+     * @since 1.0.0
      */
     static StompClientBuilder builder() {
         return new StompClientBuilder();
@@ -44,6 +46,7 @@ public sealed interface StompClient
      *
      * @throws ConnectionException   if the connection fails
      * @throws IllegalStateException if the client has already been connected before
+     * @since 1.0.0
      */
     void connect() throws ConnectionException;
 
@@ -57,6 +60,7 @@ public sealed interface StompClient
      * @param body        the body of the message
      * @throws IllegalStateException if the client is not connected
      * @throws SendException         if sending the message fails or the message cannot be encoded
+     * @since 1.0.0
      */
     void send(String destination, String body) throws SendException;
 
@@ -70,6 +74,7 @@ public sealed interface StompClient
      * @param body        the body of the message
      * @throws IllegalStateException if the client is not connected
      * @throws SendException         if sending the message fails or the message cannot be encoded
+     * @since 1.0.0
      */
     void send(String destination, Object body) throws SendException;
 
@@ -90,6 +95,7 @@ public sealed interface StompClient
      * @param <T>            the type of the message payload
      * @return a {@link Subscription} representing the subscription
      * @throws IllegalStateException if the client is not connected
+     * @since 1.0.0
      */
     <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler);
 
@@ -103,6 +109,7 @@ public sealed interface StompClient
      *
      * @param subscription the subscription to unsubscribe from
      * @throws IllegalStateException if the client is not connected
+     * @since 1.0.0
      */
     void unsubscribe(Subscription subscription);
 
@@ -111,6 +118,8 @@ public sealed interface StompClient
      * <p>
      * This method disconnects from the STOMP server if connected and cleans up any resources used by the client.
      * After calling this method, the client instance should not be used anymore.
+     *
+     * @since 1.0.0
      */
     void close();
 

@@ -4,14 +4,34 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 
+/**
+ * Generates Java source files for STOMP client publishers based on the provided {@link Publisher} metadata.
+ *
+ * @see Publisher
+ * @see Subscriber
+ * @since 1.0.0
+ */
 public class ClassGenerator {
 
     private final Publisher publisher;
 
+    /**
+     * Constructs a ClassGenerator with the specified Publisher metadata.
+     *
+     * @param publisher the Publisher metadata
+     * @since 1.0.0
+     */
     public ClassGenerator(Publisher publisher) {
         this.publisher = publisher;
     }
 
+    /**
+     * Generates the Java source file for the publisher.
+     *
+     * @param processingEnv the processing environment
+     * @throws IOException if an I/O error occurs during file creation
+     * @since 1.0.0
+     */
     public void generate(ProcessingEnvironment processingEnv) throws IOException {
         JavaFileObject builderFile = processingEnv.getFiler()
                 .createSourceFile(publisher.packageName() + "." + publisher.name());

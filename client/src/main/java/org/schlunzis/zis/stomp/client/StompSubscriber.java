@@ -18,11 +18,24 @@ import java.util.List;
  * to the client builder using the {@link StompClientBuilder#subscribers(List)} method.
  *
  * @see Topic
+ * @see StompClientBuilder#subscribers(List)
+ * @see StompPublisher
+ * @since 1.0.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StompSubscriber {
 
+    /**
+     * The common destination prefix for all topics handled by this subscriber.
+     * This prefix will be prepended to the destination values defined in the {@link Topic} annotations
+     * on the subscriber's methods.
+     * <p>
+     * Default is an empty string, meaning no prefix is applied.
+     *
+     * @return the destination prefix string
+     * @since 1.0.0
+     */
     String destinationPrefix() default "";
 
 }

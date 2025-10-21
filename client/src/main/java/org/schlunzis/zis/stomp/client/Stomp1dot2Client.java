@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 final class Stomp1dot2Client implements StompClient {
 
     private static final Logger log = LoggerFactory.getLogger(Stomp1dot2Client.class);
+    private static final String STRING_CONTENT_TYPE = "text/plain;charset=UTF-8";
 
     private final URI endpoint;
     private final WebSocketClient websocketClient;
@@ -82,7 +83,7 @@ final class Stomp1dot2Client implements StompClient {
     @Override
     public void send(String destination, String body) {
         ensureConnected();
-        send(destination, body, "text/plain;charset=UTF-8");
+        send(destination, body, STRING_CONTENT_TYPE);
     }
 
     @Override
@@ -160,8 +161,6 @@ final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void close() {
-        subscriberSubscriptions.forEach(this::doUnsubscribe);
-
         mutex.lock();
         try {
             if (connectionState.get() != ConnectionState.CONNECTED) {

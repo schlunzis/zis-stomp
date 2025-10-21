@@ -2,7 +2,31 @@ package org.schlunzis.zis.stomp.client;
 
 import java.util.Objects;
 
+/**
+ * A MessageConverter implementation that returns the message as-is for String types.
+ * It is expected that the message is already a string.
+ * Otherwise, an IllegalArgumentException is thrown.
+ * <p>
+ * This converter should not be used for more complex applications.
+ * Use {@link Jackson2MessageConverter}, {@link Jackson3MessageConverter} or provide your own
+ * implementation of {@link MessageConverter} instead.
+ * <p>
+ * This message converter always uses the content type "text/plain;charset=UTF-8".
+ *
+ * @see Jackson3MessageConverter
+ * @see Jackson2MessageConverter
+ * @since 1.0.0
+ */
 public class StringMessageConverter implements MessageConverter {
+
+    /**
+     * Creates a new StringMessageConverter.
+     *
+     * @since 1.0.0
+     */
+    public StringMessageConverter() {
+        // No special initialization required
+    }
 
     @Override
     public <T> T convertToType(String messageStr, Class<T> targetType) {
