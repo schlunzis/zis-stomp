@@ -21,7 +21,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Maven Central Repository
+      - name: Read commit time
+        id: commit_time
+        run: |
+          COMMIT_TIME=$(git log -1 --format=%cI)
+          echo "COMMIT_TIME=$COMMIT_TIME"
+          echo "::set-output name=COMMIT_TIME::$COMMIT_TIME"
+
+      - name: Set up JDK and Maven Central Repository
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
         with:
           java-version: 25
@@ -33,8 +40,9 @@ jobs:
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Publish package
-        run: mvn -Dmaven.test.skip=true --batch-mode --update-snapshots -P publish deploy
+        run: ./mvnw -Dmaven.test.skip=true -Dproject.build.outputTimestamp=${COMMIT_TIME} --batch-mode --update-snapshots -P publish deploy
         env:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_SONATYPE_TOKEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          COMMIT_TIME: ${{ steps.commit_time.outputs.COMMIT_TIME }}

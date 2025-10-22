@@ -33,9 +33,12 @@ jobs:
           sleep 10
       - name: Build and Test
         run: |
-          ./mvnw clean verify --batch-mode
+          ./mvnw clean verify --batch-mode --update-snapshots
       - name: Stop Mock Server
         run: |
           cd test/mock-server
           kill "$(cat mock-server.pid)" || true
           rm mock-server.pid || true
+      - name: Test Reproducibility
+        run: |
+          ./mvnw clean verify artifact:compare -DskipTests --batch-mode
