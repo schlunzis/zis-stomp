@@ -16,6 +16,7 @@ jobs:
     name: Verify
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         java: [ 17, 25 ]
     steps:
