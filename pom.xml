@@ -122,22 +122,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-invoker-plugin</artifactId>
                     <version>3.9.1</version>
-                    <configuration>
-                        <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                        <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
-                        <settingsFile>src/it/settings.xml</settingsFile>
-                        <streamLogs>true</streamLogs>
-                        <mavenExecutable>${project.basedir}/../mvnw</mavenExecutable>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>integration-test</id>
-                            <goals>
-                                <goal>install</goal>
-                                <goal>run</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -198,6 +182,35 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>integration-test</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-invoker-plugin</artifactId>
+                            <configuration>
+                                <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                                <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                                <settingsFile>src/it/settings.xml</settingsFile>
+                                <streamLogs>true</streamLogs>
+                                <mavenExecutable>${project.basedir}/../mvnw</mavenExecutable>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>integration-test</id>
+                                    <goals>
+                                        <goal>install</goal>
+                                        <goal>run</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
         <profile>
             <id>publish</id>
             <build>
