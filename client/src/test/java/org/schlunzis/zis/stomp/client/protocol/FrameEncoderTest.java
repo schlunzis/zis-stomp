@@ -24,8 +24,7 @@ class FrameEncoderTest {
                 version:1.2
                 host:localhost
                 
-                \0
-                """;
+                \0""";
         assertEquals(expected, encoded);
     }
 
@@ -44,8 +43,7 @@ class FrameEncoderTest {
                 destination:/queue/test
                 content-length:13
                 
-                Hello, STOMP!\0
-                """;
+                Hello, STOMP!\0""";
         assertEquals(expected, encoded);
     }
 
@@ -64,8 +62,7 @@ class FrameEncoderTest {
                 custom-header:Line1\\nLine2\\cValue\\\\Test\\rFollowing\\r\\nEscaped\\\\n
                 content-length:9
                 
-                Test Body\0
-                """;
+                Test Body\0""";
         assertEquals(expected, encoded);
     }
 
@@ -88,8 +85,7 @@ class FrameEncoderTest {
                 both-sides:\tvalue3 \s
                 content-length:15
                 
-                Whitespace Test\0
-                """;
+                Whitespace Test\0""";
         assertEquals(expected, encoded);
     }
 

@@ -2,6 +2,8 @@ package org.schlunzis.zis.stomp.client.protocol;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 public final class FrameBuilder {
 
     @Nullable
@@ -10,11 +12,14 @@ public final class FrameBuilder {
     private String body = "";
 
     public FrameBuilder command(Command command) {
+        Objects.requireNonNull(command, "command must not be null");
         this.command = command;
         return this;
     }
 
     public FrameBuilder header(String key, String value) {
+        Objects.requireNonNull(key, "header key must not be null");
+        Objects.requireNonNull(value, "header value must not be null");
         this.headers.add(key, value);
         return this;
     }
@@ -25,6 +30,7 @@ public final class FrameBuilder {
     }
 
     public FrameBuilder body(String body) {
+        Objects.requireNonNull(body, "body must not be null");
         this.body = body;
         return this;
     }

@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.client.it;
 
+import org.schlunzis.zis.stomp.client.Jackson2MessageConverter;
+import org.schlunzis.zis.stomp.client.MessageConverter;
 import org.schlunzis.zis.stomp.client.StompClient;
 
 import java.net.URI;
@@ -10,10 +12,14 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
 
-    public static void main(String[] args) throws URISyntaxException, InterruptedException {
+    public static void main(String[] args) throws URISyntaxException, InterruptedException, IllegalAccessException {
         StompClient stompClient = StompClient.builder()
                 .endpoint(new URI("ws://localhost:8080/ws"))
                 .build();
+
+        MessageConverter messageConverter = stompClient.getMessageConverter();
+        if (!(messageConverter instanceof Jackson2MessageConverter))
+            throw new IllegalStateException("messageConverter is not of type Jackson2MessageConverter");
 
         stompClient.connect();
         CountDownLatch latch = new CountDownLatch(1);

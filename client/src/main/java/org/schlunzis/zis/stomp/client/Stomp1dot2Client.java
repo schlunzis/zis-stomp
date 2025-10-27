@@ -180,6 +180,11 @@ final class Stomp1dot2Client implements StompClient {
         }
     }
 
+    @Override
+    public MessageConverter getMessageConverter() {
+        return messageConverter;
+    }
+
     private void ensureConnected() {
         if (connectionState.get() != ConnectionState.CONNECTED) {
             throw new IllegalStateException("Client is not connected");
