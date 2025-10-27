@@ -2,23 +2,23 @@ package org.schlunzis.zis.stomp.client.protocol;
 
 import java.nio.charset.StandardCharsets;
 
-public final class MessageEncoder {
+public final class FrameEncoder {
 
-    public String encode(Message message) {
+    public String encode(Frame frame) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(message.command().name()).append('\n');
-        message.headers().forEach((key, values) -> {
+        builder.append(frame.command().name()).append('\n');
+        frame.headers().forEach((key, values) -> {
             for (String value : values) {
                 builder.append(key).append(':').append(escapeHeaderValue(value)).append('\n');
             }
         });
-        if (!message.body().isEmpty() &&
-                (message.command() == Command.SEND ||
-                        message.command() == Command.MESSAGE ||
-                        message.command() == Command.ERROR)) {
-            builder.append("content-length:").append(message.body().getBytes(StandardCharsets.UTF_8).length).append('\n');
+        if (!frame.body().isEmpty() &&
+                (frame.command() == Command.SEND ||
+                        frame.command() == Command.MESSAGE ||
+                        frame.command() == Command.ERROR)) {
+            builder.append("content-length:").append(frame.body().getBytes(StandardCharsets.UTF_8).length).append('\n');
             builder.append('\n');
-            builder.append(message.body());
+            builder.append(frame.body());
         } else {
             builder.append('\n');
         }

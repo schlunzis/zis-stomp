@@ -1,14 +1,14 @@
 package org.schlunzis.zis.stomp.client.protocol;
 
 
-public record Message(
+public record Frame(
         Command command,
         Headers headers,
         String body
 ) {
 
-    public static MessageBuilder builder() {
-        return new MessageBuilder();
+    public static FrameBuilder builder() {
+        return new FrameBuilder();
     }
 
 }

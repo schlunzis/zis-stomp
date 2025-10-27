@@ -5,21 +5,21 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-public final class MessageDecoder {
+public final class FrameDecoder {
 
-    public Message decode(Reader reader) throws DecodingException {
+    public Frame decode(Reader reader) throws DecodingException {
         try (BufferedReader br = new BufferedReader(reader)) {
             final Command command = parseCommand(br);
             final Headers headers = parseHeaders(br);
             final String body = parseBody(br);
 
-            return Message.builder()
+            return Frame.builder()
                     .command(command)
                     .headers(headers)
                     .body(body)
                     .build();
         } catch (IOException e) {
-            throw new DecodingException("", "IO error while decoding STOMP message", e);
+            throw new DecodingException("", "IO error while decoding STOMP frame", e);
         }
     }
 
@@ -99,7 +99,7 @@ public final class MessageDecoder {
             }
             bodyBuilder.append((char) ch);
         }
-        throw new DecodingException(bodyBuilder.toString(), "STOMP message not properly terminated with null character");
+        throw new DecodingException(bodyBuilder.toString(), "STOMP frame not properly terminated with null character");
     }
 
 }

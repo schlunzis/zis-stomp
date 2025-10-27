@@ -5,19 +5,19 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-class MessageEncoderTest {
+class FrameEncoderTest {
 
-    MessageEncoder encoder = new MessageEncoder();
+    FrameEncoder encoder = new FrameEncoder();
 
     @Test
-    void encodeConnectedMessage() {
-        Message message = Message.builder()
+    void encodeConnectedFrame() {
+        Frame frame = Frame.builder()
                 .command(Command.CONNECTED)
                 .header("version", "1.2")
                 .header("host", "localhost")
                 .build();
 
-        String encoded = encoder.encode(message);
+        String encoded = encoder.encode(frame);
 
         String expected = """
                 CONNECTED
@@ -30,14 +30,14 @@ class MessageEncoderTest {
     }
 
     @Test
-    void encodeSendMessageWithBody() {
-        Message message = Message.builder()
+    void encodeSendFrameWithBody() {
+        Frame frame = Frame.builder()
                 .command(Command.SEND)
                 .header("destination", "/queue/test")
                 .body("Hello, STOMP!")
                 .build();
 
-        String encoded = encoder.encode(message);
+        String encoded = encoder.encode(frame);
 
         String expected = """
                 SEND
@@ -50,14 +50,14 @@ class MessageEncoderTest {
     }
 
     @Test
-    void encodeMessageWithEscapedHeaders() {
-        Message message = Message.builder()
+    void encodeFrameWithEscapedHeaders() {
+        Frame frame = Frame.builder()
                 .command(Command.MESSAGE)
                 .header("custom-header", "Line1\nLine2:Value\\Test\rFollowing\r\nEscaped\\n")
                 .body("Test Body")
                 .build();
 
-        String encoded = encoder.encode(message);
+        String encoded = encoder.encode(frame);
 
         String expected = """
                 MESSAGE
@@ -70,8 +70,8 @@ class MessageEncoderTest {
     }
 
     @Test
-    void encodeMessageWithWhitespaceHeaders() {
-        Message message = Message.builder()
+    void encodeFrameWithWhitespaceHeaders() {
+        Frame frame = Frame.builder()
                 .command(Command.SEND)
                 .header("leading-space", "  value1  ")
                 .header("trailing-space", "value2\t")
@@ -79,7 +79,7 @@ class MessageEncoderTest {
                 .body("Whitespace Test")
                 .build();
 
-        String encoded = encoder.encode(message);
+        String encoded = encoder.encode(frame);
 
         String expected = """
                 SEND

@@ -2,39 +2,39 @@ package org.schlunzis.zis.stomp.client.protocol;
 
 import org.jspecify.annotations.Nullable;
 
-public final class MessageBuilder {
+public final class FrameBuilder {
 
     @Nullable
     private Command command;
     private final Headers headers = new Headers();
     private String body = "";
 
-    public MessageBuilder command(Command command) {
+    public FrameBuilder command(Command command) {
         this.command = command;
         return this;
     }
 
-    public MessageBuilder header(String key, String value) {
+    public FrameBuilder header(String key, String value) {
         this.headers.add(key, value);
         return this;
     }
 
-    public MessageBuilder headers(Headers headers) {
+    public FrameBuilder headers(Headers headers) {
         this.headers.putAll(headers);
         return this;
     }
 
-    public MessageBuilder body(String body) {
+    public FrameBuilder body(String body) {
         this.body = body;
         return this;
     }
 
-    public Message build() {
+    public Frame build() {
         if (command == null) {
             throw new IllegalStateException("Command must be set");
         }
 
-        return new Message(command, headers, body);
+        return new Frame(command, headers, body);
     }
 
 }

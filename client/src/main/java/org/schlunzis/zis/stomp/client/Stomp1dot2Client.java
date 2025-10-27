@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.client;
 
 import org.schlunzis.zis.stomp.client.protocol.Command;
+import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.protocol.Headers;
-import org.schlunzis.zis.stomp.client.protocol.Message;
 import org.schlunzis.zis.stomp.client.subscriptions.SubscriberSubscriptionFactory;
 import org.schlunzis.zis.stomp.client.subscriptions.SubscriptionManager;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
@@ -33,7 +33,7 @@ final class Stomp1dot2Client implements StompClient {
     private final MessageConverter messageConverter;
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
-    private final TransferQueue<Message> connectedMessages = new LinkedTransferQueue<>();
+    private final TransferQueue<Frame> connectedFrames = new LinkedTransferQueue<>();
     private final Lock mutex = new ReentrantLock();
 
     Stomp1dot2Client(URI endpoint, List<Object> subscribers, MessageConverter messageConverter) {
@@ -56,17 +56,18 @@ final class Stomp1dot2Client implements StompClient {
             connectionState.set(ConnectionState.CONNECTING);
 
             websocketClient.connect();
-            Message connectMessage = Message.builder()
+            Frame connectFrame = Frame.builder()
                     .command(Command.CONNECT)
                     .header("accept-version", "1.2")
                     .header("host", host)
                     .build();
-            websocketClient.send(connectMessage);
-            Message connectedMessage = connectedMessages.take();
-            Headers headers = connectedMessage.headers();
+            websocketClient.send(connectFrame);
+            Frame connectedFrame = connectedFrames.take();
+            Headers headers = connectedFrame.headers();
             String version = headers.getFirst("version");
             if (version == null || !version.startsWith("1.2")) {
-                close();
+                websocketClient.close();
+                connectionState.set(ConnectionState.DISCONNECTED);
                 throw new ConnectionException("Unsupported STOMP version: " + version);
             }
             connectionState.set(ConnectionState.CONNECTED);
@@ -94,13 +95,13 @@ final class Stomp1dot2Client implements StompClient {
     }
 
     private void send(String destination, String body, String contentType) {
-        Message sendMessage = Message.builder()
+        Frame sendFrame = Frame.builder()
                 .command(Command.SEND)
                 .header("destination", destination)
                 .header("content-type", contentType)
                 .body(body)
                 .build();
-        websocketClient.send(sendMessage);
+        websocketClient.send(sendFrame);
     }
 
     @Override
@@ -129,14 +130,14 @@ final class Stomp1dot2Client implements StompClient {
     }
 
     private void doSubscribe(Subscription subscription) {
-        Message subscribeMessage = Message.builder()
+        Frame subscribeFrame = Frame.builder()
                 .command(Command.SUBSCRIBE)
                 .header("destination", subscription.destination())
                 .header("id", subscription.id().toString())
                 .header("ack", "auto") // TODO make ack mode configurable
                 .build();
 
-        websocketClient.send(subscribeMessage);
+        websocketClient.send(subscribeFrame);
     }
 
     @Override
@@ -151,12 +152,12 @@ final class Stomp1dot2Client implements StompClient {
     }
 
     private void doUnsubscribe(Subscription subscription) {
-        Message unsubscribeMessage = Message.builder()
+        Frame unsubscribeFrame = Frame.builder()
                 .command(Command.UNSUBSCRIBE)
                 .header("id", subscription.id().toString())
                 .build();
 
-        websocketClient.send(unsubscribeMessage);
+        websocketClient.send(unsubscribeFrame);
     }
 
     @Override
@@ -168,10 +169,10 @@ final class Stomp1dot2Client implements StompClient {
             }
             connectionState.set(ConnectionState.DISCONNECTING);
 
-            Message disconnectMessage = Message.builder()
+            Frame disconnectFrame = Frame.builder()
                     .command(Command.DISCONNECT)
                     .build();
-            websocketClient.send(disconnectMessage); // TODO use receipt
+            websocketClient.send(disconnectFrame); // TODO use receipt
             websocketClient.close();
             connectionState.set(ConnectionState.DISCONNECTED);
         } finally {
@@ -185,28 +186,28 @@ final class Stomp1dot2Client implements StompClient {
         }
     }
 
-    private void handle(Message message) {
-        switch (message.command()) {
-            case CONNECTED -> connectedMessages.add(message);
+    private void handle(Frame frame) {
+        switch (frame.command()) {
+            case CONNECTED -> connectedFrames.add(frame);
             case MESSAGE -> {
-                List<String> subscriptionId = message.headers().get("subscription");
+                List<String> subscriptionId = frame.headers().get("subscription");
                 if (subscriptionId != null && !subscriptionId.isEmpty()) {
                     subscriptionManager.handleMessage(
                             UUID.fromString(subscriptionId.get(0)),
-                            message.body()
+                            frame.body()
                     );
                 } else {
-                    log.warn("Received MESSAGE without subscription id: {}", message);
+                    log.warn("Received MESSAGE without subscription id: {}", frame);
                 }
             }
             case RECEIPT -> {
-                log.debug("Received: {}", message);
+                log.debug("Received: {}", frame);
             }
             case ERROR -> {
-                log.error("Received ERROR message: {}", message);
+                log.error("Received ERROR frame: {}", frame);
             }
             case CONNECT, STOMP, SEND, SUBSCRIBE, UNSUBSCRIBE, ACK, NACK, BEGIN, COMMIT, ABORT, DISCONNECT ->
-                    log.warn("Received message with client command: {}", message.command());
+                    log.warn("Received frame with client command: {}", frame.command());
         }
     }
 

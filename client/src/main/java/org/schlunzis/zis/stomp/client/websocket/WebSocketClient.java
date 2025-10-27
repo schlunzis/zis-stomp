@@ -2,7 +2,7 @@ package org.schlunzis.zis.stomp.client.websocket;
 
 import org.schlunzis.zis.stomp.client.ConnectionException;
 import org.schlunzis.zis.stomp.client.SendException;
-import org.schlunzis.zis.stomp.client.protocol.Message;
+import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.websocket.jakarta.JakartaWebsocketClient;
 
 public sealed interface WebSocketClient
@@ -11,7 +11,7 @@ public sealed interface WebSocketClient
 
     void connect() throws ConnectionException;
 
-    void send(Message message) throws SendException;
+    void send(Frame frame) throws SendException;
 
     void close();
 
