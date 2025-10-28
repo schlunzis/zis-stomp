@@ -45,4 +45,5 @@ jobs:
           rm mock-server.pid || true
       - name: Test Reproducibility
         run: |
+          ./mvnw clean install -DskipTests --batch-mode
           ./mvnw clean verify artifact:compare -DskipTests --batch-mode
