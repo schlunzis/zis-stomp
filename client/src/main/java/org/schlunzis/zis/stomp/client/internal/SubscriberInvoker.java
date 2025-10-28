@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-class SubscriberInvoker {
+final class SubscriberInvoker {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberInvoker.class);
 

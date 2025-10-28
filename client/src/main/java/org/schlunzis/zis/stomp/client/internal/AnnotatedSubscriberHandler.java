@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-class AnnotatedSubscriberHandler {
+final class AnnotatedSubscriberHandler {
 
     private final SubscriptionManager subscriptionManager;
     private final MessageConverter messageConverter;
