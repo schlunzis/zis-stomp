@@ -18,7 +18,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
         Object dummy = new Object();
         @SuppressWarnings("DataFlowIssue")
@@ -44,7 +45,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://unreachable:9999/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
 
         assertThrows(ConnectionException.class, client::connect);
@@ -56,7 +58,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("http://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
 
         assertThrows(ConnectionException.class, client::connect);
@@ -68,7 +71,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
         client.connect();
 
@@ -81,7 +85,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
 
         assertDoesNotThrow(client::close);
@@ -93,7 +98,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
         client.connect();
 
@@ -105,7 +111,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
         client.connect();
         client.close();
@@ -119,7 +126,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
 
         assertThrows(IllegalStateException.class, () -> client.send("/topic", "Message"));
@@ -131,7 +139,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                new StringMessageConverter()
+                new StringMessageConverter(),
+                null
         );
 
         assertThrows(IllegalStateException.class, () -> client.subscribe("/topic", String.class,
@@ -145,7 +154,8 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 List.of(),
-                messageConverter
+                messageConverter,
+                null
         );
 
         assertSame(messageConverter, client.getMessageConverter());

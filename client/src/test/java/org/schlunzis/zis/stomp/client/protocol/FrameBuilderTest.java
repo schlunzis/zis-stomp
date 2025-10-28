@@ -2,8 +2,7 @@ package org.schlunzis.zis.stomp.client.protocol;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FrameBuilderTest {
 
@@ -21,7 +20,8 @@ class FrameBuilderTest {
         assertEquals("1.2", frame.headers().getFirst("accept-version"));
         assertEquals(1, frame.headers().get("host").size());
         assertEquals("example.com", frame.headers().getFirst("host"));
-        assertEquals("Hello, STOMP!", frame.body());
+        assertTrue(frame.body().isPresent());
+        assertEquals("Hello, STOMP!", frame.body().get());
     }
 
     @Test
@@ -34,7 +34,7 @@ class FrameBuilderTest {
         assertEquals(Command.DISCONNECT, frame.command());
         assertEquals(1, frame.headers().get("receipt").size());
         assertEquals("77", frame.headers().getFirst("receipt"));
-        assertEquals("", frame.body());
+        assertTrue(frame.body().isEmpty());
     }
 
     @Test
@@ -46,7 +46,8 @@ class FrameBuilderTest {
 
         assertEquals(Command.CONNECTED, frame.command());
         assertEquals(0, frame.headers().size());
-        assertEquals("Ping", frame.body());
+        assertTrue(frame.body().isPresent());
+        assertEquals("Ping", frame.body().get());
     }
 
     @Test
@@ -66,7 +67,8 @@ class FrameBuilderTest {
         assertEquals("text/plain", frame.headers().getFirst("content-type"));
         assertEquals(1, frame.headers().get("content-length").size());
         assertEquals("13", frame.headers().getFirst("content-length"));
-        assertEquals("Hello, World!", frame.body());
+        assertTrue(frame.body().isPresent());
+        assertEquals("Hello, World!", frame.body().get());
     }
 
     @Test
@@ -89,7 +91,8 @@ class FrameBuilderTest {
         assertEquals(Command.SEND, frame.command());
         assertEquals(1, frame.headers().get("destination").size());
         assertEquals("/queue/empty", frame.headers().getFirst("destination"));
-        assertEquals("", frame.body());
+        assertTrue(frame.body().isPresent());
+        assertEquals("", frame.body().get());
     }
 
     @Test
@@ -100,14 +103,14 @@ class FrameBuilderTest {
 
         assertEquals(Command.ACK, frame.command());
         assertEquals(0, frame.headers().size());
-        assertEquals("", frame.body());
+        assertTrue(frame.body().isEmpty());
     }
 
     @Test
     void testBuildFrameWithHeadersObject() {
-        Headers headers = new Headers();
-        headers.add("key1", "value1");
-        headers.add("key2", "value2");
+        HeadersImpl headers = new HeadersImpl();
+        headers.addFirst("key1", "value1");
+        headers.addFirst("key2", "value2");
 
         Frame frame = Frame.builder()
                 .command(Command.SEND)
@@ -120,7 +123,8 @@ class FrameBuilderTest {
         assertEquals("value1", frame.headers().getFirst("key1"));
         assertEquals(1, frame.headers().get("key2").size());
         assertEquals("value2", frame.headers().getFirst("key2"));
-        assertEquals("Test body", frame.body());
+        assertTrue(frame.body().isPresent());
+        assertEquals("Test body", frame.body().get());
     }
 
     @Test
@@ -134,16 +138,21 @@ class FrameBuilderTest {
 
         assertEquals(Command.SEND, frame.command());
         assertEquals(2, frame.headers().get("destination").size());
-        assertEquals("/queue/first", frame.headers().get("destination").get(0));
-        assertEquals("/queue/second", frame.headers().get("destination").get(1));
-        assertEquals("Test body", frame.body());
+        assertEquals("/queue/second", frame.headers().get("destination").get(0));
+        assertEquals("/queue/first", frame.headers().get("destination").get(1));
+        assertTrue(frame.body().isPresent());
+        assertEquals("Test body", frame.body().get());
     }
 
     @Test
     void testBuildFrameWithNullBody() {
-        FrameBuilder builder = Frame.builder();
+        FrameBuilder builder = Frame.builder()
+                .command(Command.SEND);
 
-        assertThrows(NullPointerException.class, () -> builder.body(null));
+        assertDoesNotThrow(() -> builder.body(null));
+
+        Frame frame = builder.build();
+        assertTrue(frame.body().isEmpty());
     }
 
     @Test

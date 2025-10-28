@@ -1,15 +1,17 @@
 package org.schlunzis.zis.stomp.client.protocol;
 
 import org.jspecify.annotations.Nullable;
+import org.schlunzis.zis.stomp.client.Headers;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public final class FrameBuilder {
 
     @Nullable
     private Command command;
-    private final Headers headers = new Headers();
-    private String body = "";
+    private final Headers headers = new HeadersImpl();
+    private Optional<String> body = Optional.empty();
 
     public FrameBuilder command(Command command) {
         Objects.requireNonNull(command, "command must not be null");
@@ -20,7 +22,7 @@ public final class FrameBuilder {
     public FrameBuilder header(String key, String value) {
         Objects.requireNonNull(key, "header key must not be null");
         Objects.requireNonNull(value, "header value must not be null");
-        this.headers.add(key, value);
+        this.headers.addFirst(key, value);
         return this;
     }
 
@@ -29,9 +31,8 @@ public final class FrameBuilder {
         return this;
     }
 
-    public FrameBuilder body(String body) {
-        Objects.requireNonNull(body, "body must not be null");
-        this.body = body;
+    public FrameBuilder body(@Nullable String body) {
+        this.body = Optional.ofNullable(body);
         return this;
     }
 

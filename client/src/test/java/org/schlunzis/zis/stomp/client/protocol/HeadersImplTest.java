@@ -7,25 +7,25 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class HeadersTest {
+class HeadersImplTest {
 
     @Test
     void testAdd() {
-        Headers headers = new Headers();
-        headers.add("key1", "value1");
-        headers.add("key1", "value2");
-        headers.add("key2", "value3");
+        HeadersImpl headers = new HeadersImpl();
+        headers.addFirst("key1", "value1");
+        headers.addFirst("key1", "value2");
+        headers.addFirst("key2", "value3");
 
         assertEquals(2, headers.get("key1").size());
-        assertEquals("value1", headers.get("key1").get(0));
-        assertEquals("value2", headers.get("key1").get(1));
+        assertEquals("value2", headers.get("key1").get(0));
+        assertEquals("value1", headers.get("key1").get(1));
         assertEquals(1, headers.get("key2").size());
         assertEquals("value3", headers.get("key2").get(0));
     }
 
     @Test
     void testGetFirst() {
-        Headers headers = new Headers();
+        HeadersImpl headers = new HeadersImpl();
         headers.put("key1", List.of("value1", "value2"));
         headers.put("key2", List.of("value3"));
 
@@ -38,7 +38,7 @@ class HeadersTest {
 
     @Test
     void testGetFirstNonExistentKey() {
-        Headers headers = new Headers();
+        HeadersImpl headers = new HeadersImpl();
         headers.put("key1", List.of("value1"));
 
         assertNull(headers.getFirst("nonExistentKey"));
