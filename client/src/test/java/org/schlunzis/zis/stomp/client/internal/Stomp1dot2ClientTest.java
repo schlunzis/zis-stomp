@@ -5,7 +5,6 @@ import org.schlunzis.zis.stomp.client.ConnectionException;
 import org.schlunzis.zis.stomp.client.ReceiptPolicy;
 import org.schlunzis.zis.stomp.client.StringMessageConverter;
 import org.schlunzis.zis.stomp.client.Subscription;
-import org.schlunzis.zis.stomp.client.subscriptions.StompSubscription;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,14 +31,13 @@ class Stomp1dot2ClientTest {
                 null,
                 UUID.randomUUID(),
                 "/topic",
-                message -> fail(),
+                null,
                 String.class
         );
 
         assertThrows(IllegalStateException.class, () -> client.send("/topic", "Message"));
         assertThrows(IllegalStateException.class, () -> client.send("/topic", dummy));
-        assertThrows(IllegalStateException.class, () -> client.subscribe("/topic", String.class,
-                message -> fail()));
+        assertThrows(IllegalStateException.class, () -> client.subscribe("/topic", String.class, _ -> fail()));
         assertThrows(IllegalStateException.class, () -> client.unsubscribe(subscription));
         assertDoesNotThrow(client::close);
     }

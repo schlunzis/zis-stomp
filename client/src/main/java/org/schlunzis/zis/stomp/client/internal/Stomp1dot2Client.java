@@ -4,8 +4,6 @@ import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.*;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.protocol.Frames;
-import org.schlunzis.zis.stomp.client.subscriptions.SubscriberSubscriptionFactory;
-import org.schlunzis.zis.stomp.client.subscriptions.SubscriptionManager;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
 import org.schlunzis.zis.stomp.client.websocket.jakarta.JakartaWebsocketClient;
 import org.slf4j.Logger;
@@ -13,8 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,10 +26,8 @@ public final class Stomp1dot2Client implements StompClient {
 
     private final URI endpoint;
     private final WebSocketClient websocketClient;
-    private final SubscriptionManager subscriptionManager = new SubscriptionManager();
-    private final SubscriberSubscriptionFactory subscriberSubscriptionFactory;
-    private final Map<Object, Set<Subscription>> subscriberSubscriptions = new ConcurrentHashMap<>();
     private final MessageConverter messageConverter;
+    private final SubscriptionManager subscriptionManager;
     private final ReceiptManager receiptManager;
 
     @Nullable
@@ -50,12 +45,15 @@ public final class Stomp1dot2Client implements StompClient {
         this.messageConverter = messageConverter;
         this.onErrorConsumer = onErrorConsumer;
         this.receiptManager = new ReceiptManager(websocketClient, receiptTimeout, receiptPolicy);
-        this.subscriberSubscriptionFactory = new SubscriberSubscriptionFactory(messageConverter);
+        this.subscriptionManager = new SubscriptionManager(messageConverter);
     }
+
+    // ########
+    // CONNECT
+    // ########
 
     @Override
     public void connect() throws ConnectionException {
-
         mutex.lock();
         try {
             if (connectionState.get() != ConnectionState.UNUSED) {
@@ -66,11 +64,13 @@ public final class Stomp1dot2Client implements StompClient {
             websocketClient.connect();
             Frame connectFrame = Frames.connect(endpoint);
             websocketClient.send(connectFrame);
+
             Frame connectedFrame = connectedFrames.take();
             postProcessConnectedFrame(connectedFrame);
             connectionState.set(ConnectionState.CONNECTED);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            doClose();
             throw new ConnectionException(e);
         } finally {
             mutex.unlock();
@@ -85,6 +85,10 @@ public final class Stomp1dot2Client implements StompClient {
             throw new ConnectionException("Unsupported STOMP version: " + version);
         }
     }
+
+    // #####
+    // SEND
+    // #####
 
     @Override
     public void send(String destination, String body) {
@@ -104,26 +108,17 @@ public final class Stomp1dot2Client implements StompClient {
         receiptManager.sendAndAwaitReceiptIfPolicy(sendFrame, ReceiptPolicy.Policy.FOR_SEND);
     }
 
+    // ##########
+    // SUBSCRIBE
+    // ##########
+
     @Override
     public <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
         ensureConnected();
 
         Subscription subscription = subscriptionManager.create(
                 destination,
-                message -> {
-                    try {
-                        if (payloadType.equals(String.class)) {
-                            //noinspection unchecked
-                            messageHandler.accept((T) message);
-                        } else {
-                            log.debug("Trying to convert message to type {}: {}", payloadType, message);
-                            T convertedMessage = messageConverter.convertToType(message, payloadType);
-                            messageHandler.accept(convertedMessage);
-                        }
-                    } catch (ConversionException e) {
-                        log.error("Error converting message to type {}: {}", payloadType, e.getMessage(), e);
-                    }
-                }
+                new SubscriberInvoker(messageConverter, payloadType, messageHandler)
         );
         doSubscribe(subscription);
         return subscription;
@@ -134,21 +129,12 @@ public final class Stomp1dot2Client implements StompClient {
         mutex.lock();
         try {
             ensureConnected();
-            if (subscriberSubscriptions.containsKey(subscriber)) {
+            if (subscriptionManager.hasSubscriptionsForSubscriber(subscriber)) {
                 throw new IllegalStateException("Subscriber is already subscribed: " + subscriber);
             }
 
-            subscriberSubscriptions.computeIfAbsent(
-                    subscriber,
-                    _ -> {
-                        Set<Subscription> s = new HashSet<>();
-                        subscriberSubscriptionFactory.createAll(subscriptionManager, subscriber).forEach(subscription -> {
-                            doSubscribe(subscription);
-                            s.add(subscription);
-                        });
-                        return s;
-                    }
-            );
+            Set<Subscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
+            subscriptions.forEach(this::doSubscribe);
         } finally {
             mutex.unlock();
         }
@@ -158,6 +144,10 @@ public final class Stomp1dot2Client implements StompClient {
         Frame subscribeFrame = Frames.subscribe(subscription.destination(), subscription.id().toString(), "auto");
         receiptManager.sendAndAwaitReceiptIfPolicy(subscribeFrame, ReceiptPolicy.Policy.FOR_SUBSCRIBE);
     }
+
+    // ############
+    // UNSUBSCRIBE
+    // ############
 
     @Override
     public void unsubscribe(Subscription subscription) {
@@ -175,14 +165,11 @@ public final class Stomp1dot2Client implements StompClient {
         mutex.lock();
         try {
             ensureConnected();
-            Set<Subscription> subscriptions = subscriberSubscriptions.remove(subscriber);
+            Set<Subscription> subscriptions = subscriptionManager.remove(subscriber);
             if (subscriptions == null || subscriptions.isEmpty()) {
                 return;
             }
-            for (Subscription subscription : subscriptions) {
-                doUnsubscribe(subscription);
-                subscriptionManager.remove(subscription);
-            }
+            subscriptions.forEach(this::doUnsubscribe);
         } finally {
             mutex.unlock();
         }
@@ -192,6 +179,10 @@ public final class Stomp1dot2Client implements StompClient {
         Frame unsubscribeFrame = Frames.unsubscribe(subscription.id().toString());
         receiptManager.sendAndAwaitReceiptIfPolicy(unsubscribeFrame, ReceiptPolicy.Policy.FOR_UNSUBSCRIBE);
     }
+
+    // ###########
+    // DISCONNECT
+    // ###########
 
     @Override
     public void close() {
@@ -216,17 +207,27 @@ public final class Stomp1dot2Client implements StompClient {
             connectionState.set(ConnectionState.DISCONNECTING);
             websocketClient.close();
             connectionState.set(ConnectionState.DISCONNECTED);
-            subscriberSubscriptions.clear();
+            receiptManager.clear();
+            subscriptionManager.clear();
         } finally {
             mutex.unlock();
         }
     }
+
+    // ##############
+    // OTHER METHODS
+    // ##############
 
     @Override
     public MessageConverter getMessageConverter() {
         return messageConverter;
     }
 
+    /**
+     * If the client is not connected, this method throws an IllegalStateException.
+     * This method is used to ensure that operations that require a connected client
+     * are only performed when the client is indeed connected.
+     */
     private void ensureConnected() {
         if (connectionState.get() != ConnectionState.CONNECTED) {
             throw new IllegalStateException("Client is not connected");
@@ -240,18 +241,14 @@ public final class Stomp1dot2Client implements StompClient {
      */
     private void handle(Frame frame) {
         switch (frame.command()) {
-            case CONNECTED -> connectedFrames.add(frame);
-            case MESSAGE -> {
-                List<String> subscriptionId = frame.headers().get("subscription");
-                if (subscriptionId != null && !subscriptionId.isEmpty()) {
-                    subscriptionManager.handleMessage(
-                            UUID.fromString(subscriptionId.getFirst()),
-                            frame.body().orElse("")
-                    );
-                } else {
-                    log.warn("Received MESSAGE without subscription id: {}", frame);
+            case CONNECTED -> {
+                if (connectionState.get() != ConnectionState.CONNECTING) {
+                    log.warn("Received CONNECTED frame while not connecting: {}", frame);
+                    return;
                 }
+                connectedFrames.add(frame);
             }
+            case MESSAGE -> subscriptionManager.handleMessage(frame);
             case RECEIPT -> receiptManager.handleReceipt(frame);
             case ERROR -> {
                 if (onErrorConsumer != null) {
@@ -265,35 +262,6 @@ public final class Stomp1dot2Client implements StompClient {
             case CONNECT, STOMP, SEND, SUBSCRIBE, UNSUBSCRIBE, ACK, NACK, BEGIN, COMMIT, ABORT, DISCONNECT ->
                     log.warn("Received frame with client command: {}", frame.command());
         }
-    }
-
-    /**
-     * Enum for the connection state of the client.
-     */
-    private enum ConnectionState {
-        /**
-         * Client has not been used yet.
-         * It has not connected before.
-         */
-        UNUSED,
-        /**
-         * Client is in the process of connecting.
-         */
-        CONNECTING,
-        /**
-         * Client is connected and ready to use.
-         * This is the only state where sending and subscribing is allowed.
-         */
-        CONNECTED,
-        /**
-         * Client is in the process of disconnecting.
-         */
-        DISCONNECTING,
-        /**
-         * Client is disconnected.
-         * No further operations are allowed.
-         */
-        DISCONNECTED
     }
 
 }

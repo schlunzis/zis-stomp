@@ -1,6 +1,6 @@
 package org.schlunzis.zis.stomp.client;
 
-import org.schlunzis.zis.stomp.client.subscriptions.StompSubscription;
+import org.schlunzis.zis.stomp.client.internal.StompSubscription;
 
 import java.util.UUID;
 import java.util.function.Consumer;

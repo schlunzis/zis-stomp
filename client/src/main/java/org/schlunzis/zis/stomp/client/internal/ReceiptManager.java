@@ -91,4 +91,8 @@ final class ReceiptManager {
         }
     }
 
+    public void clear() {
+        receiptLatches.clear();
+    }
+
 }
