@@ -10,7 +10,7 @@
     <packaging>jlink</packaging>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>25</java.version>
         <zis.stomp.version>@project.version@</zis.stomp.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

@@ -11,7 +11,8 @@ public final class FrameBuilder {
     @Nullable
     private Command command;
     private final Headers headers = new HeadersImpl();
-    private Optional<String> body = Optional.empty();
+    @Nullable
+    private String body = null;
 
     public FrameBuilder command(Command command) {
         Objects.requireNonNull(command, "command must not be null");
@@ -32,7 +33,7 @@ public final class FrameBuilder {
     }
 
     public FrameBuilder body(@Nullable String body) {
-        this.body = Optional.ofNullable(body);
+        this.body = body;
         return this;
     }
 
@@ -41,7 +42,7 @@ public final class FrameBuilder {
             throw new IllegalStateException("Command must be set");
         }
 
-        return new Frame(command, headers, body);
+        return new Frame(command, headers, Optional.ofNullable(body));
     }
 
 }

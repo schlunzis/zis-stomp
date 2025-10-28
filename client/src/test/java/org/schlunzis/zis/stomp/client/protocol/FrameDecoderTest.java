@@ -32,9 +32,9 @@ class FrameDecoderTest {
 
         assertEquals(Command.CONNECT, frame.command());
         assertEquals(1, frame.headers().get("accept-version").size());
-        assertEquals("1.2", frame.headers().get("accept-version").get(0));
+        assertEquals("1.2", frame.headers().get("accept-version").getFirst());
         assertEquals(1, frame.headers().get("host").size());
-        assertEquals("example.org", frame.headers().get("host").get(0));
+        assertEquals("example.org", frame.headers().get("host").getFirst());
         assertTrue(frame.body().isEmpty());
     }
 
@@ -54,9 +54,9 @@ class FrameDecoderTest {
 
         assertEquals(Command.SEND, frame.command());
         assertEquals(1, frame.headers().get("destination").size());
-        assertEquals("/queue/a", frame.headers().get("destination").get(0));
+        assertEquals("/queue/a", frame.headers().get("destination").getFirst());
         assertEquals(1, frame.headers().get("content-type").size());
-        assertEquals("text/plain", frame.headers().get("content-type").get(0));
+        assertEquals("text/plain", frame.headers().get("content-type").getFirst());
         assertTrue(frame.body().isPresent());
         assertEquals("Hello, World!", frame.body().get());
     }
@@ -77,9 +77,9 @@ class FrameDecoderTest {
 
         assertEquals(Command.MESSAGE, frame.command());
         assertEquals(1, frame.headers().get("destination").size());
-        assertEquals("/queue/a", frame.headers().get("destination").get(0));
+        assertEquals("/queue/a", frame.headers().get("destination").getFirst());
         assertEquals(1, frame.headers().get("custom-header").size());
-        assertEquals("Line1\nLine2:Colon\rCarriageReturn\\Backslash\\nEscapedLineBreakAfterBackslash", frame.headers().get("custom-header").get(0));
+        assertEquals("Line1\nLine2:Colon\rCarriageReturn\\Backslash\\nEscapedLineBreakAfterBackslash", frame.headers().get("custom-header").getFirst());
         assertTrue(frame.body().isPresent());
         assertEquals("Body with special characters: \\n \\c \\r \\", frame.body().get());
     }
