@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
 
 /**
  * Annotation to mark a class as a STOMP subscriber.
@@ -14,11 +13,12 @@ import java.util.List;
  * specifying a common prefix for all destinations handled by the subscriber. This prefix will be prepended
  * to the destination values defined in the {@code @Topic} annotations on the subscriber's methods.
  * <p>
- * To register a subscriber with a {@link StompClient}, pass an instance of the subscriber class
- * to the client builder using the {@link StompClientBuilder#subscribers(List)} method.
+ * To register a subscriber with a {@link StompClient}, pass an instance of the subscriber method
+ * to the client's {@link StompClient#subscribe(Object)} method.
+ * To unregister the subscriber and unsubscribe from all its topics, pass the same instance
+ * to the client's {@link StompClient#unsubscribe(Object)} method.
  *
  * @see Topic
- * @see StompClientBuilder#subscribers(List)
  * @see StompPublisher
  * @since 1.0.0
  */

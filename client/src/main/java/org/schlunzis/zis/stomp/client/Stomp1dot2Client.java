@@ -11,9 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,7 +28,8 @@ final class Stomp1dot2Client implements StompClient {
     private final URI endpoint;
     private final WebSocketClient websocketClient;
     private final SubscriptionManager subscriptionManager = new SubscriptionManager();
-    private final Collection<Subscription> subscriberSubscriptions;
+    private final SubscriberSubscriptionFactory subscriberSubscriptionFactory;
+    private final Map<Object, Set<Subscription>> subscriberSubscriptions = new ConcurrentHashMap<>();
     private final MessageConverter messageConverter;
     @Nullable
     private final OnErrorConsumer onErrorConsumer;
@@ -38,13 +38,12 @@ final class Stomp1dot2Client implements StompClient {
     private final TransferQueue<Frame> connectedFrames = new LinkedTransferQueue<>();
     private final Lock mutex = new ReentrantLock();
 
-    Stomp1dot2Client(URI endpoint, List<Object> subscribers, MessageConverter messageConverter, @Nullable OnErrorConsumer onErrorConsumer) {
+    Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, @Nullable OnErrorConsumer onErrorConsumer) {
         this.endpoint = endpoint;
-        SubscriberSubscriptionFactory subscriberSubscriptionFactory = new SubscriberSubscriptionFactory(messageConverter);
-        this.subscriberSubscriptions = subscriberSubscriptionFactory.createAll(subscribers, this.subscriptionManager);
         this.websocketClient = new JakartaWebsocketClient(endpoint, this::handle);
         this.messageConverter = messageConverter;
         this.onErrorConsumer = onErrorConsumer;
+        this.subscriberSubscriptionFactory = new SubscriberSubscriptionFactory(messageConverter);
     }
 
     @Override
@@ -79,8 +78,6 @@ final class Stomp1dot2Client implements StompClient {
         } finally {
             mutex.unlock();
         }
-
-        subscriberSubscriptions.forEach(this::doSubscribe);
     }
 
     @Override
@@ -131,6 +128,31 @@ final class Stomp1dot2Client implements StompClient {
         return subscription;
     }
 
+    @Override
+    public void subscribe(Object subscriber) {
+        mutex.lock();
+        try {
+            ensureConnected();
+            if (subscriberSubscriptions.containsKey(subscriber)) {
+                throw new IllegalStateException("Subscriber is already subscribed: " + subscriber);
+            }
+
+            subscriberSubscriptions.computeIfAbsent(
+                    subscriber,
+                    _ -> {
+                        Set<Subscription> s = new HashSet<>();
+                        subscriberSubscriptionFactory.createAll(subscriptionManager, subscriber).forEach(subscription -> {
+                            doSubscribe(subscription);
+                            s.add(subscription);
+                        });
+                        return s;
+                    }
+            );
+        } finally {
+            mutex.unlock();
+        }
+    }
+
     private void doSubscribe(Subscription subscription) {
         Frame subscribeFrame = Frame.builder()
                 .command(Command.SUBSCRIBE)
@@ -151,6 +173,24 @@ final class Stomp1dot2Client implements StompClient {
         }
         doUnsubscribe(subscription);
         subscriptionManager.remove(subscription);
+    }
+
+    @Override
+    public void unsubscribe(Object subscriber) {
+        mutex.lock();
+        try {
+            ensureConnected();
+            Set<Subscription> subscriptions = subscriberSubscriptions.remove(subscriber);
+            if (subscriptions == null || subscriptions.isEmpty()) {
+                return;
+            }
+            for (Subscription subscription : subscriptions) {
+                doUnsubscribe(subscription);
+                subscriptionManager.remove(subscription);
+            }
+        } finally {
+            mutex.unlock();
+        }
     }
 
     private void doUnsubscribe(Subscription subscription) {
@@ -187,6 +227,7 @@ final class Stomp1dot2Client implements StompClient {
             connectionState.set(ConnectionState.DISCONNECTING);
             websocketClient.close();
             connectionState.set(ConnectionState.DISCONNECTED);
+            subscriberSubscriptions.clear();
         } finally {
             mutex.unlock();
         }

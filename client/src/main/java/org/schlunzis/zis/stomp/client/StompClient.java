@@ -100,6 +100,24 @@ public sealed interface StompClient
     <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler);
 
     /**
+     * Subscribes all methods annotated with {@link Topic} in the given subscriber object.
+     * You can unsubscribe all created subscriptions by calling {@link #unsubscribe(Object)} with the same subscriber
+     * instance. To provide more configuration, annotate the class with {@link StompSubscriber}.
+     * <p>
+     * After calling this method, the subscriber's annotated methods will be invoked for incoming messages
+     * on their respective topics.
+     * If you call this method multiple times with the same subscriber instance,
+     * an {@link IllegalStateException} is thrown.
+     * <p>
+     * If the client is not connected, an {@link IllegalStateException} is thrown.
+     *
+     * @param subscriber the subscriber object containing methods annotated with {@link Topic}
+     * @throws IllegalStateException if the client is not connected
+     * @since 1.0.0
+     */
+    void subscribe(Object subscriber);
+
+    /**
      * Unsubscribes from the specified subscription.
      * <p>
      * After calling this method, no more messages will be received for the given subscription.
@@ -112,6 +130,21 @@ public sealed interface StompClient
      * @since 1.0.0
      */
     void unsubscribe(Subscription subscription);
+
+    /**
+     * Unsubscribes all subscriptions created from the given subscriber object.
+     * <p>
+     * After calling this method, no more messages will be received for any subscriptions created
+     * from the specified subscriber.
+     * If there are no subscriptions for the given subscriber, this method has no effect.
+     * <p>
+     * If the client is not connected, an {@link IllegalStateException} is thrown.
+     *
+     * @param subscriber the subscriber object whose subscriptions should be unsubscribed
+     * @throws IllegalStateException if the client is not connected
+     * @since 1.0.0
+     */
+    void unsubscribe(Object subscriber);
 
     /**
      * Closes the STOMP client and releases all associated resources.

@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ServiceLoader;
 
 /**
  * Builder for {@link StompClient}.
@@ -19,7 +21,6 @@ public final class StompClientBuilder {
 
     @Nullable
     private URI endpoint;
-    private final List<Object> subscribers = new ArrayList<>();
     @Nullable
     private MessageConverter messageConverter;
     @Nullable
@@ -46,21 +47,6 @@ public final class StompClientBuilder {
      */
     public StompClientBuilder endpoint(URI endpoint) {
         this.endpoint = endpoint;
-        return this;
-    }
-
-    /**
-     * Adds a subscriber instance to the client. This instance must be annotated with
-     * {@link StompSubscriber} and its methods must be annotated with {@link Topic}.
-     * <p>
-     * This method may be called multiple times to add multiple subscribers.
-     *
-     * @param subscribers the subscriber instances
-     * @return the builder instance
-     * @since 1.0.0
-     */
-    public StompClientBuilder subscribers(List<Object> subscribers) {
-        this.subscribers.addAll(subscribers);
         return this;
     }
 
@@ -127,7 +113,6 @@ public final class StompClientBuilder {
 
         return new Stomp1dot2Client(
                 endpoint,
-                subscribers,
                 messageConverter,
                 onErrorConsumer
         );
