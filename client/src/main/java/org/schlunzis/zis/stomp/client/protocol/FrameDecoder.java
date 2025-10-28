@@ -29,7 +29,7 @@ public final class FrameDecoder {
             return Frame.builder()
                     .command(command)
                     .headers(headers)
-                    .body(body)
+                    .body(body.isEmpty() ? null : body)
                     .build();
         } catch (IOException e) {
             throw new DecodingException("", "IO error while decoding STOMP frame", e);

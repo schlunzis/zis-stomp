@@ -4,6 +4,7 @@ import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.Message;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * This record represents a STOMP frame consisting of a command, headers, and an optional body.
@@ -21,8 +22,8 @@ import java.util.Objects;
 public record Frame(
         Command command,
         Headers headers,
-        String body
-) implements Message {
+        Optional<String> body
+) implements Message<String> {
 
     /**
      * Do not use this constructor directly. Use the FrameBuilder instead.

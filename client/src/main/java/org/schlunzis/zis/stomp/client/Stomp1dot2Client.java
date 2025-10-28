@@ -216,7 +216,7 @@ final class Stomp1dot2Client implements StompClient {
                 if (subscriptionId != null && !subscriptionId.isEmpty()) {
                     subscriptionManager.handleMessage(
                             UUID.fromString(subscriptionId.get(0)),
-                            frame.body()
+                            frame.body().orElse("")
                     );
                 } else {
                     log.warn("Received MESSAGE without subscription id: {}", frame);

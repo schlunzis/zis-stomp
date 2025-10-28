@@ -27,13 +27,13 @@ public final class FrameEncoder {
         });
 
         // Body
-        if (!frame.body().isEmpty() &&
+        if (frame.body().isPresent() &&
                 (frame.command() == Command.SEND ||
                         frame.command() == Command.MESSAGE ||
                         frame.command() == Command.ERROR)) {
-            builder.append("content-length:").append(frame.body().getBytes(StandardCharsets.UTF_8).length).append('\n');
+            builder.append("content-length:").append(frame.body().get().getBytes(StandardCharsets.UTF_8).length).append('\n');
             builder.append('\n');
-            builder.append(frame.body());
+            builder.append(frame.body().get());
         } else {
             builder.append('\n');
         }
