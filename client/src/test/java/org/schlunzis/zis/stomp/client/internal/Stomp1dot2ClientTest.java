@@ -1,6 +1,10 @@
-package org.schlunzis.zis.stomp.client;
+package org.schlunzis.zis.stomp.client.internal;
 
 import org.junit.jupiter.api.Test;
+import org.schlunzis.zis.stomp.client.ConnectionException;
+import org.schlunzis.zis.stomp.client.ReceiptPolicy;
+import org.schlunzis.zis.stomp.client.StringMessageConverter;
+import org.schlunzis.zis.stomp.client.Subscription;
 import org.schlunzis.zis.stomp.client.subscriptions.StompSubscription;
 
 import java.net.URI;
