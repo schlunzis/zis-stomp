@@ -6,7 +6,9 @@
 version: 2
 updates:
   - package-ecosystem: "maven"
-    directory: "/"
+    directores:
+      - "/"
+      - "/client/src/it/*"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"

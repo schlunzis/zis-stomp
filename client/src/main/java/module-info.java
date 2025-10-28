@@ -17,6 +17,8 @@ module org.schlunzis.zis.stomp.client {
     uses com.fasterxml.jackson.core.ObjectCodec;
     uses tools.jackson.databind.ObjectMapper;
 
+    // Has to be open to everything, because different jakarta websocket implementations
+    // use reflection to access the endpoint classes and have different module names
     opens org.schlunzis.zis.stomp.client.websocket.jakarta;
 
     exports org.schlunzis.zis.stomp.client;

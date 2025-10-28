@@ -4,7 +4,7 @@ import jakarta.websocket.*;
 import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.ConnectionException;
 import org.schlunzis.zis.stomp.client.SendException;
-import org.schlunzis.zis.stomp.client.protocol.Message;
+import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +15,10 @@ import java.util.function.Consumer;
 
 @ClientEndpoint(
         encoders = {
-                JakartaMessageEncoder.class
+                JakartaFrameEncoder.class
         },
         decoders = {
-                JakartaMessageDecoder.class
+                JakartaFrameDecoder.class
         }
 )
 public final class JakartaWebsocketClient implements WebSocketClient {
@@ -26,14 +26,14 @@ public final class JakartaWebsocketClient implements WebSocketClient {
     private static final Logger log = LoggerFactory.getLogger(JakartaWebsocketClient.class);
 
     private final URI endpoint;
-    private final Consumer<Message> messageHandler;
+    private final Consumer<Frame> frameHandler;
 
     @Nullable
     private Session session;
 
-    public JakartaWebsocketClient(URI endpoint, Consumer<Message> messageHandler) {
+    public JakartaWebsocketClient(URI endpoint, Consumer<Frame> frameHandler) {
         this.endpoint = endpoint;
-        this.messageHandler = messageHandler;
+        this.frameHandler = frameHandler;
     }
 
     @Override
@@ -56,21 +56,21 @@ public final class JakartaWebsocketClient implements WebSocketClient {
     }
 
     @OnMessage
-    public void onMessage(Message message, Session session) {
-        log.debug("Received message: {}", message);
-        messageHandler.accept(message);
+    public void onMessage(Frame frame, Session session) {
+        log.debug("Received frame: {}", frame);
+        frameHandler.accept(frame);
     }
 
     @Override
-    public void send(Message message) throws SendException {
+    public void send(Frame frame) throws SendException {
         if (session == null || !session.isOpen()) {
-            log.warn("Cannot send message, client is not connected");
-            return;
+            log.warn("Cannot send frame, client is not connected");
+            throw new SendException("Cannot send frame");
         }
 
         try {
-            log.debug("Sending message: {}", message);
-            session.getBasicRemote().sendObject(message);
+            log.debug("Sending frame: {}", frame);
+            session.getBasicRemote().sendObject(frame);
         } catch (IOException | EncodeException e) {
             throw new SendException(e);
         }

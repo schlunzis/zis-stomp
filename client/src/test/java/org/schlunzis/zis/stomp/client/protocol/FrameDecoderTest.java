@@ -9,16 +9,16 @@ import java.io.StringReader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class MessageDecoderTest {
+class FrameDecoderTest {
 
-    MessageDecoder decoder = new MessageDecoder();
+    FrameDecoder decoder = new FrameDecoder();
 
-    private Reader createReader(String message) {
-        return new StringReader(message);
+    private Reader createReader(String frame) {
+        return new StringReader(frame);
     }
 
     @Test
-    void decodeValidMessage() throws DecodingException {
+    void decodeValidFrame() throws DecodingException {
         Reader reader = createReader("""
                 CONNECT
                 accept-version:1.2
@@ -28,19 +28,19 @@ class MessageDecoderTest {
                 """
         );
 
-        Message message = decoder.decode(reader);
-        assertThrows(IOException.class, reader::read);
+        Frame frame = decoder.decode(reader);
+        assertThrows(IOException.class, reader::read); // ensure reader is closed
 
-        assertEquals(Command.CONNECT, message.command());
-        assertEquals(1, message.headers().get("accept-version").size());
-        assertEquals("1.2", message.headers().get("accept-version").get(0));
-        assertEquals(1, message.headers().get("host").size());
-        assertEquals("example.org", message.headers().get("host").get(0));
-        assertEquals("", message.body());
+        assertEquals(Command.CONNECT, frame.command());
+        assertEquals(1, frame.headers().get("accept-version").size());
+        assertEquals("1.2", frame.headers().get("accept-version").get(0));
+        assertEquals(1, frame.headers().get("host").size());
+        assertEquals("example.org", frame.headers().get("host").get(0));
+        assertEquals("", frame.body());
     }
 
     @Test
-    void decodeMessageWithBody() throws DecodingException {
+    void decodeFrameWithBody() throws DecodingException {
         Reader reader = createReader("""
                 SEND
                 destination:/queue/a
@@ -50,19 +50,19 @@ class MessageDecoderTest {
                 """
         );
 
-        Message message = decoder.decode(reader);
+        Frame frame = decoder.decode(reader);
         assertThrows(IOException.class, reader::read);
 
-        assertEquals(Command.SEND, message.command());
-        assertEquals(1, message.headers().get("destination").size());
-        assertEquals("/queue/a", message.headers().get("destination").get(0));
-        assertEquals(1, message.headers().get("content-type").size());
-        assertEquals("text/plain", message.headers().get("content-type").get(0));
-        assertEquals("Hello, World!", message.body());
+        assertEquals(Command.SEND, frame.command());
+        assertEquals(1, frame.headers().get("destination").size());
+        assertEquals("/queue/a", frame.headers().get("destination").get(0));
+        assertEquals(1, frame.headers().get("content-type").size());
+        assertEquals("text/plain", frame.headers().get("content-type").get(0));
+        assertEquals("Hello, World!", frame.body());
     }
 
     @Test
-    void decodeMessageWithEscapedHeaders() throws DecodingException {
+    void decodeFrameWithEscapedHeaders() throws DecodingException {
         Reader reader = createReader("""
                 MESSAGE
                 destination:/queue/a
@@ -72,19 +72,19 @@ class MessageDecoderTest {
                 """
         );
 
-        Message message = decoder.decode(reader);
+        Frame frame = decoder.decode(reader);
         assertThrows(IOException.class, reader::read);
 
-        assertEquals(Command.MESSAGE, message.command());
-        assertEquals(1, message.headers().get("destination").size());
-        assertEquals("/queue/a", message.headers().get("destination").get(0));
-        assertEquals(1, message.headers().get("custom-header").size());
-        assertEquals("Line1\nLine2:Colon\rCarriageReturn\\Backslash\\nEscapedLineBreakAfterBackslash", message.headers().get("custom-header").get(0));
-        assertEquals("Body with special characters: \\n \\c \\r \\", message.body());
+        assertEquals(Command.MESSAGE, frame.command());
+        assertEquals(1, frame.headers().get("destination").size());
+        assertEquals("/queue/a", frame.headers().get("destination").get(0));
+        assertEquals(1, frame.headers().get("custom-header").size());
+        assertEquals("Line1\nLine2:Colon\rCarriageReturn\\Backslash\\nEscapedLineBreakAfterBackslash", frame.headers().get("custom-header").get(0));
+        assertEquals("Body with special characters: \\n \\c \\r \\", frame.body());
     }
 
     @Test
-    void decodeWithInvalidCommand() {
+    void decodeFrameWithInvalidCommand() {
         Reader reader = createReader("""
                 INVALID_COMMAND
                 header1:value1
@@ -102,7 +102,7 @@ class MessageDecoderTest {
     }
 
     @Test
-    void decodeWithInvalidHeader() {
+    void decodeFrameWithInvalidHeader() {
         Reader reader = createReader("""
                 CONNECT
                 invalid-header
@@ -120,7 +120,7 @@ class MessageDecoderTest {
     }
 
     @Test
-    void decodeWithInvalidHeaderValueEscape() {
+    void decodeFrameWithInvalidHeaderValueEscape() {
         Reader reader = createReader("""
                 CONNECT
                 header1:Value with invalid escape \\t
@@ -137,7 +137,7 @@ class MessageDecoderTest {
     }
 
     @Test
-    void decodeWithoutNullTerminator() {
+    void decodeFrameWithoutNullTerminator() {
         Reader reader = createReader("""
                 CONNECT
                 header1:value1
@@ -150,7 +150,7 @@ class MessageDecoderTest {
         assertThrows(IOException.class, reader::read);
 
         assertEquals("Body\n", e.getLine());
-        assertEquals("STOMP message not properly terminated with null character", e.getMessage());
+        assertEquals("STOMP frame not properly terminated with null character", e.getMessage());
     }
 
 }

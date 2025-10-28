@@ -123,4 +123,12 @@ public sealed interface StompClient
      */
     void close();
 
+    /**
+     * Returns the message converter used by the STOMP client for converting message payloads.
+     *
+     * @return the message converter
+     * @since 1.0.0
+     */
+    MessageConverter getMessageConverter();
+
 }

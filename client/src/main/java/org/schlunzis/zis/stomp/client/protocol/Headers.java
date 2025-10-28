@@ -11,7 +11,7 @@ public final class Headers extends LinkedHashMap<String, List<String>>
         implements Map<String, List<String>> {
 
     public void add(String key, String value) {
-        this.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+        this.computeIfAbsent(key, k -> new ArrayList<>(1)).add(value);
     }
 
     public @Nullable String getFirst(String key) {
