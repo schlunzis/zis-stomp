@@ -105,7 +105,7 @@ class FrameBuilderTest {
 
     @Test
     void testBuildFrameWithHeadersObject() {
-        Headers headers = new Headers();
+        HeadersImpl headers = new HeadersImpl();
         headers.add("key1", "value1");
         headers.add("key2", "value2");
 

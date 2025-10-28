@@ -1,6 +1,7 @@
 package org.schlunzis.zis.stomp.client.protocol;
 
 import org.jspecify.annotations.Nullable;
+import org.schlunzis.zis.stomp.client.Headers;
 
 import java.util.Objects;
 
@@ -8,7 +9,7 @@ public final class FrameBuilder {
 
     @Nullable
     private Command command;
-    private final Headers headers = new Headers();
+    private final Headers headers = new HeadersImpl();
     private String body = "";
 
     public FrameBuilder command(Command command) {

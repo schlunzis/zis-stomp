@@ -5,10 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
 
 /**
  * Builder for {@link StompClient}.
@@ -25,6 +22,8 @@ public final class StompClientBuilder {
     private final List<Object> subscribers = new ArrayList<>();
     @Nullable
     private MessageConverter messageConverter;
+    @Nullable
+    private OnErrorConsumer onErrorConsumer;
 
     /**
      * Creates a new STOMP client builder.
@@ -83,7 +82,36 @@ public final class StompClientBuilder {
     }
 
     /**
+     * Sets the consumer to run when a STOMP ERROR frame is received.
+     * If an ERROR frame is received from the server, the provided consumer will be invoked
+     * with the error details.
+     * <p>
+     * If this happens, the server closes the connection, since ERROR frames are only sent
+     * in fatal error situations like protocol violations. If you think this is a problem
+     * with the client, please open an issue on GitHub.
+     * <p>
+     * If you want to recover from such errors, you need to build a new StompClient instance
+     * and connect again. However, be aware that this is not recommended, since ERROR frames
+     * usually indicate serious problems.
+     * You can reuse the same builder instance to build a new client with the same configuration.
+     * <p>
+     * The builder and the constructed StompClient will hold a strong reference to the provided
+     * consumer even after the client is closed.
+     *
+     * @param onErrorConsumer the error consumer
+     * @return the builder instance
+     * @since 1.0.0
+     */
+    public StompClientBuilder onErrorConsumer(OnErrorConsumer onErrorConsumer) {
+        Objects.requireNonNull(onErrorConsumer, "onErrorConsumer must not be null");
+        this.onErrorConsumer = onErrorConsumer;
+        return this;
+    }
+
+    /**
      * Builds the {@link StompClient} instance.
+     * <p>
+     * You may call this method multiple times to create multiple clients with the same configuration.
      *
      * @return the STOMP client
      * @throws IllegalStateException if the endpoint is not set
@@ -100,7 +128,8 @@ public final class StompClientBuilder {
         return new Stomp1dot2Client(
                 endpoint,
                 subscribers,
-                messageConverter
+                messageConverter,
+                onErrorConsumer
         );
     }
 

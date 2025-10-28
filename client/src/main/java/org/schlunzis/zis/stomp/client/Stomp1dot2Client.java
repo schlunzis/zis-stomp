@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.client;
 
+import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.Headers;
 import org.schlunzis.zis.stomp.client.subscriptions.SubscriberSubscriptionFactory;
 import org.schlunzis.zis.stomp.client.subscriptions.SubscriptionManager;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
@@ -31,17 +31,20 @@ final class Stomp1dot2Client implements StompClient {
     private final SubscriptionManager subscriptionManager = new SubscriptionManager();
     private final Collection<Subscription> subscriberSubscriptions;
     private final MessageConverter messageConverter;
+    @Nullable
+    private final OnErrorConsumer onErrorConsumer;
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
     private final TransferQueue<Frame> connectedFrames = new LinkedTransferQueue<>();
     private final Lock mutex = new ReentrantLock();
 
-    Stomp1dot2Client(URI endpoint, List<Object> subscribers, MessageConverter messageConverter) {
+    Stomp1dot2Client(URI endpoint, List<Object> subscribers, MessageConverter messageConverter, @Nullable OnErrorConsumer onErrorConsumer) {
         this.endpoint = endpoint;
         SubscriberSubscriptionFactory subscriberSubscriptionFactory = new SubscriberSubscriptionFactory(messageConverter);
         this.subscriberSubscriptions = subscriberSubscriptionFactory.createAll(subscribers, this.subscriptionManager);
         this.websocketClient = new JakartaWebsocketClient(endpoint, this::handle);
         this.messageConverter = messageConverter;
+        this.onErrorConsumer = onErrorConsumer;
     }
 
     @Override
@@ -65,9 +68,8 @@ final class Stomp1dot2Client implements StompClient {
             Frame connectedFrame = connectedFrames.take();
             Headers headers = connectedFrame.headers();
             String version = headers.getFirst("version");
-            if (version == null || !version.startsWith("1.2")) {
-                websocketClient.close();
-                connectionState.set(ConnectionState.DISCONNECTED);
+            if (version == null || !version.equals("1.2")) {
+                doClose();
                 throw new ConnectionException("Unsupported STOMP version: " + version);
             }
             connectionState.set(ConnectionState.CONNECTED);
@@ -172,7 +174,17 @@ final class Stomp1dot2Client implements StompClient {
             Frame disconnectFrame = Frame.builder()
                     .command(Command.DISCONNECT)
                     .build();
-            websocketClient.send(disconnectFrame); // TODO use receipt
+            websocketClient.send(disconnectFrame);
+            doClose();
+        } finally {
+            mutex.unlock();
+        }
+    }
+
+    private void doClose() {
+        mutex.lock();
+        try {
+            connectionState.set(ConnectionState.DISCONNECTING);
             websocketClient.close();
             connectionState.set(ConnectionState.DISCONNECTED);
         } finally {
@@ -191,6 +203,11 @@ final class Stomp1dot2Client implements StompClient {
         }
     }
 
+    /**
+     * This is the entry point for incoming STOMP frames from the WebSocket.
+     *
+     * @param frame the received STOMP frame
+     */
     private void handle(Frame frame) {
         switch (frame.command()) {
             case CONNECTED -> connectedFrames.add(frame);
@@ -209,18 +226,45 @@ final class Stomp1dot2Client implements StompClient {
                 log.debug("Received: {}", frame);
             }
             case ERROR -> {
-                log.error("Received ERROR frame: {}", frame);
+                if (onErrorConsumer != null) {
+                    String message = frame.headers().getFirst("message");
+                    onErrorConsumer.accept(message != null ? message : "Unknown Error", frame);
+                } else {
+                    log.error("Received STOMP ERROR frame: {}", frame);
+                }
+                doClose();
             }
             case CONNECT, STOMP, SEND, SUBSCRIBE, UNSUBSCRIBE, ACK, NACK, BEGIN, COMMIT, ABORT, DISCONNECT ->
                     log.warn("Received frame with client command: {}", frame.command());
         }
     }
 
+    /**
+     * Enum for the connection state of the client.
+     */
     private enum ConnectionState {
+        /**
+         * Client has not been used yet.
+         * It has not connected before.
+         */
         UNUSED,
+        /**
+         * Client is in the process of connecting.
+         */
         CONNECTING,
+        /**
+         * Client is connected and ready to use.
+         * This is the only state where sending and subscribing is allowed.
+         */
         CONNECTED,
+        /**
+         * Client is in the process of disconnecting.
+         */
         DISCONNECTING,
+        /**
+         * Client is disconnected.
+         * No further operations are allowed.
+         */
         DISCONNECTED
     }
 

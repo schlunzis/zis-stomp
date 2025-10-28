@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.client.protocol;
 
+import org.schlunzis.zis.stomp.client.Headers;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -73,7 +75,7 @@ public final class FrameDecoder {
      * @throws IOException       if an I/O error occurs
      */
     private Headers parseHeaders(Reader reader) throws DecodingException, IOException {
-        Headers headers = new Headers();
+        Headers headers = new HeadersImpl();
         StringBuilder headerBuilder = new StringBuilder();
         int ch;
         while ((ch = reader.read()) != -1) {

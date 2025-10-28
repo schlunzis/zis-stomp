@@ -1,19 +1,21 @@
 package org.schlunzis.zis.stomp.client.protocol;
 
 import org.jspecify.annotations.Nullable;
+import org.schlunzis.zis.stomp.client.Headers;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-public final class Headers extends LinkedHashMap<String, List<String>>
-        implements Map<String, List<String>> {
+public final class HeadersImpl extends LinkedHashMap<String, List<String>>
+        implements Headers {
 
+    @Override
     public void add(String key, String value) {
         this.computeIfAbsent(key, k -> new ArrayList<>(1)).add(value);
     }
 
+    @Override
     public @Nullable String getFirst(String key) {
         List<String> values = this.get(key);
         if (values != null && !values.isEmpty()) {

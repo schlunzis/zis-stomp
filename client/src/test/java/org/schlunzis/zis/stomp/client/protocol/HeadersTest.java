@@ -4,14 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HeadersTest {
 
     @Test
     void testAdd() {
-        Headers headers = new Headers();
+        HeadersImpl headers = new HeadersImpl();
         headers.add("key1", "value1");
         headers.add("key1", "value2");
         headers.add("key2", "value3");
@@ -25,7 +24,7 @@ class HeadersTest {
 
     @Test
     void testGetFirst() {
-        Headers headers = new Headers();
+        HeadersImpl headers = new HeadersImpl();
         headers.put("key1", List.of("value1", "value2"));
         headers.put("key2", List.of("value3"));
 
@@ -38,7 +37,7 @@ class HeadersTest {
 
     @Test
     void testGetFirstNonExistentKey() {
-        Headers headers = new Headers();
+        HeadersImpl headers = new HeadersImpl();
         headers.put("key1", List.of("value1"));
 
         assertNull(headers.getFirst("nonExistentKey"));
