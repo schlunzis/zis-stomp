@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -25,6 +26,8 @@ public final class StompClientBuilder {
     private MessageConverter messageConverter;
     @Nullable
     private OnErrorConsumer onErrorConsumer;
+    private Duration receiptTimeout = Duration.ofSeconds(10);
+    private ReceiptPolicy receiptPolicy = ReceiptPolicy.none();
 
     /**
      * Creates a new STOMP client builder.
@@ -95,6 +98,37 @@ public final class StompClientBuilder {
     }
 
     /**
+     * Sets the receipt timeout duration.
+     * If a receipt is requested, this timeout defines how long the client
+     * will wait for the receipt frame from the server before considering it a failure.
+     * The default is 10 seconds.
+     *
+     * @param receiptTimeout the receipt timeout duration
+     * @return the builder instance
+     * @since 1.0.0
+     */
+    public StompClientBuilder receiptTimeout(Duration receiptTimeout) {
+        Objects.requireNonNull(receiptTimeout, "receiptTimeout must not be null");
+        this.receiptTimeout = receiptTimeout;
+        return this;
+    }
+
+    /**
+     * Sets the receipt policy for the client.
+     * The receipt policy defines for which operations the client will request receipts from the server.
+     * By default, no receipts are requested.
+     *
+     * @param receiptPolicy the receipt policy
+     * @return the builder instance
+     * @since 1.0.0
+     */
+    public StompClientBuilder receiptPolicy(ReceiptPolicy receiptPolicy) {
+        Objects.requireNonNull(receiptPolicy, "receiptPolicy must not be null");
+        this.receiptPolicy = receiptPolicy;
+        return this;
+    }
+
+    /**
      * Builds the {@link StompClient} instance.
      * <p>
      * You may call this method multiple times to create multiple clients with the same configuration.
@@ -114,7 +148,9 @@ public final class StompClientBuilder {
         return new Stomp1dot2Client(
                 endpoint,
                 messageConverter,
-                onErrorConsumer
+                onErrorConsumer,
+                receiptTimeout,
+                receiptPolicy
         );
     }
 
