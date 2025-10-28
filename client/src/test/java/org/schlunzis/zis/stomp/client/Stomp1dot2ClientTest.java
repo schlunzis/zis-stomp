@@ -5,7 +5,6 @@ import org.schlunzis.zis.stomp.client.subscriptions.StompSubscription;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,7 +16,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -44,7 +42,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://unreachable:9999/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -57,7 +54,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("http://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -70,7 +66,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -84,7 +79,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -97,7 +91,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -110,7 +103,6 @@ class Stomp1dot2ClientTest {
     void testCloseDouble() throws URISyntaxException, ConnectionException {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -125,7 +117,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -138,7 +129,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 new StringMessageConverter(),
                 null
         );
@@ -153,7 +143,6 @@ class Stomp1dot2ClientTest {
         @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
-                List.of(),
                 messageConverter,
                 null
         );

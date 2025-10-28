@@ -24,10 +24,8 @@ public final class SubscriberSubscriptionFactory {
         this.messageConverter = messageConverter;
     }
 
-    public List<Subscription> createAll(List<Object> subscribers, SubscriptionManager subscriptionManager) {
-        return subscribers.stream()
-                .flatMap(subscriber -> create(subscriber, subscriptionManager))
-                .toList();
+    public List<Subscription> createAll(SubscriptionManager subscriptionManager, Object subscriber) {
+        return create(subscriber, subscriptionManager).toList();
     }
 
     private Stream<Subscription> create(Object subscriber, SubscriptionManager subscriptionManager) {
