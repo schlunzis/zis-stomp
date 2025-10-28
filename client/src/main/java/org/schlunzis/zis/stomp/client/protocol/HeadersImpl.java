@@ -11,8 +11,8 @@ public final class HeadersImpl extends LinkedHashMap<String, List<String>>
         implements Headers {
 
     @Override
-    public void add(String key, String value) {
-        this.computeIfAbsent(key, k -> new ArrayList<>(1)).add(value);
+    public void addFirst(String key, String value) {
+        this.computeIfAbsent(key, k -> new ArrayList<>(1)).add(0, value);
     }
 
     @Override

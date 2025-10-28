@@ -21,7 +21,7 @@ public final class FrameBuilder {
     public FrameBuilder header(String key, String value) {
         Objects.requireNonNull(key, "header key must not be null");
         Objects.requireNonNull(value, "header value must not be null");
-        this.headers.add(key, value);
+        this.headers.addFirst(key, value);
         return this;
     }
 

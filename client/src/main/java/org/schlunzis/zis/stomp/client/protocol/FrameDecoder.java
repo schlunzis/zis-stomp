@@ -88,7 +88,7 @@ public final class FrameDecoder {
                 if (headerParts.length == 2) {
                     String key = headerParts[0];
                     String value = decodeEscapedHeaderValue(headerParts[1]);
-                    headers.add(key, value);
+                    headers.addFirst(key, value);
                 } else {
                     throw new DecodingException(line, "Invalid STOMP header");
                 }

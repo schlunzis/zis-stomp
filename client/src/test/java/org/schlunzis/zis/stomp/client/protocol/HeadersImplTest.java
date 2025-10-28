@@ -12,13 +12,13 @@ class HeadersImplTest {
     @Test
     void testAdd() {
         HeadersImpl headers = new HeadersImpl();
-        headers.add("key1", "value1");
-        headers.add("key1", "value2");
-        headers.add("key2", "value3");
+        headers.addFirst("key1", "value1");
+        headers.addFirst("key1", "value2");
+        headers.addFirst("key2", "value3");
 
         assertEquals(2, headers.get("key1").size());
-        assertEquals("value1", headers.get("key1").get(0));
-        assertEquals("value2", headers.get("key1").get(1));
+        assertEquals("value2", headers.get("key1").get(0));
+        assertEquals("value1", headers.get("key1").get(1));
         assertEquals(1, headers.get("key2").size());
         assertEquals("value3", headers.get("key2").get(0));
     }

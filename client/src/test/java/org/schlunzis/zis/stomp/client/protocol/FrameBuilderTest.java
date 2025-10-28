@@ -106,8 +106,8 @@ class FrameBuilderTest {
     @Test
     void testBuildFrameWithHeadersObject() {
         HeadersImpl headers = new HeadersImpl();
-        headers.add("key1", "value1");
-        headers.add("key2", "value2");
+        headers.addFirst("key1", "value1");
+        headers.addFirst("key2", "value2");
 
         Frame frame = Frame.builder()
                 .command(Command.SEND)
@@ -134,8 +134,8 @@ class FrameBuilderTest {
 
         assertEquals(Command.SEND, frame.command());
         assertEquals(2, frame.headers().get("destination").size());
-        assertEquals("/queue/first", frame.headers().get("destination").get(0));
-        assertEquals("/queue/second", frame.headers().get("destination").get(1));
+        assertEquals("/queue/second", frame.headers().get("destination").get(0));
+        assertEquals("/queue/first", frame.headers().get("destination").get(1));
         assertEquals("Test body", frame.body());
     }
 

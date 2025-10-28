@@ -102,7 +102,7 @@ public final class StompClientBuilder {
      * @return the builder instance
      * @since 1.0.0
      */
-    public StompClientBuilder onErrorConsumer(OnErrorConsumer onErrorConsumer) {
+    public StompClientBuilder onError(OnErrorConsumer onErrorConsumer) {
         Objects.requireNonNull(onErrorConsumer, "onErrorConsumer must not be null");
         this.onErrorConsumer = onErrorConsumer;
         return this;

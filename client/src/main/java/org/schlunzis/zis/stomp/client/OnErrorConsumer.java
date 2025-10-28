@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
  * @since 1.0.0
  */
 @FunctionalInterface
-public interface OnErrorConsumer extends BiConsumer<String, Message> {
+public interface OnErrorConsumer extends BiConsumer<String, Message<String>> {
 
     /**
      * Accepts an error that occurred during STOMP communication.
@@ -16,6 +16,6 @@ public interface OnErrorConsumer extends BiConsumer<String, Message> {
      * @param message the error message from the ERROR frame
      * @since 1.0.0
      */
-    void accept(String m, Message message);
+    void accept(String m, Message<String> message);
 
 }

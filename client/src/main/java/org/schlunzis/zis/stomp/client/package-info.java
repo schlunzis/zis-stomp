@@ -5,5 +5,7 @@
  * You may also register a custom {@link org.schlunzis.zis.stomp.client.MessageConverter} to handle message
  * conversion, e.g., for JSON payloads. Default implementations for Jackson 2 and Jackson 3 are provided.
  * They are automatically used if the respective Jackson version is available.
+ *
+ * @since 1.0.0
  */
 package org.schlunzis.zis.stomp.client;
