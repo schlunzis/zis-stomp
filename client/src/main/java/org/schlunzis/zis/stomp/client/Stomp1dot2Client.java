@@ -11,8 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -33,6 +35,8 @@ final class Stomp1dot2Client implements StompClient {
     private final MessageConverter messageConverter;
     @Nullable
     private final OnErrorConsumer onErrorConsumer;
+    private final Map<UUID, CountDownLatch> receiptLatches = new ConcurrentHashMap<>();
+    private final Duration receiptTimeout = Duration.ofSeconds(10);
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
     private final TransferQueue<Frame> connectedFrames = new LinkedTransferQueue<>();
@@ -214,7 +218,7 @@ final class Stomp1dot2Client implements StompClient {
             Frame disconnectFrame = Frame.builder()
                     .command(Command.DISCONNECT)
                     .build();
-            websocketClient.send(disconnectFrame);
+            sendAndAwaitReceipt(disconnectFrame);
             doClose();
         } finally {
             mutex.unlock();
@@ -245,6 +249,53 @@ final class Stomp1dot2Client implements StompClient {
     }
 
     /**
+     * Sends a frame and waits for the corresponding RECEIPT frame.
+     *
+     * @param frame the frame to send
+     * @throws SendException if the receipt is not received within the timeout
+     */
+    private void sendAndAwaitReceipt(Frame frame) {
+        UUID receiptId = UUID.randomUUID();
+        frame.headers().addFirst("receipt", receiptId.toString());
+        CountDownLatch latch = new CountDownLatch(1);
+        receiptLatches.put(receiptId, latch);
+        websocketClient.send(frame);
+        try {
+            if (!latch.await(receiptTimeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                throw new SendException("Timeout waiting for receipt");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SendException("Interrupted while waiting for receipt", e);
+        } finally {
+            receiptLatches.remove(receiptId);
+        }
+    }
+
+    /**
+     * Handles an incoming RECEIPT frame.
+     * It looks up the corresponding latch and counts it down.
+     *
+     * @param frame the RECEIPT frame
+     */
+    private void handleReceipt(Frame frame) {
+        UUID receiptId;
+        try {
+            receiptId = UUID.fromString(frame.headers().get("receipt-id").getFirst());
+        } catch (IllegalArgumentException _) {
+            log.warn("Received RECEIPT with invalid receipt id: {}", frame);
+            return;
+        }
+
+        CountDownLatch latch = receiptLatches.get(receiptId);
+        if (latch != null) {
+            latch.countDown();
+        } else {
+            log.warn("Received RECEIPT for unknown receipt id: {}", receiptId);
+        }
+    }
+
+    /**
      * This is the entry point for incoming STOMP frames from the WebSocket.
      *
      * @param frame the received STOMP frame
@@ -256,16 +307,14 @@ final class Stomp1dot2Client implements StompClient {
                 List<String> subscriptionId = frame.headers().get("subscription");
                 if (subscriptionId != null && !subscriptionId.isEmpty()) {
                     subscriptionManager.handleMessage(
-                            UUID.fromString(subscriptionId.get(0)),
+                            UUID.fromString(subscriptionId.getFirst()),
                             frame.body().orElse("")
                     );
                 } else {
                     log.warn("Received MESSAGE without subscription id: {}", frame);
                 }
             }
-            case RECEIPT -> {
-                log.debug("Received: {}", frame);
-            }
+            case RECEIPT -> handleReceipt(frame);
             case ERROR -> {
                 if (onErrorConsumer != null) {
                     String message = frame.headers().getFirst("message");
