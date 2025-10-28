@@ -140,11 +140,11 @@ public final class StompClientBuilder {
             mapperClass = Class.forName("tools.jackson.databind.ObjectMapper");
             jackson3 = true;
             log.debug("Found Jackson 3 ObjectMapper");
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException _) {
             try {
                 mapperClass = Class.forName("com.fasterxml.jackson.core.ObjectCodec");
                 log.debug("Found Jackson 2 ObjectMapper");
-            } catch (ClassNotFoundException e1) {
+            } catch (ClassNotFoundException _) {
                 log.debug("No Jackson ObjectMapper found");
                 return new StringMessageConverter();
             }

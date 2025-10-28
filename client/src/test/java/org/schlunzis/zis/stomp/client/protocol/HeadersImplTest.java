@@ -17,10 +17,10 @@ class HeadersImplTest {
         headers.addFirst("key2", "value3");
 
         assertEquals(2, headers.get("key1").size());
-        assertEquals("value2", headers.get("key1").get(0));
+        assertEquals("value2", headers.get("key1").getFirst());
         assertEquals("value1", headers.get("key1").get(1));
         assertEquals(1, headers.get("key2").size());
-        assertEquals("value3", headers.get("key2").get(0));
+        assertEquals("value3", headers.get("key2").getFirst());
     }
 
     @Test

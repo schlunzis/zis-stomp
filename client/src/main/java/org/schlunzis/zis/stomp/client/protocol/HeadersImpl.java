@@ -12,14 +12,14 @@ public final class HeadersImpl extends LinkedHashMap<String, List<String>>
 
     @Override
     public void addFirst(String key, String value) {
-        this.computeIfAbsent(key, k -> new ArrayList<>(1)).add(0, value);
+        this.computeIfAbsent(key, k -> new ArrayList<>(1)).addFirst(value);
     }
 
     @Override
     public @Nullable String getFirst(String key) {
         List<String> values = this.get(key);
         if (values != null && !values.isEmpty()) {
-            return values.get(0);
+            return values.getFirst();
         }
         return null;
     }
