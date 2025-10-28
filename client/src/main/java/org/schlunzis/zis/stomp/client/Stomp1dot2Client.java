@@ -36,17 +36,22 @@ final class Stomp1dot2Client implements StompClient {
     @Nullable
     private final OnErrorConsumer onErrorConsumer;
     private final Map<UUID, CountDownLatch> receiptLatches = new ConcurrentHashMap<>();
-    private final Duration receiptTimeout = Duration.ofSeconds(10);
+    private final Duration receiptTimeout;
+    private final ReceiptPolicy receiptPolicy;
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
     private final TransferQueue<Frame> connectedFrames = new LinkedTransferQueue<>();
     private final Lock mutex = new ReentrantLock();
 
-    Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, @Nullable OnErrorConsumer onErrorConsumer) {
+    Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, @Nullable OnErrorConsumer onErrorConsumer,
+                     Duration receiptTimeout, ReceiptPolicy receiptPolicy
+    ) {
         this.endpoint = endpoint;
         this.websocketClient = new JakartaWebsocketClient(endpoint, this::handle);
         this.messageConverter = messageConverter;
         this.onErrorConsumer = onErrorConsumer;
+        this.receiptTimeout = receiptTimeout;
+        this.receiptPolicy = receiptPolicy;
         this.subscriberSubscriptionFactory = new SubscriberSubscriptionFactory(messageConverter);
     }
 
@@ -104,7 +109,7 @@ final class Stomp1dot2Client implements StompClient {
                 .header("content-type", contentType)
                 .body(body)
                 .build();
-        websocketClient.send(sendFrame);
+        sendAndAwaitReceiptIfPolicy(sendFrame, ReceiptPolicy.Policy.FOR_SEND);
     }
 
     @Override
@@ -164,8 +169,7 @@ final class Stomp1dot2Client implements StompClient {
                 .header("id", subscription.id().toString())
                 .header("ack", "auto") // TODO make ack mode configurable
                 .build();
-
-        websocketClient.send(subscribeFrame);
+        sendAndAwaitReceiptIfPolicy(subscribeFrame, ReceiptPolicy.Policy.FOR_SUBSCRIBE);
     }
 
     @Override
@@ -202,8 +206,7 @@ final class Stomp1dot2Client implements StompClient {
                 .command(Command.UNSUBSCRIBE)
                 .header("id", subscription.id().toString())
                 .build();
-
-        websocketClient.send(unsubscribeFrame);
+        sendAndAwaitReceiptIfPolicy(unsubscribeFrame, ReceiptPolicy.Policy.FOR_UNSUBSCRIBE);
     }
 
     @Override
@@ -218,7 +221,7 @@ final class Stomp1dot2Client implements StompClient {
             Frame disconnectFrame = Frame.builder()
                     .command(Command.DISCONNECT)
                     .build();
-            sendAndAwaitReceipt(disconnectFrame);
+            sendAndAwaitReceiptIfPolicy(disconnectFrame, ReceiptPolicy.Policy.FOR_DISCONNECT);
             doClose();
         } finally {
             mutex.unlock();
@@ -249,6 +252,20 @@ final class Stomp1dot2Client implements StompClient {
     }
 
     /**
+     * Sends a frame and awaits a receipt if the policy requires it.
+     *
+     * @param frame  the frame to send
+     * @param policy the receipt policy to check
+     */
+    private void sendAndAwaitReceiptIfPolicy(Frame frame, ReceiptPolicy.Policy policy) {
+        if (receiptPolicy.isEnabled(policy)) {
+            sendAndAwaitReceipt(frame);
+        } else {
+            websocketClient.send(frame);
+        }
+    }
+
+    /**
      * Sends a frame and waits for the corresponding RECEIPT frame.
      *
      * @param frame the frame to send
@@ -262,7 +279,7 @@ final class Stomp1dot2Client implements StompClient {
         websocketClient.send(frame);
         try {
             if (!latch.await(receiptTimeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
-                throw new SendException("Timeout waiting for receipt");
+                throw new ReceiptTimeoutException("Did not receive receipt for id " + receiptId + " within " + receiptTimeout);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

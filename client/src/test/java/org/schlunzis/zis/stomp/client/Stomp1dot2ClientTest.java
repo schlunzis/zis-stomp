@@ -5,6 +5,7 @@ import org.schlunzis.zis.stomp.client.subscriptions.StompSubscription;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,7 +18,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
         Object dummy = new Object();
         @SuppressWarnings("DataFlowIssue")
@@ -43,7 +46,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://unreachable:9999/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
 
         assertThrows(ConnectionException.class, client::connect);
@@ -55,7 +60,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("http://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
 
         assertThrows(ConnectionException.class, client::connect);
@@ -67,7 +74,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
         client.connect();
 
@@ -80,7 +89,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
 
         assertDoesNotThrow(client::close);
@@ -92,7 +103,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
         client.connect();
 
@@ -104,7 +117,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
         client.connect();
         client.close();
@@ -118,7 +133,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
 
         assertThrows(IllegalStateException.class, () -> client.send("/topic", "Message"));
@@ -130,7 +147,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
 
         assertThrows(IllegalStateException.class, () -> client.subscribe("/topic", String.class,
@@ -144,7 +163,9 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 messageConverter,
-                null
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
         );
 
         assertSame(messageConverter, client.getMessageConverter());
