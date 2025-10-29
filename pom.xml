@@ -30,6 +30,7 @@
         <connection>scm:git:git://github.com/schlunzis/zis-stomp.git</connection>
         <developerConnection>scm:git:ssh://github.com/schlunzis/zis-stomp.git</developerConnection>
     </scm>
+    <url>https://docs.schlunzis.org/zis-stomp/site</url>
 
     <modules>
         <module>client</module>
