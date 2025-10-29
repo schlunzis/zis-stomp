@@ -1,0 +1,53 @@
+name: Publish Site
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions: { }
+
+jobs:
+  get-publish-version:
+    runs-on: ubuntu-latest
+    outputs:
+      PROJECT_VERSION: ${{ steps.project_version.outputs.PROJECT_VERSION }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Get Project Version
+        id: project_version
+        run: |
+          PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+          # if the version ends with -SNAPSHOT, set it to "snapshot"
+          if [[ "$PROJECT_VERSION" == *"-SNAPSHOT" ]]; then
+            PROJECT_VERSION="snapshot"
+          fi
+          echo "Project Version: $PROJECT_VERSION"
+          echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_OUTPUT
+
+  publish-javadoc:
+    runs-on: ubuntu-latest
+    needs: get-publish-version
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        with:
+          java-version: "25"
+          distribution: 'temurin'
+          cache: "maven"
+
+      - name: Build and generate JavaDoc
+        run: ./mvnw clean install site site:stage -DskipTests
+
+      - name: Publish JavaDoc
+        env:
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_SECRET: ${{ secrets.FTP_SECRET }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          PROJECT_VERSION: ${{ needs.get-publish-version.outputs.PROJECT_VERSION }}
+        run: |
+          lftp -u "$FTP_USER","$FTP_SECRET" "$FTP_HOST" <<EOF
+          mirror --reverse --create-dirs --verbose --delete --parallel=2 "target/staging/" "/$PROJECT_VERSION/maven/"
+          quit
+          EOF
