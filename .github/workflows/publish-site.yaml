@@ -51,6 +51,6 @@ jobs:
           PROJECT_VERSION: ${{ needs.get-publish-version.outputs.PROJECT_VERSION }}
         run: |
           lftp -u "$FTP_USER","$FTP_SECRET" "$FTP_HOST" <<EOF
-          mirror --reverse --create-dirs --verbose --delete --parallel=2 "target/staging/" "/$PROJECT_VERSION/maven/"
+          mirror --reverse --verbose --delete --parallel=2 "target/staging/" "/$PROJECT_VERSION/maven/"
           quit
           EOF
