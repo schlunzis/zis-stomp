@@ -26,7 +26,7 @@ jobs:
         run: |
           COMMIT_TIME=$(git log -1 --format=%cI)
           echo "COMMIT_TIME=$COMMIT_TIME"
-          echo "::set-output name=COMMIT_TIME::$COMMIT_TIME"
+          echo "COMMIT_TIME=$COMMIT_TIME" >> $GITHUB_OUTPUT
 
       - name: Set up JDK and Maven Central Repository
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
