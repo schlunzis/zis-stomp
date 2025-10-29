@@ -46,3 +46,8 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           COMMIT_TIME: ${{ steps.commit_time.outputs.COMMIT_TIME }}
+
+  publish-site:
+    needs: publish
+    uses: ./.github/workflows/publish-site.yaml
+    secrets: inherit
