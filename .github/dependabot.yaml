@@ -9,6 +9,7 @@ updates:
     directories:
       - "/"
       - "/client/src/it/*"
+      - "/test/mock-server"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"
