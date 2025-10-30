@@ -1,6 +1,7 @@
 package org.schlunzis.zis.stomp.client;
 
 import org.jspecify.annotations.Nullable;
+import org.schlunzis.zis.stomp.client.internal.Stomp1dot2Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

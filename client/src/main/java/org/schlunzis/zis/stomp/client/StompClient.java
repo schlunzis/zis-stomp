@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.client;
 
+import org.schlunzis.zis.stomp.client.internal.Stomp1dot2Client;
+
 import java.util.function.Consumer;
 
 /**
