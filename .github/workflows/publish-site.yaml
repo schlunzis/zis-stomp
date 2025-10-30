@@ -45,6 +45,6 @@ jobs:
       - name: Publish Site via FTP
         run: |
           lftp -u "${{ secrets.FTP_USER }}","${{ secrets.FTP_SECRET }}" "${{ secrets.FTP_HOST }}" <<EOF
-          mirror --reverse --verbose --delete --parallel=2 "target/staging/" "/${{ steps.project_version.outputs.PROJECT_VERSION }}/site/"
+          mirror --reverse --verbose --delete --parallel=8 "target/staging/" "/${{ steps.project_version.outputs.PROJECT_VERSION }}/site/"
           quit
           EOF
