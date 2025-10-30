@@ -1,15 +1,14 @@
 package org.schlunzis.zis.stomp.client.internal;
 
 import org.junit.jupiter.api.Test;
-import org.schlunzis.zis.stomp.client.ConnectionException;
-import org.schlunzis.zis.stomp.client.ReceiptPolicy;
-import org.schlunzis.zis.stomp.client.StringMessageConverter;
-import org.schlunzis.zis.stomp.client.Subscription;
+import org.schlunzis.zis.stomp.client.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -171,6 +170,49 @@ class Stomp1dot2ClientTest {
         );
 
         assertSame(messageConverter, client.getMessageConverter());
+    }
+
+    @Test
+    void testChangingHashCodeOfSubscriberObject() throws URISyntaxException, ConnectionException, InterruptedException {
+        @SuppressWarnings("resource")
+        Stomp1dot2Client client = new Stomp1dot2Client(
+                new URI("ws://localhost:8080/ws"),
+                new StringMessageConverter(),
+                null,
+                Duration.ofSeconds(10),
+                ReceiptPolicy.none()
+        );
+        client.connect();
+
+        CountDownLatch latch = new CountDownLatch(2);
+        class MutableHashCodeSubscriber {
+            int hashCode = 1;
+
+            @Override
+            public int hashCode() {
+                return hashCode;
+            }
+
+            @Topic("/insight/scheduled/publisher/string")
+            public void handleStringMessage(String message) {
+                if (latch.getCount() == 0) {
+                    fail("Received more messages than expected");
+                } else {
+                    latch.countDown();
+                }
+            }
+        }
+
+        MutableHashCodeSubscriber subscriber = new MutableHashCodeSubscriber();
+        client.subscribe(subscriber);
+
+        subscriber.hashCode = 2;
+        if (!latch.await(4, TimeUnit.SECONDS)) {
+            fail("Did not receive messages in time");
+        }
+
+        assertDoesNotThrow(() -> client.unsubscribe(subscriber));
+        Thread.sleep(2000);
     }
 
 }

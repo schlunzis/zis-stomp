@@ -7,10 +7,7 @@ import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 final class SubscriptionManager {
@@ -18,7 +15,7 @@ final class SubscriptionManager {
     private static final Logger log = LoggerFactory.getLogger(SubscriptionManager.class);
 
     private final Map<UUID, StompSubscription> subscriptions = new ConcurrentHashMap<>();
-    private final Map<Object, Set<Subscription>> subscriberSubscriptions = new ConcurrentHashMap<>();
+    private final Map<Object, Set<Subscription>> subscriberSubscriptions = Collections.synchronizedMap(new IdentityHashMap<>());
 
     private final AnnotatedSubscriberHandler annotatedSubscriberHandler;
 
