@@ -1,26 +1,55 @@
 # zis-stomp
 
 A STOMP client written in Java and built on Jakarta WebSockets.
+This library aims to provide a STOMP 1.2 client for Java applications, with support for programmatic and
+annotation-driven publishers and subscribers.
+It was created due to a need for a STOMP client with a real `module-info` JLink support.
+
+Currently, the following features are implemented:
+
+- Basic STOMP protocol support (CONNECT, SEND, SUBSCRIBE, UNSUBSCRIBE, DISCONNECT)
+- Receipts
+- Annotation-driven publishers and subscribers
+- Message conversion using Jackson
+
+Parts of the protocol that are not implemented yet:
+
+- Acknowledgements
+- Transactions
+- Heartbeats
+- Authentication
 
 This project is part of [Ze Impressive Schwifty](https://github.com/schlunzis/Ze-Impressive-Schwifty).
+
+| Version  | Documentation                                                                                                                         |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| snapshot | [Site](https://docs.schlunzis.org/zis-stomp/snapshot/site/) \| [JavaDoc](https://docs.schlunzis.org/zis-stomp/snapshot/site/apidocs/) |
 
 ## Usage
 
 ### Maven
 
-Currently, this library is not published to Maven Central. It will be published, when it is in a ready enough state. You
-can use Jitpack to include it in your project.
+This library is not published to Maven Central at this time.
+It will be published, when it is in a ready enough state.
+You can use the snapshot build to include it in your project.
 
-#### Jitpack
+#### Snapshot
 
-To use Jitpack, add the following to your `pom.xml`:
+To use the snapshot build, add the following to your `pom.xml`:
 
 <!-- @formatter:off -->
 ```xml
 <repositories>
     <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
+        <name>Central Portal Snapshots</name>
+        <id>central-portal-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
     </repository>
 </repositories>
 ```
@@ -31,9 +60,9 @@ Then, add the dependency:
 <!-- @formatter:off -->
 ```xml
 <dependency>
-    <groupId>com.github.schlunzis.zis-stomp</groupId>
+    <groupId>org.schlunzis.zis.stomp</groupId>
     <artifactId>client</artifactId>
-    <version>COMMIT_HASH_OR_TAG</version>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 <!-- @formatter:on -->
@@ -61,9 +90,6 @@ void main() {
 
 ### Annotation Driven Usage
 
-This part is still a work in progress and not in a complete state. However, here is a small example of how it will look
-like.
-
 #### Subscribers
 
 You can create subscriber classes using the `@StompSubscriber` annotation. Methods can be annotated with `@Topic` to
@@ -88,7 +114,24 @@ public class MainController {
 ```
 <!-- @formatter:on -->
 
-We are still working on the best way to register these subscribers with the `StompClient`.
+Then you can register the subscriber with the client:
+
+```java
+void main() {
+    StompClient client = StompClient.builder()
+            .endpoint(new URI("ws://localhost:8080/ws"))
+            .build();
+    client.connect();
+
+    MainController controller = new MainController();
+    client.subscribe(controller);
+    // Do other stuff and listen for messages...
+    client.unsubscribe(controller);
+}
+```
+
+Here, you do not get a subscription object back, as the client manages the subscriptions for you and you can simply
+unsubscribe the using the controller instance.
 
 #### Publishers
 
@@ -96,13 +139,13 @@ You can also use the annotation processor to generate publisher classes.
 
 <!-- @formatter:off -->
 ```java
-@StompPublisher
+@StompPublisher(destinationPrefix = "/app")
 public interface MainPublisher {
 
-    @Topic("/app/hello")
+    @Topic("/hello")
     void sendGreeting(String message);
 
-    @Topic("/app/model")
+    @Topic("/model")
     void sendModel(Model model);
 
 }
@@ -128,14 +171,28 @@ This allows for a clean definition of topics to send messages to and receive mes
 
 ## Building
 
-To build the project, make sure you have Java 17 or higher installed. We are using Java 25 to build, but are compatible
-with Java 17 and higher.
+To build the project, make sure you have Java 25 or higher installed.
 
 You can build the project using Maven:
 
 ```bash
-    ./mvnw clean verify
+./mvnw clean install
 ```
+
+### Tests
+
+To run the integration tests, you can use the following Maven command:
+
+```bash
+./mvnw clean verify -P integration-test
+```
+
+### Reproducible Builds
+
+Maven is configured to produce reproducible builds.
+If you want to verify that the build you have is correct, you have to set the `project.build.outputTimestamp` property
+to the time of the commit you want to check against and of course check out the correct commit.
+See [here](https://maven.apache.org/guides/mini/guide-reproducible-builds.html) for more information.
 
 ## License
 
