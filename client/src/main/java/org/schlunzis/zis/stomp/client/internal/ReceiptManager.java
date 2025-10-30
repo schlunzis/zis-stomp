@@ -102,7 +102,7 @@ final class ReceiptManager {
         }
     }
 
-    public void clear() {
+    void clear() {
         receiptLatches.clear();
     }
 

@@ -2,7 +2,6 @@ package org.schlunzis.zis.stomp.client.internal;
 
 import org.schlunzis.zis.stomp.client.MessageConverter;
 import org.schlunzis.zis.stomp.client.StompSubscriber;
-import org.schlunzis.zis.stomp.client.Subscription;
 import org.schlunzis.zis.stomp.client.Topic;
 
 import java.lang.reflect.Method;
@@ -20,11 +19,11 @@ final class AnnotatedSubscriberHandler {
         this.messageConverter = messageConverter;
     }
 
-    List<Subscription> handle(Object subscriber) {
+    List<StompSubscription> handle(Object subscriber) {
         return create(subscriber).toList();
     }
 
-    private Stream<Subscription> create(Object subscriber) {
+    private Stream<StompSubscription> create(Object subscriber) {
         final SubscriberConfiguration config = getSubscriberConfiguration(subscriber);
         final String destinationPrefix = config.destinationPrefix();
         final Method[] methods = subscriber.getClass().getDeclaredMethods();

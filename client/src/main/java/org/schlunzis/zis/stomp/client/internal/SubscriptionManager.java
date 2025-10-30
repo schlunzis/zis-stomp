@@ -15,7 +15,7 @@ final class SubscriptionManager {
     private static final Logger log = LoggerFactory.getLogger(SubscriptionManager.class);
 
     private final Map<UUID, StompSubscription> subscriptions = new ConcurrentHashMap<>();
-    private final Map<Object, Set<Subscription>> subscriberSubscriptions = Collections.synchronizedMap(new IdentityHashMap<>());
+    private final Map<Object, Set<StompSubscription>> subscriberSubscriptions = Collections.synchronizedMap(new IdentityHashMap<>());
 
     private final AnnotatedSubscriberHandler annotatedSubscriberHandler;
 
@@ -23,19 +23,18 @@ final class SubscriptionManager {
         this.annotatedSubscriberHandler = new AnnotatedSubscriberHandler(this, messageConverter);
     }
 
-    Set<Subscription> createAnnotatedSubscriptions(Object subscriber) {
-        Set<Subscription> s = new HashSet<>(annotatedSubscriberHandler.handle(subscriber));
+    Set<StompSubscription> createAnnotatedSubscriptions(Object subscriber) {
+        Set<StompSubscription> s = new HashSet<>(annotatedSubscriberHandler.handle(subscriber));
         subscriberSubscriptions.put(subscriber, s);
         return s;
     }
 
-    Subscription create(String destination, SubscriberInvoker invoker) {
+    StompSubscription create(String destination, SubscriberInvoker invoker) {
         StompSubscription subscription = new StompSubscription(
                 this,
                 UUID.randomUUID(),
                 destination,
-                invoker,
-                null
+                invoker
         );
         subscriptions.put(subscription.id(), subscription);
         return subscription;
@@ -59,7 +58,7 @@ final class SubscriptionManager {
         }
     }
 
-    void remove(Subscription stompSubscription) {
+    void remove(StompSubscription stompSubscription) {
         subscriptions.remove(stompSubscription.id());
     }
 
@@ -71,8 +70,8 @@ final class SubscriptionManager {
         return subscriberSubscriptions.containsKey(subscriber);
     }
 
-    @Nullable Set<Subscription> remove(Object subscriber) {
-        Set<Subscription> subs = subscriberSubscriptions.remove(subscriber);
+    @Nullable Set<StompSubscription> remove(Object subscriber) {
+        Set<StompSubscription> subs = subscriberSubscriptions.remove(subscriber);
         if (subs != null) {
             for (Subscription sub : subs) {
                 subscriptions.remove(sub.id());

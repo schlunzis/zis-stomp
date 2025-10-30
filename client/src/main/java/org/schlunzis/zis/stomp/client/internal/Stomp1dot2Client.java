@@ -133,7 +133,7 @@ public final class Stomp1dot2Client implements StompClient {
                 throw new IllegalStateException("Subscriber is already subscribed: " + subscriber);
             }
 
-            Set<Subscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
+            Set<StompSubscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
             subscriptions.forEach(this::doSubscribe);
         } finally {
             mutex.unlock();
@@ -165,7 +165,7 @@ public final class Stomp1dot2Client implements StompClient {
         mutex.lock();
         try {
             ensureConnected();
-            Set<Subscription> subscriptions = subscriptionManager.remove(subscriber);
+            Set<StompSubscription> subscriptions = subscriptionManager.remove(subscriber);
             if (subscriptions == null || subscriptions.isEmpty()) {
                 return;
             }

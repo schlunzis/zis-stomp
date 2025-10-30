@@ -30,8 +30,7 @@ class Stomp1dot2ClientTest {
                 null,
                 UUID.randomUUID(),
                 "/topic",
-                null,
-                String.class
+                null
         );
 
         assertThrows(IllegalStateException.class, () -> client.send("/topic", "Message"));
