@@ -9,10 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 final class ReceiptManager {
 
@@ -22,12 +24,24 @@ final class ReceiptManager {
 
     private final Map<UUID, CountDownLatch> receiptLatches = new ConcurrentHashMap<>();
     private final Duration receiptTimeout;
-    private final ReceiptPolicy receiptPolicy;
+    private final Map<ReceiptPolicy.Policy, Consumer<Frame>> receiptPolicyRespectingSenders;
 
     ReceiptManager(WebSocketClient websocketClient, Duration receiptTimeout, ReceiptPolicy receiptPolicy) {
         this.websocketClient = websocketClient;
         this.receiptTimeout = receiptTimeout;
-        this.receiptPolicy = receiptPolicy;
+        this.receiptPolicyRespectingSenders = createPolicyRespectingSenders(receiptPolicy);
+    }
+
+    private Map<ReceiptPolicy.Policy, Consumer<Frame>> createPolicyRespectingSenders(ReceiptPolicy receiptPolicy) {
+        Map<ReceiptPolicy.Policy, Consumer<Frame>> policyRespectingSenders = new EnumMap<>(ReceiptPolicy.Policy.class);
+        for (ReceiptPolicy.Policy policy : ReceiptPolicy.Policy.values()) {
+            if (receiptPolicy.isEnabled(policy)) {
+                policyRespectingSenders.put(policy, this::sendAndAwaitReceipt);
+            } else {
+                policyRespectingSenders.put(policy, websocketClient::send);
+            }
+        }
+        return Map.copyOf(policyRespectingSenders);
     }
 
     /**
@@ -37,11 +51,8 @@ final class ReceiptManager {
      * @param policy the receipt policy to check
      */
     void sendAndAwaitReceiptIfPolicy(Frame frame, ReceiptPolicy.Policy policy) {
-        if (receiptPolicy.isEnabled(policy)) {
-            sendAndAwaitReceipt(frame);
-        } else {
-            websocketClient.send(frame);
-        }
+        Consumer<Frame> sender = receiptPolicyRespectingSenders.get(policy);
+        sender.accept(frame);
     }
 
     /**
