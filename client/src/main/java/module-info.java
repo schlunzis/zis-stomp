@@ -1,11 +1,13 @@
 import org.jspecify.annotations.NullMarked;
 
-/// This module provides a STOMP client implementation using Jakarta WebSocket API.
-///
-/// It includes support for subscribing to STOMP topics and publishing messages,
-/// with optional integration for JSON message conversion using Jackson 2 or Jackson 3.
-///
-/// @since 1.0.0
+/**
+ * This module provides a STOMP client implementation using Jakarta WebSocket API.
+ * <p>
+ * It includes support for subscribing to STOMP topics and publishing messages,
+ * with optional integration for JSON message conversion using Jackson 2 or Jackson 3.
+ *
+ * @since 1.0.0
+ */
 @NullMarked
 module org.schlunzis.zis.stomp.client {
     requires jakarta.websocket.client;

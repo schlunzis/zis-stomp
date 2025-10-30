@@ -44,19 +44,23 @@ final class ReceiptManager {
         return Map.copyOf(policyRespectingSenders);
     }
 
-    /// Sends a frame and awaits a receipt if the policy requires it.
-    ///
-    /// @param frame  the frame to send
-    /// @param policy the receipt policy to check
+    /**
+     * Sends a frame and awaits a receipt if the policy requires it.
+     *
+     * @param frame  the frame to send
+     * @param policy the receipt policy to check
+     */
     void sendAndAwaitReceiptIfPolicy(Frame frame, ReceiptPolicy.Policy policy) {
         Consumer<Frame> sender = receiptPolicyRespectingSenders.get(policy);
         sender.accept(frame);
     }
 
-    /// Sends a frame and waits for the corresponding RECEIPT frame.
-    ///
-    /// @param frame the frame to send
-    /// @throws SendException if the receipt is not received within the timeout
+    /**
+     * Sends a frame and waits for the corresponding RECEIPT frame.
+     *
+     * @param frame the frame to send
+     * @throws SendException if the receipt is not received within the timeout
+     */
     void sendAndAwaitReceipt(Frame frame) {
         UUID receiptId = UUID.randomUUID();
         frame.headers().addFirst("receipt", receiptId.toString());
@@ -75,10 +79,12 @@ final class ReceiptManager {
         }
     }
 
-    /// Handles an incoming `RECEIPT` frame.
-    /// It looks up the corresponding latch and counts it down.
-    ///
-    /// @param frame the `RECEIPT` frame
+    /**
+     * Handles an incoming RECEIPT frame.
+     * It looks up the corresponding latch and counts it down.
+     *
+     * @param frame the RECEIPT frame
+     */
     void handleReceipt(Frame frame) {
         UUID receiptId;
         try {

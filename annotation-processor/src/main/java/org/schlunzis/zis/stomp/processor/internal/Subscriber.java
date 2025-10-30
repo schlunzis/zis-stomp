@@ -1,11 +1,13 @@
 package org.schlunzis.zis.stomp.processor.internal;
 
-/// Record representing a Subscriber with its metadata.
-///
-/// @param topic                       the topic the subscriber is subscribed to
-/// @param methodName                  the method name to handle messages for the topic
-/// @param fullyQualifiedParameterType the fully qualified type of the method parameter
-/// @param parameterName               the name of the method parameter
+/**
+ * Record representing a Subscriber with its metadata.
+ *
+ * @param topic                       the topic the subscriber is subscribed to
+ * @param methodName                  the method name to handle messages for the topic
+ * @param fullyQualifiedParameterType the fully qualified type of the method parameter
+ * @param parameterName               the name of the method parameter
+ */
 public record Subscriber(
         String topic,
         String methodName,
