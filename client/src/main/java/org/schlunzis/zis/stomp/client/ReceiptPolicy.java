@@ -7,6 +7,12 @@ import java.util.Set;
  * Policy for requesting receipts from the STOMP server.
  * If the policy is enabled for a specific command, the client will request a receipt
  * from the server for that command.
+ * <p>
+ * You can use the {@link #all()} method to create a policy that requests receipts for all supported commands,
+ * or the {@link #none()} method to create a policy that does not request any receipts.
+ * You can also use the {@link #add(Policy)} method to add specific policies to an existing receipt policy.
+ * <p>
+ * A ReceiptPolicy can be set on the {@link StompClientBuilder} to define the default receipt policy for the client.
  *
  * @since 1.0.0
  */

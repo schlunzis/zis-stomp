@@ -17,6 +17,14 @@ import java.lang.annotation.Target;
  * to the client's {@link StompClient#subscribe(Object)} method.
  * To unregister the subscriber and unsubscribe from all its topics, pass the same instance
  * to the client's {@link StompClient#unsubscribe(Object)} method.
+ * <p>
+ * The hash code of the subscriber instance may change. This has no effect on subscription management,
+ * as the client uses identity comparison to track subscribers.
+ * <p>
+ * Methods annotated with {@link Topic} in a subscriber class must be instance methods
+ * (non-static) and have a single parameter representing the message payload type.
+ * The message payload will be deserialized to the parameter type before invoking the method.
+ * The return type of the method is ignored. It is recommended to use {@code void} return type.
  *
  * @see Topic
  * @see StompPublisher

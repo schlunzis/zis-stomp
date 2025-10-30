@@ -37,6 +37,7 @@ public @interface StompPublisher {
      * Default is an empty string, meaning no prefix is applied.
      *
      * @return the destination prefix string
+     * @see Topic
      * @since 1.0.0
      */
     String destinationPrefix() default "";

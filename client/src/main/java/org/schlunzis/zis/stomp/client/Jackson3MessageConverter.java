@@ -1,5 +1,6 @@
 package org.schlunzis.zis.stomp.client;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -45,7 +46,11 @@ public class Jackson3MessageConverter implements MessageConverter {
 
     @Override
     public String convertToString(Object object) {
-        return mapper.writeValueAsString(object);
+        try {
+            return mapper.writeValueAsString(object);
+        } catch (JacksonException e) {
+            throw new ConversionException("Error converting object to string", e);
+        }
     }
 
     @Override

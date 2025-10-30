@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 /**
- * Builder for {@link StompClient}.
+ * Builder for {@link StompClient} instances.
  *
  * @see StompClient#builder()
  * @since 1.0.0
@@ -43,7 +43,7 @@ public final class StompClientBuilder {
     /**
      * Sets the STOMP endpoint URI. This parameter is required.
      * <p>
-     * The protocol must be either "ws" or "wss".
+     * The protocol must be either "ws" or "wss". Example: <code>ws://localhost:8080/ws</code>
      *
      * @param endpoint the STOMP endpoint URI
      * @return the builder instance
@@ -56,7 +56,7 @@ public final class StompClientBuilder {
 
     /**
      * Sets the message converter to be used by the client. If not set, the builder will attempt to
-     * find a suitable message converter via a ServiceLoader.
+     * create a suitable MessageConverter automatically.
      * <p>
      * It will first look for a Jackson 3 ObjectMapper, then for a Jackson 2 ObjectMapper. If one of them is found,
      * a corresponding MessageConverter will be created. If none is found, a {@link StringMessageConverter} will be

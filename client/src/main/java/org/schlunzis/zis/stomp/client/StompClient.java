@@ -12,11 +12,15 @@ import java.util.function.Consumer;
  * subscriptions.
  * <p>
  * To create an instance of a STOMP client, use the {@link #builder()} method to obtain a {@link StompClientBuilder}.
+ * This builder allows you to configure the client.
+ * <p>
  * To disconnect and release resources, call the {@link #close()} method.
  * <p>
  * You may also consider using the {@link StompSubscriber} annotation to define classes that can be
  * registered as subscribers to STOMP destinations, and {@link StompPublisher} annotation to define publisher interfaces
  * that can be used to send messages to STOMP destinations.
+ * <p>
+ * StompClient implementations are required to be thread-safe.
  *
  * @see StompSubscriber
  * @see StompPublisher
@@ -30,6 +34,8 @@ public sealed interface StompClient
      * Creates a new {@link StompClientBuilder} for building a STOMP client.
      * <p>
      * The builder must be provided with an endpoint URI before building the client.
+     * <p>
+     * Builder instances are not thread-safe and should not be shared between threads.
      *
      * @return a new instance of {@link StompClientBuilder}
      * @since 1.0.0
@@ -45,6 +51,9 @@ public sealed interface StompClient
      * It blocks until the connection is successfully established or fails.
      * <p>
      * If the method is called a second time on the same client instance, an {@link IllegalStateException} is thrown.
+     * <p>
+     * If the thread is interrupted while waiting for the connection to be established,
+     * an {@link ConnectionException} is thrown. The interrupt status of the thread is preserved.
      *
      * @throws ConnectionException   if the connection fails
      * @throws IllegalStateException if the client has already been connected before
@@ -153,6 +162,8 @@ public sealed interface StompClient
      * <p>
      * This method disconnects from the STOMP server if connected and cleans up any resources used by the client.
      * After calling this method, the client instance should not be used anymore.
+     * <p>
+     * Subscriptions created by this client are also unsubscribed and will no longer receive messages.
      *
      * @since 1.0.0
      */

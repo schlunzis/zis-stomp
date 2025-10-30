@@ -2,6 +2,8 @@ package org.schlunzis.zis.stomp.client;
 
 /**
  * Converts messages between String representation and target object types.
+ * <p>
+ * Implementations must be thread-safe, and it is recommended that they are stateless.
  *
  * @since 1.0.0
  */

@@ -14,6 +14,8 @@ import java.util.Map;
  * The first value for a given key can be retrieved using the {@link #getFirst(String)} method.
  * The first value is also the true value. Subsequent values are provided to give a history of changes to that value
  * over eventual multiple hops.
+ * <p>
+ * Implementations may not be thread-safe.
  *
  * @since 1.0.0
  */
@@ -21,7 +23,8 @@ public sealed interface Headers extends Map<String, List<String>> permits Header
 
     /**
      * Adds a header with the specified key and value.
-     * If the key already exists, the new value is added as the first value for that key.
+     * If the key already exists, the new value is added as the first value for that key
+     * Meaning it takes precedence over existing values.
      *
      * @param key   the header key
      * @param value the header value
