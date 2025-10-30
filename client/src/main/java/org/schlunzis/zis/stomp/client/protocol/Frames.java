@@ -2,11 +2,9 @@ package org.schlunzis.zis.stomp.client.protocol;
 
 import java.net.URI;
 
-/**
- * Utility class for creating STOMP frames.
- *
- * @since 1.0.0
- */
+/// Utility class for creating STOMP frames.
+///
+/// @since 1.0.0
 public final class Frames {
 
     private Frames() {
