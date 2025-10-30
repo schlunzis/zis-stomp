@@ -13,7 +13,7 @@ public interface Publisher {
     @Topic("/simple/echo")
     void sendSimpleEcho(Model model);
 
-    @Topic("/simple/echo")
+    @Topic("/simple/echo/string")
     void sendAnotherEcho(String model);
 
 }
