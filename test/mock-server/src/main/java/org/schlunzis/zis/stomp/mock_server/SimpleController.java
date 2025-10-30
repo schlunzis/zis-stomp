@@ -26,4 +26,13 @@ public class SimpleController {
         this.template.convertAndSend("/insight/simple/echo", message);
     }
 
+    @MessageMapping("/echo/string")
+    public void echo(String message) {
+        if (message == null || message.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        this.template.convertAndSend("/insight/simple/echo", message);
+    }
+
 }
