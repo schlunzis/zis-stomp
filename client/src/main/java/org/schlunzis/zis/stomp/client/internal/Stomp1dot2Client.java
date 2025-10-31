@@ -223,22 +223,20 @@ public final class Stomp1dot2Client implements StompClient {
         return messageConverter;
     }
 
-    /**
-     * If the client is not connected, this method throws an IllegalStateException.
-     * This method is used to ensure that operations that require a connected client
-     * are only performed when the client is indeed connected.
-     */
+    /// If the client is not connected, this method throws an [IllegalStateException].
+    /// This method is used to ensure that operations that require a connected client
+    /// are only performed when the client is indeed connected.
+    ///
+    /// @throws IllegalStateException if the client is not connected
     private void ensureConnected() {
         if (connectionState.get() != ConnectionState.CONNECTED) {
             throw new IllegalStateException("Client is not connected");
         }
     }
 
-    /**
-     * This is the entry point for incoming STOMP frames from the WebSocket.
-     *
-     * @param frame the received STOMP frame
-     */
+    /// This is the entry point for incoming STOMP frames from the WebSocket.
+    ///
+    /// @param frame the received STOMP frame
     private void handle(Frame frame) {
         switch (frame.command()) {
             case CONNECTED -> {

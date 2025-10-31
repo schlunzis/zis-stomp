@@ -20,26 +20,22 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Annotation processor for generating STOMP client publishers.
- * <p>
- * This processor scans for interfaces annotated with {@link StompPublisher} and generates
- * implementation classes that provide methods to send messages to specified STOMP topics.
- *
- * @see StompPublisher
- * @since 1.0.0
- */
+/// Annotation processor for generating STOMP client publishers.
+///
+/// This processor scans for interfaces annotated with [StompPublisher] and generates
+/// implementation classes that provide methods to send messages to specified STOMP topics.
+///
+/// @see StompPublisher
+/// @since 1.0.0
 @SupportedAnnotationTypes({
         "org.schlunzis.zis.stomp.client.StompPublisher"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
 public class StompClientPublisherProcessor extends AbstractProcessor {
 
-    /**
-     * Constructs a new StompClientPublisherProcessor.
-     *
-     * @since 1.0.0
-     */
+    /// Constructs a new StompClientPublisherProcessor.
+    ///
+    /// @since 1.0.0
     public StompClientPublisherProcessor() {
         super();
     }

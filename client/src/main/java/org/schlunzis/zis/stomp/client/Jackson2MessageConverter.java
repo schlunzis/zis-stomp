@@ -3,34 +3,28 @@ package org.schlunzis.zis.stomp.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * A MessageConverter implementation that uses Jackson 2 to convert messages
- * between JSON string representation and target object types.
- * <p>
- * The content type used by this converter is "application/json;charset=UTF-8".
- *
- * @see Jackson3MessageConverter
- * @since 1.0.0
- */
+/// A MessageConverter implementation that uses Jackson 2 to convert messages
+/// between JSON string representation and target object types.
+///
+/// The content type used by this converter is `application/json;charset=UTF-8`.
+///
+/// @see Jackson3MessageConverter
+/// @since 1.0.0
 public class Jackson2MessageConverter implements MessageConverter {
 
     private final ObjectMapper mapper;
 
-    /**
-     * Creates a new MessageConverter using a default Jackson 2 ObjectMapper.
-     *
-     * @since 1.0.0
-     */
+    /// Creates a new MessageConverter using a default Jackson 2 ObjectMapper.
+    ///
+    /// @since 1.0.0
     public Jackson2MessageConverter() {
         this(new ObjectMapper());
     }
 
-    /**
-     * Creates a new MessageConverter using the provided Jackson 2 ObjectMapper.
-     *
-     * @param mapper the ObjectMapper to use for JSON serialization and deserialization
-     * @since 1.0.0
-     */
+    /// Creates a new MessageConverter using the provided Jackson 2 ObjectMapper.
+    ///
+    /// @param mapper the ObjectMapper to use for JSON serialization and deserialization
+    /// @since 1.0.0
     public Jackson2MessageConverter(ObjectMapper mapper) {
         this.mapper = mapper;
     }

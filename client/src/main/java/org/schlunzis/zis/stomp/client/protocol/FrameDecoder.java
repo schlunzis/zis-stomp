@@ -9,17 +9,15 @@ import java.io.StringReader;
 
 public final class FrameDecoder {
 
-    /**
-     * Decodes a STOMP frame from the given Reader.
-     * The reader must provide a valid STOMP frame according to the STOMP protocol specification.
-     * If the frame is invalid, a DecodingException is thrown.
-     * <p>
-     * The reader will be closed after this method returns or throws an exception.
-     *
-     * @param reader the Reader to read the STOMP frame from
-     * @return the decoded STOMP Frame
-     * @throws DecodingException if the frame is invalid or cannot be decoded
-     */
+    /// Decodes a STOMP frame from the given Reader.
+    /// The reader must provide a valid STOMP frame according to the STOMP protocol specification.
+    /// If the frame is invalid, a DecodingException is thrown.
+    ///
+    /// The reader will be closed after this method returns or throws an exception.
+    ///
+    /// @param reader the Reader to read the STOMP frame from
+    /// @return the decoded STOMP Frame
+    /// @throws DecodingException if the frame is invalid or cannot be decoded
     public Frame decode(Reader reader) throws DecodingException {
         try (BufferedReader br = new BufferedReader(reader)) {
             final Command command = parseCommand(br);
@@ -36,15 +34,13 @@ public final class FrameDecoder {
         }
     }
 
-    /**
-     * Parses the STOMP command from the reader.
-     * The line break after the command is consumed.
-     *
-     * @param reader the Reader to read the command from
-     * @return the parsed Command
-     * @throws DecodingException if the command is invalid
-     * @throws IOException       if an I/O error occurs
-     */
+    /// Parses the STOMP command from the reader.
+    /// The line break after the command is consumed.
+    ///
+    /// @param reader the Reader to read the command from
+    /// @return the parsed Command
+    /// @throws DecodingException if the command is invalid
+    /// @throws IOException       if an I/O error occurs
     private Command parseCommand(Reader reader) throws DecodingException, IOException {
         StringBuilder commandBuilder = new StringBuilder();
         int ch;
@@ -61,19 +57,17 @@ public final class FrameDecoder {
         }
     }
 
-    /**
-     * Parses the STOMP headers from the reader.
-     * If a header value contains escaped characters, they are decoded.
-     * If an invalid header is encountered, a DecodingException is thrown.
-     * The line break after the headers is consumed.
-     * This method stops parsing when an empty line is encountered, indicating the end of headers.
-     * The empty line is consumed as well.
-     *
-     * @param reader the Reader to read the headers from
-     * @return the parsed Headers
-     * @throws DecodingException if a header is invalid
-     * @throws IOException       if an I/O error occurs
-     */
+    /// Parses the STOMP headers from the reader.
+    /// If a header value contains escaped characters, they are decoded.
+    /// If an invalid header is encountered, a DecodingException is thrown.
+    /// The line break after the headers is consumed.
+    /// This method stops parsing when an empty line is encountered, indicating the end of headers.
+    /// The empty line is consumed as well.
+    ///
+    /// @param reader the Reader to read the headers from
+    /// @return the parsed Headers
+    /// @throws DecodingException if a header is invalid
+    /// @throws IOException       if an I/O error occurs
     private Headers parseHeaders(Reader reader) throws DecodingException, IOException {
         Headers headers = new HeadersImpl();
         StringBuilder headerBuilder = new StringBuilder();
@@ -125,17 +119,15 @@ public final class FrameDecoder {
         return result.toString();
     }
 
-    /**
-     * Parses the STOMP body from the reader.
-     * The body is read until a null character ('\0') is encountered.
-     * If the null character is not found, a DecodingException is thrown.
-     * The null character is not included in the returned body string.
-     *
-     * @param reader the Reader to read the body from
-     * @return the parsed body as a String
-     * @throws DecodingException if the body is not properly terminated
-     * @throws IOException       if an I/O error occurs
-     */
+    /// Parses the STOMP body from the reader.
+    /// The body is read until a null character (`\0`) is encountered.
+    /// If the null character is not found, a DecodingException is thrown.
+    /// The null character is not included in the returned body string.
+    ///
+    /// @param reader the Reader to read the body from
+    /// @return the parsed body as a String
+    /// @throws DecodingException if the body is not properly terminated
+    /// @throws IOException       if an I/O error occurs
     private String parseBody(Reader reader) throws DecodingException, IOException {
         StringBuilder bodyBuilder = new StringBuilder();
         int ch;
