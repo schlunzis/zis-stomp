@@ -54,6 +54,17 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void connect() throws ConnectionException {
+        Frame connectFrame = Frames.connect(endpoint);
+        doConnect(connectFrame);
+    }
+
+    @Override
+    public void connect(String login, String passcode) throws ConnectionException {
+        Frame connectFrame = Frames.connect(endpoint, login, passcode);
+        doConnect(connectFrame);
+    }
+
+    private void doConnect(Frame connectFrame) throws ConnectionException {
         mutex.lock();
         try {
             if (connectionState.get() != ConnectionState.UNUSED) {
@@ -62,7 +73,6 @@ public final class Stomp1dot2Client implements StompClient {
             connectionState.set(ConnectionState.CONNECTING);
 
             websocketClient.connect();
-            Frame connectFrame = Frames.connect(endpoint);
             websocketClient.send(connectFrame);
 
             Frame connectedFrame = connectedFrames.take();

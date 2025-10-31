@@ -19,6 +19,17 @@ public final class Frames {
                 .build();
     }
 
+    public static Frame connect(URI endpoint, String login, String passcode) {
+        final String host = endpoint.getHost();
+        return Frame.builder()
+                .command(Command.CONNECT)
+                .header("accept-version", "1.2")
+                .header("host", host)
+                .header("login", login)
+                .header("passcode", passcode)
+                .build();
+    }
+
     public static Frame send(String destination, String body, String contentType) {
         return Frame.builder()
                 .command(Command.SEND)

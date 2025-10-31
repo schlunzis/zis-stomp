@@ -55,6 +55,24 @@ public sealed interface StompClient
     /// @since 1.0.0
     void connect() throws ConnectionException;
 
+    /// Connects to the STOMP server using the provided login and passcode.
+    ///
+    /// This method establishes a connection to the STOMP server specified in the client's configuration,
+    /// using the provided login and passcode for authentication.
+    /// It blocks until the connection is successfully established or fails.
+    ///
+    /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
+    ///
+    /// If the thread is interrupted while waiting for the connection to be established,
+    /// an [ConnectionException] is thrown. The interrupt status of the thread is preserved.
+    ///
+    /// @param login    the login username
+    /// @param passcode the passcode (password)
+    /// @throws ConnectionException   if the connection fails
+    /// @throws IllegalStateException if the client has already been connected before
+    /// @since 1.0.0
+    void connect(String login, String passcode) throws ConnectionException;
+
     /// Sends a message to the specified destination with the given body. This method does not use the provided message
     /// converter. It sends the body directly as a string and indicates a content type of `text/plain;charset=UTF-8`.
     ///
