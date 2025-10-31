@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -92,20 +93,28 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void send(String destination, String body) {
-        ensureConnected();
-        doSend(destination, body, STRING_CONTENT_TYPE);
+        sendWith(destination, body)
+                .header("content-type", STRING_CONTENT_TYPE)
+                .send();
     }
 
     @Override
     public void send(String destination, Object body) {
-        ensureConnected();
-        String convertedBody = messageConverter.convertToString(body);
-        doSend(destination, convertedBody, messageConverter.contentType());
+        sendWith(destination, body)
+                .send();
     }
 
-    private void doSend(String destination, String body, String contentType) {
-        Frame sendFrame = Frames.send(destination, body, contentType);
-        receiptManager.sendAndAwaitReceiptIfPolicy(sendFrame, ReceiptPolicy.Policy.FOR_SEND);
+    @Override
+    public SendContext sendWith(String destination, Object body) {
+        Objects.requireNonNull(destination, "destination must not be null");
+        Objects.requireNonNull(body, "body must not be null");
+        ensureConnected();
+        return new SendContextImpl(
+                receiptManager,
+                messageConverter,
+                destination,
+                body
+        );
     }
 
     // ##########

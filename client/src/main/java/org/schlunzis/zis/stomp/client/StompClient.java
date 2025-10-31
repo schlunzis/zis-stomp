@@ -58,6 +58,13 @@ public sealed interface StompClient
     /// Sends a message to the specified destination with the given body. This method does not use the provided message
     /// converter. It sends the body directly as a string and indicates a content type of `text/plain;charset=UTF-8`.
     ///
+    /// This method is a shorthand for:
+    /// ```java
+    /// sendWith(destination, body)
+    ///     .header("content-type", "text/plain;charset=UTF-8")
+    ///     .send();
+    ///```
+    ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination the destination to end the message to
@@ -70,6 +77,13 @@ public sealed interface StompClient
     /// Sends a message to the specified destination with the given body. The body is converted to a string using the
     /// client's configured message converter.
     ///
+    /// This method is a shorthand for:
+    ///
+    /// ```java
+    /// sendWith(destination, body)
+    ///     .send();
+    ///```
+    ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination the destination to send the message to
@@ -78,6 +92,32 @@ public sealed interface StompClient
     /// @throws SendException         if sending the message fails or the message cannot be encoded
     /// @since 1.0.0
     void send(String destination, Object body) throws SendException;
+
+    /// Creates a [SendContext] for sending a message to the specified destination with the given body.
+    ///
+    /// The returned [SendContext] allows for further configuration of the message, such as adding custom headers,
+    /// before sending it.
+    /// The [SendContext#send()] method must be called to actually send the message.
+    /// It is recommended to call the send method as soon as possible after obtaining the [SendContext].
+    /// Usage should look like this:
+    ///
+    /// ```java
+    /// stompClient.sendWith("/topic/example", body)
+    ///     .header("custom-header", "value")
+    ///     .send();
+    ///```
+    ///
+    /// The [SendContext] is not thread-safe and should not be shared between threads.
+    /// The body is converted to a string using the client's configured message converter when the message is sent.
+    ///
+    /// If the client is not connected, an [IllegalStateException] is thrown.
+    ///
+    /// @param destination the destination to send the message to
+    /// @param body        the body of the message
+    /// @return a [SendContext] for configuring and sending the message
+    /// @throws IllegalStateException if the client is not connected
+    /// @since 1.0.0
+    SendContext sendWith(String destination, Object body);
 
     /// Subscribes to the specified destination to receive messages of the given payload type.
     ///
