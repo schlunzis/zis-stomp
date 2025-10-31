@@ -13,9 +13,9 @@ import java.lang.annotation.Target;
 /// to the destination values defined in the `@Topic` annotations on the subscriber's methods.
 ///
 /// To register a subscriber with a [StompClient], pass an instance of the subscriber method
-/// to the client's [#subscribe(Object)] method.
+/// to the client's [StompClient#subscribe(Object)] method.
 /// To unregister the subscriber and unsubscribe from all its topics, pass the same instance
-/// to the client's [#unsubscribe(Object)] method.
+/// to the client's [StompClient#unsubscribe(Object)] method.
 ///
 /// The hash code of the subscriber instance may change. This has no effect on subscription management,
 /// as the client uses identity comparison to track subscribers.

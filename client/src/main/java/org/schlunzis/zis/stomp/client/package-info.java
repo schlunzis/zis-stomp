@@ -1,6 +1,6 @@
 /// This package contains the public API for the STOMP client.
 ///
-/// You can acquire a STOMP client instance via the [#builder()] method.
+/// You can acquire a STOMP client instance via the [org.schlunzis.zis.stomp.client.StompClient#builder()] method.
 /// You may also register a custom [org.schlunzis.zis.stomp.client.MessageConverter] to handle message
 /// conversion, e.g., for JSON payloads. Default implementations for Jackson 2 and Jackson 3 are provided.
 /// They are automatically used if the respective Jackson version is available and discoverable via a ServiceLoader.
