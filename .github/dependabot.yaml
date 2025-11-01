@@ -10,6 +10,19 @@ updates:
       - "/"
       - "/client/src/it/*"
       - "/test/mock-server"
+    groups:
+      jakarta-websocket:
+        patterns:
+          - "jakarta.websocket:jakarta.websocket-*"
+      tyrus:
+        patterns:
+          - "org.glassfish.tyrus:tyrus-*"
+      fasterxml-jackson:
+        patterns:
+          - "com.fasterxml.jackson.core:jackson-*"
+      tools-jackson:
+        patterns:
+          - "tools.jackson.core:jackson-*"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"
