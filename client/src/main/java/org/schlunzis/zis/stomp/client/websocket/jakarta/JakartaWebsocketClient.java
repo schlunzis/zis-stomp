@@ -11,17 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
-@ClientEndpoint(
-        encoders = {
-                JakartaFrameEncoder.class
-        },
-        decoders = {
-                JakartaFrameDecoder.class
-        }
-)
-public final class JakartaWebsocketClient implements WebSocketClient {
+public final class JakartaWebsocketClient extends Endpoint implements WebSocketClient {
 
     private static final Logger log = LoggerFactory.getLogger(JakartaWebsocketClient.class);
 
@@ -37,11 +31,16 @@ public final class JakartaWebsocketClient implements WebSocketClient {
     }
 
     @Override
-    public void connect() throws ConnectionException {
+    public void connect(Map<String, List<String>> connectHeaders) throws ConnectionException {
         try {
             log.debug("Connecting to endpoint: {}", endpoint);
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            container.connectToServer(this, endpoint);
+            ClientEndpointConfig config = ClientEndpointConfig.Builder.create()
+                    .configurator(new ConnectHeadersConfigurator(connectHeaders))
+                    .encoders(List.of(JakartaFrameEncoder.class))
+                    .decoders(List.of(JakartaFrameDecoder.class))
+                    .build();
+            container.connectToServer(this, config, endpoint);
             log.debug("Connected to endpoint: {}", endpoint);
         } catch (DeploymentException | IOException e) {
             log.error(e.getMessage(), e);
@@ -49,14 +48,14 @@ public final class JakartaWebsocketClient implements WebSocketClient {
         }
     }
 
-    @OnOpen
-    public void onOpen(Session session) {
+    @Override
+    public void onOpen(Session session, EndpointConfig config) {
         log.info("Connected to {}", session.getRequestURI());
         this.session = session;
+        session.addMessageHandler(Frame.class, this::onMessage);
     }
 
-    @OnMessage
-    public void onMessage(Frame frame, Session session) {
+    private void onMessage(Frame frame) {
         log.debug("Received frame: {}", frame);
         frameHandler.accept(frame);
     }
