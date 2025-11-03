@@ -172,6 +172,7 @@ This allows for a clean definition of topics to send messages to and receive mes
 ## Building
 
 To build the project, make sure you have Java 25 or higher installed.
+If you do not skip the tests, you have the mock server running in the background.
 
 You can build the project using Maven:
 
