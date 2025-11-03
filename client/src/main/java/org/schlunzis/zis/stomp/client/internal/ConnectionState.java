@@ -4,6 +4,7 @@ package org.schlunzis.zis.stomp.client.internal;
 ///
 /// @since 1.0.0
 enum ConnectionState {
+
     /// Client has not been used yet.
     /// It has not connected before.
     ///
@@ -27,4 +28,5 @@ enum ConnectionState {
     ///
     /// @since 1.0.0
     DISCONNECTED
+
 }

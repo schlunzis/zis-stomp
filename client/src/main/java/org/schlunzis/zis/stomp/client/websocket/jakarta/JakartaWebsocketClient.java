@@ -50,7 +50,6 @@ public final class JakartaWebsocketClient extends Endpoint implements WebSocketC
 
     @Override
     public void onOpen(Session session, EndpointConfig config) {
-        log.info("Connected to {}", session.getRequestURI());
         this.session = session;
         session.addMessageHandler(Frame.class, this::onMessage);
     }
@@ -85,7 +84,7 @@ public final class JakartaWebsocketClient extends Endpoint implements WebSocketC
         } catch (IOException e) {
             log.error("Error closing WebSocket session", e);
         }
-        log.info("WebSocket connection closed");
+        log.debug("WebSocket connection closed");
     }
 
 }
