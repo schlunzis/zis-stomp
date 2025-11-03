@@ -11,13 +11,13 @@ Currently, the following features are implemented:
 - Receipts
 - Annotation-driven publishers and subscribers
 - Message conversion using Jackson
+- Authentication
 
 Parts of the protocol that are not implemented yet:
 
 - Acknowledgements
 - Transactions
 - Heartbeats
-- Authentication
 
 This project is part of [Ze Impressive Schwifty](https://github.com/schlunzis/Ze-Impressive-Schwifty).
 
