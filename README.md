@@ -3,7 +3,7 @@
 A STOMP client written in Java and built on Jakarta WebSockets.
 This library aims to provide a STOMP 1.2 client for Java applications, with support for programmatic and
 annotation-driven publishers and subscribers.
-It was created due to a need for a STOMP client with a real `module-info` JLink support.
+It was created due to a need for a STOMP client with a real `module-info` and JLink support.
 
 Currently, the following features are implemented:
 
