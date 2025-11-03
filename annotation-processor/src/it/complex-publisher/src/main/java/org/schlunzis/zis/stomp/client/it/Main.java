@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
@@ -19,7 +20,8 @@ public class Main {
 
         PublisherClass publisher = new PublisherClass(stompClient);
 
-        stompClient.connect();
+        CompletableFuture<Void> future = stompClient.connect();
+        future.join();
         CountDownLatch latch = new CountDownLatch(2);
         Model model = new Model(UUID.randomUUID(), "Test");
 

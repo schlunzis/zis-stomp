@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,15 +54,15 @@ public final class Stomp1dot2Client implements StompClient {
     // ########
 
     @Override
-    public void connect() throws ConnectionException {
+    public CompletableFuture<Void> connect() throws ConnectionException {
         Frame connectFrame = Frames.connect(endpoint);
-        doConnect(connectFrame);
+        return CompletableFuture.runAsync(() -> doConnect(connectFrame));
     }
 
     @Override
-    public void connect(String login, String passcode) throws ConnectionException {
+    public CompletableFuture<Void> connect(String login, String passcode) throws ConnectionException {
         Frame connectFrame = Frames.connect(endpoint, login, passcode);
-        doConnect(connectFrame);
+        return CompletableFuture.runAsync(() -> doConnect(connectFrame));
     }
 
     private void doConnect(Frame connectFrame) throws ConnectionException {
