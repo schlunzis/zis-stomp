@@ -58,7 +58,7 @@ final class SubscriptionManager {
         }
     }
 
-    void remove(StompSubscription stompSubscription) {
+    void remove(Subscription stompSubscription) {
         subscriptions.remove(stompSubscription.id());
     }
 
