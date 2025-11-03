@@ -1,7 +1,6 @@
 package org.schlunzis.zis.stomp.client;
 
-import org.schlunzis.zis.stomp.client.internal.Stomp1dot2Client;
-
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /// A STOMP client for sending and receiving messages over the STOMP protocol.
@@ -24,9 +23,7 @@ import java.util.function.Consumer;
 /// @see StompSubscriber
 /// @see StompPublisher
 /// @since 1.0.0
-public sealed interface StompClient
-        extends AutoCloseable
-        permits Stomp1dot2Client {
+public interface StompClient extends AutoCloseable {
 
     /// Creates a new [StompClientBuilder] for building a STOMP client.
     ///
@@ -53,7 +50,7 @@ public sealed interface StompClient
     /// @throws ConnectionException   if the connection fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
-    void connect() throws ConnectionException;
+    CompletableFuture<Void> connect() throws ConnectionException;
 
     /// Connects to the STOMP server using the provided login and passcode.
     ///
@@ -71,7 +68,7 @@ public sealed interface StompClient
     /// @throws ConnectionException   if the connection fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
-    void connect(String login, String passcode) throws ConnectionException;
+    CompletableFuture<Void> connect(String login, String passcode) throws ConnectionException;
 
     /// Sends a message to the specified destination with the given body. This method does not use the provided message
     /// converter. It sends the body directly as a string and indicates a content type of `text/plain;charset=UTF-8`.

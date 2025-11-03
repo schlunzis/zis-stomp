@@ -4,6 +4,7 @@ import org.schlunzis.zis.stomp.client.StompClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This verifies that multiple subscribers can coexist and receive their respective messages.
@@ -15,7 +16,8 @@ public class Main {
         StompClient stompClient = StompClient.builder()
                 .endpoint(new URI("ws://localhost:8080/ws"))
                 .build();
-        stompClient.connect();
+        CompletableFuture<Void> future = stompClient.connect();
+        future.join();
 
         Subscriber subscriber5 = new Subscriber(5);
         stompClient.subscribe(subscriber5);
