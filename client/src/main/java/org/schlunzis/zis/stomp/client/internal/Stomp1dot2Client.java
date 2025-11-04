@@ -11,11 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Objects;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -153,14 +149,24 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
-        ensureConnected();
+        return subscribeWith(destination, payloadType, messageHandler)
+                .subscribe();
+    }
 
-        Subscription subscription = subscriptionManager.create(
+    @Override
+    public <T> SubscribeContext subscribeWith(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
+        Objects.requireNonNull(destination, "destination must not be null");
+        Objects.requireNonNull(payloadType, "payloadType must not be null");
+        Objects.requireNonNull(messageHandler, "messageHandler must not be null");
+        ensureConnected();
+        return new SubscribeContextImpl<>(
+                receiptManager,
+                subscriptionManager,
+                messageConverter,
                 destination,
-                new SubscriberInvoker(messageConverter, payloadType, messageHandler)
+                payloadType,
+                messageHandler
         );
-        doSubscribe(subscription);
-        return subscription;
     }
 
     @Override
@@ -173,15 +179,13 @@ public final class Stomp1dot2Client implements StompClient {
             }
 
             Set<StompSubscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
-            subscriptions.forEach(this::doSubscribe);
+            subscriptions.forEach(s -> {
+                Frame subscribeFrame = Frames.subscribe(s.destination(), s.id().toString(), "auto");
+                receiptManager.sendAndAwaitReceiptIfPolicy(subscribeFrame, ReceiptPolicy.Policy.FOR_SUBSCRIBE);
+            });
         } finally {
             mutex.unlock();
         }
-    }
-
-    private void doSubscribe(Subscription subscription) {
-        Frame subscribeFrame = Frames.subscribe(subscription.destination(), subscription.id().toString(), "auto");
-        receiptManager.sendAndAwaitReceiptIfPolicy(subscribeFrame, ReceiptPolicy.Policy.FOR_SUBSCRIBE);
     }
 
     // ############

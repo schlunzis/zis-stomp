@@ -1,15 +1,12 @@
 package org.schlunzis.zis.stomp.client;
 
-import org.schlunzis.zis.stomp.client.internal.SendContextImpl;
-
 /// Context for sending a STOMP message.
 ///
 /// This can be obtained via the [StompClient#sendWith(String, Object)] method.
 ///
 /// @see StompClient#sendWith(String, Object)
 /// @since 1.0.0
-public sealed interface SendContext
-        permits SendContextImpl {
+public interface SendContext {
 
     /// Adds a header to the STOMP message to be sent.
     ///

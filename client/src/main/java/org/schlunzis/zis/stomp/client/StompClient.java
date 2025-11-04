@@ -164,6 +164,12 @@ public interface StompClient extends AutoCloseable {
     /// The returned [Subscription] can be used to unsubscribe from the destination using the
     /// [#unsubscribe(Subscription)] method.
     ///
+    /// This method is a shorthand for:
+    /// ```java
+    /// subscribeWith(destination, payloadType, messageHandler)
+    ///     .subscribe();
+    ///```
+    ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination    the destination to subscribe to
@@ -174,6 +180,37 @@ public interface StompClient extends AutoCloseable {
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
     <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler);
+
+    /// Subscribes to the specified destination to receive messages of the given payload type.
+    ///
+    /// The provided message handler is invoked for each received message, with the message payload converted to
+    /// the specified type.
+    ///
+    /// This method allows for additional configuration of the subscription via the returned [SubscribeContext].
+    /// The [SubscribeContext#subscribe()] method must be called to actually create the subscription.
+    /// It is recommended to call the subscribe method as soon as possible after obtaining the [SubscribeContext].
+    /// Usage should look like this:
+    ///
+    /// ```java
+    /// stompClient.subscribeWith("/topic/example", String.class, new Consumer<String>())
+    ///     .header("custom-header", "value")
+    ///     .subscribe();
+    ///```
+    ///
+    /// The returned [Subscription] can be used to unsubscribe from the destination using the
+    /// [#unsubscribe(Subscription)] method.
+    ///
+    /// The [SubscribeContext] is not thread-safe and should not be shared between threads.
+    ///
+    /// If the client is not connected, an [IllegalStateException] is thrown.
+    ///
+    /// @param destination    the destination to subscribe to
+    /// @param payloadType    the type of the message payload
+    /// @param messageHandler the handler to process received messages
+    /// @return a [SubscribeContext] for configuring and creating the subscription
+    /// @throws IllegalStateException if the client is not connected
+    /// @since 1.0.0
+    <T> SubscribeContext subscribeWith(String destination, Class<T> payloadType, Consumer<T> messageHandler);
 
     /// Subscribes all methods annotated with [Topic] in the given subscriber object.
     /// You can unsubscribe all created subscriptions by calling [#unsubscribe(Object)] with the same subscriber
