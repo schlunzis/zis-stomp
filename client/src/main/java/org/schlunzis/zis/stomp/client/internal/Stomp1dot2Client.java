@@ -12,7 +12,11 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,7 +58,34 @@ public final class Stomp1dot2Client implements StompClient {
     // ########
 
     @Override
-    public void connect() throws ConnectionException {
+    public CompletableFuture<Void> connect() throws ConnectionException {
+        Frame connectFrame = Frames.connect(endpoint);
+        return CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
+    }
+
+    @Override
+    public CompletableFuture<Void> connect(String login, String passcode) throws ConnectionException {
+        return connect(login, passcode, AuthenticationMethod.STOMP);
+    }
+
+    @Override
+    public CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod) throws ConnectionException {
+        return switch (authenticationMethod) {
+            case STOMP -> {
+                Frame connectFrame = Frames.connect(endpoint, login, passcode);
+                yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
+            }
+            case HTTP_BASIC -> {
+                String credentials = login + ":" + passcode;
+                String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+                String authHeaderValue = "Basic " + encodedCredentials;
+                Frame connectFrame = Frames.connect(endpoint);
+                yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of("Authorization", List.of(authHeaderValue))));
+            }
+        };
+    }
+
+    private void doConnect(Frame connectFrame, Map<String, List<String>> connectHeaders) throws ConnectionException {
         mutex.lock();
         try {
             if (connectionState.get() != ConnectionState.UNUSED) {
@@ -62,8 +93,7 @@ public final class Stomp1dot2Client implements StompClient {
             }
             connectionState.set(ConnectionState.CONNECTING);
 
-            websocketClient.connect();
-            Frame connectFrame = Frames.connect(endpoint);
+            websocketClient.connect(connectHeaders);
             websocketClient.send(connectFrame);
 
             Frame connectedFrame = connectedFrames.take();

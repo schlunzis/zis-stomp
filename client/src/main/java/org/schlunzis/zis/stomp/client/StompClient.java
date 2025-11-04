@@ -1,7 +1,6 @@
 package org.schlunzis.zis.stomp.client;
 
-import org.schlunzis.zis.stomp.client.internal.Stomp1dot2Client;
-
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /// A STOMP client for sending and receiving messages over the STOMP protocol.
@@ -24,9 +23,7 @@ import java.util.function.Consumer;
 /// @see StompSubscriber
 /// @see StompPublisher
 /// @since 1.0.0
-public sealed interface StompClient
-        extends AutoCloseable
-        permits Stomp1dot2Client {
+public interface StompClient extends AutoCloseable {
 
     /// Creates a new [StompClientBuilder] for building a STOMP client.
     ///
@@ -53,7 +50,47 @@ public sealed interface StompClient
     /// @throws ConnectionException   if the connection fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
-    void connect() throws ConnectionException;
+    CompletableFuture<Void> connect() throws ConnectionException;
+
+    /// Connects to the STOMP server using the provided login and passcode.
+    ///
+    /// This method establishes a connection to the STOMP server specified in the client's configuration,
+    /// using the provided login and passcode for authentication in the STOMP CONNECT frame.
+    /// It returns a [CompletableFuture] that completes when the connection is established or fails.
+    ///
+    /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
+    ///
+    /// If the thread is interrupted while waiting for the connection to be established,
+    /// an [ConnectionException] is thrown. The interrupt status of the thread is preserved.
+    ///
+    /// This method is a shorthand for calling [#connect(String, String, AuthenticationMethod)] with
+    /// [AuthenticationMethod#STOMP] as the authentication method.
+    ///
+    /// @param login    the login username
+    /// @param passcode the passcode (password)
+    /// @throws ConnectionException   if the connection fails
+    /// @throws IllegalStateException if the client has already been connected before
+    /// @since 1.0.0
+    CompletableFuture<Void> connect(String login, String passcode) throws ConnectionException;
+
+    /// Connects to the STOMP server using the provided login, passcode and authentication method.
+    ///
+    /// This method establishes a connection to the STOMP server specified in the client's configuration,
+    /// using the provided login and passcode for authentication.
+    /// The [AuthenticationMethod] determines how the credentials are used.
+    /// It returns a [CompletableFuture] that completes when the connection is established or fails.
+    ///
+    /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
+    ///
+    /// If the thread is interrupted while waiting for the connection to be established,
+    /// an [ConnectionException] is thrown. The interrupt status of the thread is preserved.
+    ///
+    /// @param login    the login username
+    /// @param passcode the passcode (password)
+    /// @throws ConnectionException   if the connection fails
+    /// @throws IllegalStateException if the client has already been connected before
+    /// @since 1.0.0
+    CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod) throws ConnectionException;
 
     /// Sends a message to the specified destination with the given body. This method does not use the provided message
     /// converter. It sends the body directly as a string and indicates a content type of `text/plain;charset=UTF-8`.

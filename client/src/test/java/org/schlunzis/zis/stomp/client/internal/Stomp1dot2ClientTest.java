@@ -7,6 +7,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -51,7 +53,9 @@ class Stomp1dot2ClientTest {
                 ReceiptPolicy.none()
         );
 
-        assertThrows(ConnectionException.class, client::connect);
+        CompletableFuture<Void> future = client.connect();
+        CompletionException e = assertThrows(CompletionException.class, future::join);
+        assertInstanceOf(ConnectionException.class, e.getCause());
     }
 
     @Test
@@ -65,7 +69,9 @@ class Stomp1dot2ClientTest {
                 ReceiptPolicy.none()
         );
 
-        assertThrows(ConnectionException.class, client::connect);
+        CompletableFuture<Void> future = client.connect();
+        CompletionException e = assertThrows(CompletionException.class, future::join);
+        assertInstanceOf(ConnectionException.class, e.getCause());
     }
 
     @Test
@@ -78,9 +84,12 @@ class Stomp1dot2ClientTest {
                 Duration.ofSeconds(10),
                 ReceiptPolicy.none()
         );
-        client.connect();
+        CompletableFuture<Void> future = client.connect();
+        future.join();
 
-        assertThrows(IllegalStateException.class, client::connect);
+        future = client.connect();
+        CompletionException e = assertThrows(CompletionException.class, future::join);
+        assertInstanceOf(IllegalStateException.class, e.getCause());
     }
 
     @Test
@@ -107,7 +116,8 @@ class Stomp1dot2ClientTest {
                 Duration.ofSeconds(10),
                 ReceiptPolicy.none()
         );
-        client.connect();
+        CompletableFuture<Void> future = client.connect();
+        future.join();
 
         assertDoesNotThrow(client::close);
     }
@@ -121,7 +131,8 @@ class Stomp1dot2ClientTest {
                 Duration.ofSeconds(10),
                 ReceiptPolicy.none()
         );
-        client.connect();
+        CompletableFuture<Void> future = client.connect();
+        future.join();
         client.close();
 
         assertDoesNotThrow(client::close);
@@ -181,7 +192,8 @@ class Stomp1dot2ClientTest {
                 Duration.ofSeconds(10),
                 ReceiptPolicy.none()
         );
-        client.connect();
+        CompletableFuture<Void> future = client.connect();
+        future.join();
 
         CountDownLatch latch = new CountDownLatch(2);
         class MutableHashCodeSubscriber {

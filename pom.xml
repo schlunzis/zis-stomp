@@ -40,6 +40,7 @@
     <properties>
         <revision>1.0.0-SNAPSHOT</revision>
         <java.version>25</java.version>
+        <tyrus.version>2.2.1</tyrus.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,7 +56,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.20.0</version>
+                <version>2.20.1</version>
             </dependency>
             <dependency>
                 <groupId>tools.jackson.core</groupId>
@@ -74,21 +75,26 @@
                 <artifactId>jspecify</artifactId>
                 <version>1.0.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>2.25.2</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
-                <version>6.0.0</version>
+                <version>6.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-client</artifactId>
-                <version>2.2.0</version>
+                <version>${tyrus.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-container-jdk-client</artifactId>
-                <version>2.2.0</version>
+                <version>${tyrus.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

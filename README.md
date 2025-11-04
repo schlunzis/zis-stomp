@@ -3,7 +3,7 @@
 A STOMP client written in Java and built on Jakarta WebSockets.
 This library aims to provide a STOMP 1.2 client for Java applications, with support for programmatic and
 annotation-driven publishers and subscribers.
-It was created due to a need for a STOMP client with a real `module-info` JLink support.
+It was created due to a need for a STOMP client with a real `module-info` and JLink support.
 
 Currently, the following features are implemented:
 
@@ -11,13 +11,13 @@ Currently, the following features are implemented:
 - Receipts
 - Annotation-driven publishers and subscribers
 - Message conversion using Jackson
+- Authentication
 
 Parts of the protocol that are not implemented yet:
 
 - Acknowledgements
 - Transactions
 - Heartbeats
-- Authentication
 
 This project is part of [Ze Impressive Schwifty](https://github.com/schlunzis/Ze-Impressive-Schwifty).
 
@@ -172,6 +172,7 @@ This allows for a clean definition of topics to send messages to and receive mes
 ## Building
 
 To build the project, make sure you have Java 25 or higher installed.
+If you do not skip the tests, you have the mock server running in the background.
 
 You can build the project using Maven:
 
