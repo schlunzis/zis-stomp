@@ -13,8 +13,8 @@
     <description>A STOMP client and annotation processor.</description>
     <licenses>
         <license>
-            <name>GPL-3.0</name>
-            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/MIT</url>
         </license>
     </licenses>
     <developers>
