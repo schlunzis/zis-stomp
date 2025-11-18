@@ -20,6 +20,13 @@ public final class FrameBuilder {
         return this;
     }
 
+    public Command command() {
+        if (command == null) {
+            throw new IllegalStateException("Command has not been set");
+        }
+        return command;
+    }
+
     public FrameBuilder header(String key, String value) {
         Objects.requireNonNull(key, "header key must not be null");
         Objects.requireNonNull(value, "header value must not be null");

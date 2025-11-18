@@ -1,85 +1,76 @@
 package org.schlunzis.zis.stomp.client.internal;
 
 import org.schlunzis.zis.stomp.client.ReceiptPolicy;
-import org.schlunzis.zis.stomp.client.ReceiptTimeoutException;
-import org.schlunzis.zis.stomp.client.SendException;
+import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
+import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 
-final class ReceiptManager {
+public final class ReceiptManager {
 
     private static final Logger log = LoggerFactory.getLogger(ReceiptManager.class);
 
-    private final WebSocketClient websocketClient;
-
     private final Map<UUID, CountDownLatch> receiptLatches = new ConcurrentHashMap<>();
     private final Duration receiptTimeout;
-    private final Map<ReceiptPolicy.Policy, Consumer<Frame>> receiptPolicyRespectingSenders;
+    private final ReceiptPolicy receiptPolicy;
 
-    ReceiptManager(WebSocketClient websocketClient, Duration receiptTimeout, ReceiptPolicy receiptPolicy) {
-        this.websocketClient = websocketClient;
+    public ReceiptManager(Duration receiptTimeout, ReceiptPolicy receiptPolicy) {
         this.receiptTimeout = receiptTimeout;
-        this.receiptPolicyRespectingSenders = createPolicyRespectingSenders(receiptPolicy);
+        this.receiptPolicy = receiptPolicy;
     }
 
-    private Map<ReceiptPolicy.Policy, Consumer<Frame>> createPolicyRespectingSenders(ReceiptPolicy receiptPolicy) {
-        Map<ReceiptPolicy.Policy, Consumer<Frame>> policyRespectingSenders = new EnumMap<>(ReceiptPolicy.Policy.class);
-        for (ReceiptPolicy.Policy policy : ReceiptPolicy.Policy.values()) {
-            if (receiptPolicy.isEnabled(policy)) {
-                policyRespectingSenders.put(policy, this::sendAndAwaitReceipt);
-            } else {
-                policyRespectingSenders.put(policy, websocketClient::send);
+    public Optional<CountDownLatch> attachReceiptIfPolicyEnabled(FrameBuilder frameBuilder) {
+        Command command = frameBuilder.command();
+        return switch (command) {
+            case SEND -> {
+                if (receiptPolicy.isEnabled(ReceiptPolicy.Policy.FOR_SEND))
+                    yield Optional.of(attachReceipt(frameBuilder));
+                else
+                    yield Optional.empty();
             }
-        }
-        return Map.copyOf(policyRespectingSenders);
+            case SUBSCRIBE -> {
+                if (receiptPolicy.isEnabled(ReceiptPolicy.Policy.FOR_SUBSCRIBE))
+                    yield Optional.of(attachReceipt(frameBuilder));
+                else
+                    yield Optional.empty();
+            }
+            case UNSUBSCRIBE -> {
+                if (receiptPolicy.isEnabled(ReceiptPolicy.Policy.FOR_UNSUBSCRIBE))
+                    yield Optional.of(attachReceipt(frameBuilder));
+                else
+                    yield Optional.empty();
+            }
+            case DISCONNECT -> {
+                if (receiptPolicy.isEnabled(ReceiptPolicy.Policy.FOR_DISCONNECT))
+                    yield Optional.of(attachReceipt(frameBuilder));
+                else
+                    yield Optional.empty();
+            }
+            default -> Optional.empty();
+        };
     }
 
-    /// Sends a frame and awaits a receipt if the policy requires it.
-    ///
-    /// @param frame  the frame to send
-    /// @param policy the receipt policy to check
-    void sendAndAwaitReceiptIfPolicy(Frame frame, ReceiptPolicy.Policy policy) {
-        Consumer<Frame> sender = receiptPolicyRespectingSenders.get(policy);
-        sender.accept(frame);
-    }
-
-    /// Sends a frame and waits for the corresponding RECEIPT frame.
-    ///
-    /// @param frame the frame to send
-    /// @throws SendException if the receipt is not received within the timeout
-    void sendAndAwaitReceipt(Frame frame) {
+    private CountDownLatch attachReceipt(FrameBuilder frameBuilder) {
         UUID receiptId = UUID.randomUUID();
-        frame.headers().addFirst("receipt", receiptId.toString());
+        frameBuilder.header("receipt", receiptId.toString());
         CountDownLatch latch = new CountDownLatch(1);
         receiptLatches.put(receiptId, latch);
-        websocketClient.send(frame);
-        try {
-            if (!latch.await(receiptTimeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)) {
-                throw new ReceiptTimeoutException("Did not receive receipt for id " + receiptId + " within " + receiptTimeout);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new SendException("Interrupted while waiting for receipt", e);
-        } finally {
-            receiptLatches.remove(receiptId);
-        }
+        return latch;
     }
 
     /// Handles an incoming `RECEIPT` frame.
     /// It looks up the corresponding latch and counts it down.
     ///
     /// @param frame the `RECEIPT` frame
-    void handleReceipt(Frame frame) {
+    public void handleReceipt(Frame frame) {
         UUID receiptId;
         try {
             receiptId = UUID.fromString(frame.headers().get("receipt-id").getFirst());
@@ -96,7 +87,11 @@ final class ReceiptManager {
         }
     }
 
-    void clear() {
+    public Duration receiptTimeout() {
+        return receiptTimeout;
+    }
+
+    public void clear() {
         receiptLatches.clear();
     }
 

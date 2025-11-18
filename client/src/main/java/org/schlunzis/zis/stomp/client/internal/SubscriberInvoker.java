@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-final class SubscriberInvoker {
+public final class SubscriberInvoker {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberInvoker.class);
 
@@ -19,14 +19,14 @@ final class SubscriberInvoker {
     private final Method method;
     private final Object target;
 
-    SubscriberInvoker(MessageConverter messageConverter, Class<?> payloadType, Method method, Object target) {
+    public SubscriberInvoker(MessageConverter messageConverter, Class<?> payloadType, Method method, Object target) {
         this.messageConverter = messageConverter;
         this.payloadType = payloadType;
         this.method = method;
         this.target = target;
     }
 
-    SubscriberInvoker(MessageConverter messageConverter, Class<?> payloadType, Consumer<?> consumer) {
+    public SubscriberInvoker(MessageConverter messageConverter, Class<?> payloadType, Consumer<?> consumer) {
         this.messageConverter = messageConverter;
         this.payloadType = payloadType;
         try {
@@ -37,7 +37,7 @@ final class SubscriberInvoker {
         this.target = consumer;
     }
 
-    void invoke(Frame frame) {
+    public void invoke(Frame frame) {
         Optional<String> body = frame.body();
         Object payload;
         if (payloadType.equals(String.class)) {

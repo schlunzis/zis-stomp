@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-final class SubscriptionManager {
+public class SubscriptionManager {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionManager.class);
 
@@ -19,17 +19,17 @@ final class SubscriptionManager {
 
     private final AnnotatedSubscriberHandler annotatedSubscriberHandler;
 
-    SubscriptionManager(MessageConverter messageConverter) {
+    public SubscriptionManager(MessageConverter messageConverter) {
         this.annotatedSubscriberHandler = new AnnotatedSubscriberHandler(this, messageConverter);
     }
 
-    Set<StompSubscription> createAnnotatedSubscriptions(Object subscriber) {
+    public Set<StompSubscription> createAnnotatedSubscriptions(Object subscriber) {
         Set<StompSubscription> s = new HashSet<>(annotatedSubscriberHandler.handle(subscriber));
         subscriberSubscriptions.put(subscriber, s);
         return s;
     }
 
-    StompSubscription create(String destination, SubscriberInvoker invoker) {
+    public StompSubscription create(String destination, SubscriberInvoker invoker) {
         StompSubscription subscription = new StompSubscription(
                 this,
                 UUID.randomUUID(),
@@ -37,10 +37,11 @@ final class SubscriptionManager {
                 invoker
         );
         subscriptions.put(subscription.id(), subscription);
+        log.trace("Created subscription {} for destination {}", subscription.id(), destination);
         return subscription;
     }
 
-    void handleMessage(Frame frame) {
+    public void handleMessage(Frame frame) {
         String subscriptionId = frame.headers().getFirst("subscription");
         if (subscriptionId == null) {
             log.warn("Received frame without subscription id: {}", frame);
@@ -50,8 +51,11 @@ final class SubscriptionManager {
         try {
             UUID id = UUID.fromString(subscriptionId);
             StompSubscription subscription = subscriptions.get(id);
+            log.trace("Received frame for subscription {}", subscription);
             if (subscription != null) {
                 subscription.invoker().invoke(frame);
+            } else {
+                log.warn("No subscription found for id {}", subscriptionId);
             }
         } catch (ClassCastException e) {
             log.error("Failed to cast subscription for id {}: {}", subscriptionId, e.getMessage());

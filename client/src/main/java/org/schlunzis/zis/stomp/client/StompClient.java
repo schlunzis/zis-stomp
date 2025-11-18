@@ -134,7 +134,6 @@ public interface StompClient extends AutoCloseable {
     ///
     /// The returned [SendContext] allows for further configuration of the message, such as adding custom headers,
     /// before sending it.
-    /// The [SendContext#send()] method must be called to actually send the message.
     /// It is recommended to call the send method as soon as possible after obtaining the [SendContext].
     /// Usage should look like this:
     ///
@@ -149,12 +148,10 @@ public interface StompClient extends AutoCloseable {
     ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
-    /// @param destination the destination to send the message to
-    /// @param body        the body of the message
-    /// @return a [SendContext] for configuring and sending the message
+    /// @param sendContext the context for configuring the message to be sent
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    SendContext sendWith(String destination, Object body);
+    void send(SendContext sendContext) throws SendException;
 
     /// Subscribes to the specified destination to receive messages of the given payload type.
     ///
@@ -187,7 +184,6 @@ public interface StompClient extends AutoCloseable {
     /// the specified type.
     ///
     /// This method allows for additional configuration of the subscription via the returned [SubscribeContext].
-    /// The [SubscribeContext#subscribe()] method must be called to actually create the subscription.
     /// It is recommended to call the subscribe method as soon as possible after obtaining the [SubscribeContext].
     /// Usage should look like this:
     ///
@@ -204,13 +200,12 @@ public interface StompClient extends AutoCloseable {
     ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
-    /// @param destination    the destination to subscribe to
-    /// @param payloadType    the type of the message payload
-    /// @param messageHandler the handler to process received messages
+    /// @param <T></T>          the type of the message payload
+    /// @param subscribeContext the context for configuring the subscription
     /// @return a [SubscribeContext] for configuring and creating the subscription
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    <T> SubscribeContext subscribeWith(String destination, Class<T> payloadType, Consumer<T> messageHandler);
+    <T> Subscription subscribe(SubscribeContext<T> subscribeContext);
 
     /// Subscribes all methods annotated with [Topic] in the given subscriber object.
     /// You can unsubscribe all created subscriptions by calling [#unsubscribe(Object)] with the same subscriber

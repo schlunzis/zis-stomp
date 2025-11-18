@@ -3,7 +3,7 @@ package org.schlunzis.zis.stomp.client;
 /// Exception thrown if an error occurs while connecting to the STOMP server.
 ///
 /// @since 1.0.0
-public final class ConnectionException extends RuntimeException {
+public class ConnectionException extends RuntimeException {
 
     /// Constructs a new ConnectionException with the specified detail message.
     ///

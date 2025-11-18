@@ -14,7 +14,7 @@ import java.util.Set;
 /// A ReceiptPolicy can be set on the [StompClientBuilder] to define the default receipt policy for the client.
 ///
 /// @since 1.0.0
-public final class ReceiptPolicy {
+public class ReceiptPolicy {
 
     private final Set<Policy> policies = EnumSet.noneOf(Policy.class);
 

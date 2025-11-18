@@ -10,55 +10,49 @@ public final class Frames {
     private Frames() {
     }
 
-    public static Frame connect(URI endpoint) {
+    public static FrameBuilder connect(URI endpoint) {
         final String host = endpoint.getHost();
         return Frame.builder()
                 .command(Command.CONNECT)
                 .header("accept-version", "1.2")
-                .header("host", host)
-                .build();
+                .header("host", host);
     }
 
-    public static Frame connect(URI endpoint, String login, String passcode) {
+    public static FrameBuilder connect(URI endpoint, String login, String passcode) {
         final String host = endpoint.getHost();
         return Frame.builder()
                 .command(Command.CONNECT)
                 .header("accept-version", "1.2")
                 .header("host", host)
                 .header("login", login)
-                .header("passcode", passcode)
-                .build();
+                .header("passcode", passcode);
     }
 
-    public static Frame send(String destination, String body, String contentType) {
+    public static FrameBuilder send(String destination, String body, String contentType) {
         return Frame.builder()
                 .command(Command.SEND)
                 .header("destination", destination)
                 .header("content-type", contentType)
-                .body(body)
-                .build();
+                .body(body);
     }
 
-    public static Frame subscribe(String destination, String id, String ackMode) {
+    public static FrameBuilder subscribe(String destination, String id, String ackMode) {
         return Frame.builder()
                 .command(Command.SUBSCRIBE)
                 .header("destination", destination)
                 .header("id", id)
-                .header("ack", ackMode)
-                .build();
+                .header("ack", ackMode);
     }
 
-    public static Frame unsubscribe(String id) {
+    public static FrameBuilder unsubscribe(String id) {
         return Frame.builder()
                 .command(Command.UNSUBSCRIBE)
-                .header("id", id)
-                .build();
+                .header("id", id);
     }
 
-    public static Frame disconnect() {
+    public static FrameBuilder disconnect() {
         return Frame.builder()
-                .command(Command.DISCONNECT)
-                .build();
+                .command(Command.DISCONNECT);
     }
 
 }

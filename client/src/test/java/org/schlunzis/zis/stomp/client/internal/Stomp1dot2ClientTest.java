@@ -1,30 +1,52 @@
 package org.schlunzis.zis.stomp.client.internal;
 
 import org.junit.jupiter.api.Test;
-import org.schlunzis.zis.stomp.client.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.schlunzis.zis.stomp.client.ConnectionException;
+import org.schlunzis.zis.stomp.client.StringMessageConverter;
+import org.schlunzis.zis.stomp.client.Subscription;
+import org.schlunzis.zis.stomp.client.Topic;
+import org.schlunzis.zis.stomp.client.internal.channel.inbound.InboundChannel;
+import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundChannel;
+import org.schlunzis.zis.stomp.client.protocol.Command;
+import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class Stomp1dot2ClientTest {
+
+    @Mock
+    WebSocketClient webSocketClient;
+    @Mock
+    InboundChannel inboundChannel;
+    @Mock
+    OutboundChannel outboundChannel;
+    @Mock
+    SubscriptionManager subscriptionManager;
 
     @Test
     void testBeforeConnection() throws URISyntaxException {
-        @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
         Object dummy = new Object();
         @SuppressWarnings("DataFlowIssue")
@@ -44,13 +66,15 @@ class Stomp1dot2ClientTest {
 
     @Test
     void testConnectUnreachableURI() throws URISyntaxException {
-        @SuppressWarnings("resource")
+        doThrow(new ConnectionException("Message")).when(webSocketClient).connect(anyMap());
+
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://unreachable:9999/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
 
         CompletableFuture<Void> future = client.connect();
@@ -60,13 +84,15 @@ class Stomp1dot2ClientTest {
 
     @Test
     void testConnectInvalidProtocol() throws URISyntaxException {
-        @SuppressWarnings("resource")
+        doThrow(new ConnectionException("Message")).when(webSocketClient).connect(anyMap());
+
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("http://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
 
         CompletableFuture<Void> future = client.connect();
@@ -75,14 +101,19 @@ class Stomp1dot2ClientTest {
     }
 
     @Test
-    void testDoubleConnect() throws URISyntaxException {
-        @SuppressWarnings("resource")
+    void testDoubleConnect() throws URISyntaxException, InterruptedException {
+        when(inboundChannel.waitForConnectedFrame()).thenReturn(Frame.builder()
+                .command(Command.CONNECTED)
+                .header("version", "1.2")
+                .build());
+
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
@@ -94,27 +125,32 @@ class Stomp1dot2ClientTest {
 
     @Test
     void testCloseBeforeConnect() throws URISyntaxException {
-        @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
 
         assertDoesNotThrow(client::close);
     }
 
     @Test
-    void testCloseAfterConnect() throws URISyntaxException, ConnectionException {
-        @SuppressWarnings("resource")
+    void testCloseAfterConnect() throws URISyntaxException, ConnectionException, InterruptedException {
+        when(inboundChannel.waitForConnectedFrame()).thenReturn(Frame.builder()
+                .command(Command.CONNECTED)
+                .header("version", "1.2")
+                .build());
+
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
@@ -123,13 +159,19 @@ class Stomp1dot2ClientTest {
     }
 
     @Test
-    void testCloseDouble() throws URISyntaxException, ConnectionException {
+    void testCloseDouble() throws URISyntaxException, ConnectionException, InterruptedException {
+        when(inboundChannel.waitForConnectedFrame()).thenReturn(Frame.builder()
+                .command(Command.CONNECTED)
+                .header("version", "1.2")
+                .build());
+
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
@@ -140,13 +182,13 @@ class Stomp1dot2ClientTest {
 
     @Test
     void testSendWithoutConnect() throws URISyntaxException {
-        @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
 
         assertThrows(IllegalStateException.class, () -> client.send("/topic", "Message"));
@@ -154,13 +196,13 @@ class Stomp1dot2ClientTest {
 
     @Test
     void testSubscribeWithoutConnect() throws URISyntaxException {
-        @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
 
         assertThrows(IllegalStateException.class, () -> client.subscribe("/topic", String.class,
@@ -170,32 +212,37 @@ class Stomp1dot2ClientTest {
     @Test
     void testGetMessageConverter() throws URISyntaxException {
         StringMessageConverter messageConverter = new StringMessageConverter();
-        @SuppressWarnings("resource")
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 messageConverter,
                 null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
 
         assertSame(messageConverter, client.getMessageConverter());
     }
 
     @Test
-    void testChangingHashCodeOfSubscriberObject() throws URISyntaxException, ConnectionException, InterruptedException {
-        @SuppressWarnings("resource")
+    void testChangingHashCodeOfSubscriberObject() throws URISyntaxException, InterruptedException {
+        when(inboundChannel.waitForConnectedFrame()).thenReturn(Frame.builder()
+                .command(Command.CONNECTED)
+                .header("version", "1.2")
+                .build());
+        when(subscriptionManager.hasSubscriptionsForSubscriber(any())).thenReturn(Boolean.FALSE);
+
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null,
-                Duration.ofSeconds(10),
-                ReceiptPolicy.none()
+                subscriptionManager,
+                webSocketClient,
+                inboundChannel,
+                outboundChannel
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
 
-        CountDownLatch latch = new CountDownLatch(2);
         class MutableHashCodeSubscriber {
             int hashCode = 1;
 
@@ -206,11 +253,6 @@ class Stomp1dot2ClientTest {
 
             @Topic("/insight/scheduled/publisher/string")
             public void handleStringMessage(String message) {
-                if (latch.getCount() == 0) {
-                    fail("Received more messages than expected");
-                } else {
-                    latch.countDown();
-                }
             }
         }
 
@@ -218,12 +260,8 @@ class Stomp1dot2ClientTest {
         client.subscribe(subscriber);
 
         subscriber.hashCode = 2;
-        if (!latch.await(4, TimeUnit.SECONDS)) {
-            fail("Did not receive messages in time");
-        }
 
         assertDoesNotThrow(() -> client.unsubscribe(subscriber));
-        Thread.sleep(2000);
     }
 
 }

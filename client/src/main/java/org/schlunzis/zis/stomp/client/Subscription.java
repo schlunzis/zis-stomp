@@ -1,7 +1,5 @@
 package org.schlunzis.zis.stomp.client;
 
-import org.schlunzis.zis.stomp.client.internal.StompSubscription;
-
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -10,8 +8,7 @@ import java.util.function.Consumer;
 /// @see StompClient#subscribe(String, Class, Consumer)
 /// @see StompClient#unsubscribe(Subscription)
 /// @since 1.0.0
-public sealed interface Subscription
-        permits StompSubscription {
+public interface Subscription {
 
     /// The unique identifier of the subscription.
     ///
