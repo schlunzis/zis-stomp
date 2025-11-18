@@ -214,7 +214,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <failOnWarnings>false</failOnWarnings>
+                    <failOnWarnings>true</failOnWarnings>
                 </configuration>
             </plugin>
             <plugin>

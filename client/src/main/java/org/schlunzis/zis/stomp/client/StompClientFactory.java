@@ -3,10 +3,7 @@ package org.schlunzis.zis.stomp.client;
 import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
 import org.schlunzis.zis.stomp.client.internal.Stomp1dot2Client;
 import org.schlunzis.zis.stomp.client.internal.SubscriptionManager;
-import org.schlunzis.zis.stomp.client.internal.channel.inbound.ConnectedInboundChannelHandler;
-import org.schlunzis.zis.stomp.client.internal.channel.inbound.InboundChannel;
-import org.schlunzis.zis.stomp.client.internal.channel.inbound.ReceiptInboundChannelHandler;
-import org.schlunzis.zis.stomp.client.internal.channel.inbound.SubscriptionsInboundChannelHandler;
+import org.schlunzis.zis.stomp.client.internal.channel.inbound.*;
 import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundChannel;
 import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundCustomHeaderHandler;
 import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundWebsocketSenderHandler;
@@ -113,9 +110,15 @@ public class StompClientFactory {
         );
         receiptInboundChannelHandler.setNext(subscriptionsInboundChannelHandler);
 
-        ConnectedInboundChannelHandler connectedInboundChannelHandler = new ConnectedInboundChannelHandler();
-        connectedInboundChannelHandler.setConnectedFrameConsumer(inboundChannel::connected);
-        subscriptionsInboundChannelHandler.setNext(connectedInboundChannelHandler);
+        InboundConnectedChannelHandler inboundConnectedChannelHandler = new InboundConnectedChannelHandler();
+        inboundConnectedChannelHandler.setConnectedFrameConsumer(inboundChannel::connected);
+        subscriptionsInboundChannelHandler.setNext(inboundConnectedChannelHandler);
+
+        OnErrorConsumer onErrorConsumer = builder.onErrorConsumer();
+        if (onErrorConsumer != null) {
+            InboundErrorChannelHandler inboundErrorChannelHandler = new InboundErrorChannelHandler(onErrorConsumer);
+            inboundConnectedChannelHandler.setNext(inboundErrorChannelHandler);
+        }
 
         return inboundChannel;
     }

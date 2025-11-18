@@ -23,8 +23,9 @@ public interface MessageConverter {
     ///
     /// @param object the object to convert
     /// @return the String representation of the object
+    /// @throws ConversionException if the conversion fails
     /// @since 1.0.0
-    String convertToString(Object object);
+    String convertToString(Object object) throws ConversionException;
 
     /// Returns the content type associated with this message converter.
     /// This content type is used in STOMP message headers to indicate

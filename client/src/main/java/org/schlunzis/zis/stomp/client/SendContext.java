@@ -5,7 +5,10 @@ import org.schlunzis.zis.stomp.client.internal.interaction.SendContextImpl;
 
 /// Context for sending a STOMP message.
 ///
-/// This can be obtained via the [StompClient#send(SendContext)] method.
+/// An instance of this interface can be obtained via [SendContext#create].
+/// It allows setting various parameters for the STOMP message to be sent, such as headers and body.
+/// After its configuration, the [SendContext] can be passed to the [StompClient#send(SendContext)] method to send the
+/// message.
 ///
 /// @see StompClient#send(SendContext)
 /// @since 1.0.0
@@ -19,6 +22,8 @@ public non-sealed interface SendContext extends InteractionContext<SendContext> 
     ///
     /// This may be a custom header or a standard STOMP header.
     /// Headers set by default by the client (e.g., `destination` or `content-type`) may be overridden.
+    /// Keep in mind that some headers are mandatory for certain STOMP commands and must be set
+    /// correctly to ensure proper communication with the STOMP server.
     ///
     /// @param key   the header key
     /// @param value the header value
@@ -27,10 +32,22 @@ public non-sealed interface SendContext extends InteractionContext<SendContext> 
     /// @since 1.0.0
     SendContext header(String key, String value);
 
+    /// Returns the custom headers set in this context.
+    ///
+    /// @return the headers
+    /// @since 1.0.0
     Headers headers();
 
+    /// Returns the destination to which the STOMP message will be sent.
+    ///
+    /// @return the destination
+    /// @since 1.0.0
     String destination();
 
+    /// Returns the body of the STOMP message to be sent.
+    ///
+    /// @return the body
+    /// @since 1.0.0
     Object body();
 
 }

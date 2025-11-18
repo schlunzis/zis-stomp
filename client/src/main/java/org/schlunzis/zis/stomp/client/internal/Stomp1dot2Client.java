@@ -52,20 +52,17 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public CompletableFuture<Void> connect() throws ConnectionException {
-        log.trace("connect()");
         FrameBuilder connectFrame = Frames.connect(endpoint);
         return CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
     }
 
     @Override
     public CompletableFuture<Void> connect(String login, String passcode) throws ConnectionException {
-        log.trace("connect({}, ****)", login);
         return connect(login, passcode, AuthenticationMethod.STOMP);
     }
 
     @Override
     public CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod) throws ConnectionException {
-        log.trace("connect({}, ****, {})", login, authenticationMethod);
         return switch (authenticationMethod) {
             case STOMP -> {
                 FrameBuilder connectFrame = Frames.connect(endpoint, login, passcode);
@@ -82,7 +79,6 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     private void doConnect(FrameBuilder connectFrame, Map<String, List<String>> connectHeaders) throws ConnectionException {
-        log.trace("doConnect()");
         mutex.lock();
         try {
             if (connectionState.get() != ConnectionState.UNUSED) {
@@ -106,7 +102,6 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     private void postProcessConnectedFrame(Frame connectedFrame) {
-        log.trace("postProcessConnectedFrame()");
         Headers headers = connectedFrame.headers();
         String version = headers.getFirst("version");
         if (version == null || !version.equals("1.2")) {
@@ -121,7 +116,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void send(String destination, String body) {
-        log.trace("send({}, {})", destination, body);
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(body, "body must not be null");
         SendContext sendContext = SendContext.create(destination, body)
@@ -131,7 +125,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void send(String destination, Object body) {
-        log.trace("send({}, {})", destination, body);
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(body, "body must not be null");
         SendContext sendContext = SendContext.create(destination, body);
@@ -140,13 +133,16 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void send(SendContext context) {
-        log.trace("send({})", context);
         Objects.requireNonNull(context, "SendContext must not be null");
         ensureConnected();
         FrameBuilder builder = Frame.builder()
                 .command(Command.SEND)
                 .header("destination", context.destination())
-                .body(convertBodyToString(context.body()));
+                .body(convertBodyToString(context.body()))
+                .header("content-type", context.body() instanceof String
+                        ? STRING_CONTENT_TYPE
+                        : messageConverter.contentType()
+                );
         outboundChannel.handle(builder, context);
     }
 
@@ -156,7 +152,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
-        log.trace("subscribe({}, {}, {})", destination, payloadType, messageHandler);
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(payloadType, "payloadType must not be null");
         Objects.requireNonNull(messageHandler, "messageHandler must not be null");
@@ -170,7 +165,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public <T> Subscription subscribe(SubscribeContext<T> context) {
-        log.trace("subscribe(Subscribe Context {})", context);
         Objects.requireNonNull(context, "SubscribeContext must not be null");
         ensureConnected();
 
@@ -188,7 +182,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void subscribe(Object subscriber) {
-        log.trace("subscribe(Object {})", subscriber);
         mutex.lock();
         try {
             ensureConnected();
@@ -212,7 +205,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void unsubscribe(Subscription subscription) {
-        log.trace("unsubscribe({})", subscription);
         ensureConnected();
 
         if (!subscriptionManager.contains(subscription.id())) {
@@ -224,7 +216,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void unsubscribe(Object subscriber) {
-        log.trace("unsubscribe({})", subscriber);
         mutex.lock();
         try {
             ensureConnected();
@@ -239,7 +230,6 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     private void doUnsubscribe(Subscription subscription) {
-        log.trace("doUnsubscribe({})", subscription);
         FrameBuilder unsubscribeFrame = Frames.unsubscribe(subscription.id().toString());
         outboundChannel.handle(unsubscribeFrame, new EmptyInteractionContext<>());
     }
@@ -250,7 +240,6 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void close() {
-        log.trace("close()");
         mutex.lock();
         try {
             if (connectionState.get() != ConnectionState.CONNECTED) {
@@ -267,7 +256,6 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     private void doClose() {
-        log.trace("doClose()");
         mutex.lock();
         try {
             connectionState.set(ConnectionState.DISCONNECTING);
