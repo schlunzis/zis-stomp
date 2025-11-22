@@ -4,6 +4,11 @@ import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
 import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
 
+/// Outbound channel handler for sending STOMP frames over a WebSocket connection.
+///
+/// This handler uses a [WebSocketClient] to send the built STOMP frames.
+///
+/// @see WebSocketClient
 public class OutboundWebsocketSenderHandler extends AbstractOutboundChannelHandler {
 
     private final WebSocketClient webSocketClient;

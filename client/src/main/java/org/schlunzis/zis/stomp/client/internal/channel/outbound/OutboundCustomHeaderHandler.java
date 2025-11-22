@@ -6,6 +6,9 @@ import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import java.util.List;
 import java.util.Map;
 
+/// Outbound channel handler for adding custom headers to outgoing STOMP frames.
+///
+/// This handler adds custom headers from the interaction context to the outgoing STOMP frame.
 public class OutboundCustomHeaderHandler extends AbstractOutboundChannelHandler {
 
     @Override

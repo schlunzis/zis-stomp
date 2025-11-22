@@ -7,6 +7,12 @@ import org.schlunzis.zis.stomp.client.protocol.Frame;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/// Inbound channel handler for processing CONNECTED frames.
+///
+/// This handler intercepts CONNECTED frames and passes them to a configured consumer for further processing.
+///
+/// @see InboundChannel
+/// @see org.schlunzis.zis.stomp.client.StompClientFactory
 public class InboundConnectedChannelHandler extends AbstractInboundChannelHandler {
 
     @Nullable

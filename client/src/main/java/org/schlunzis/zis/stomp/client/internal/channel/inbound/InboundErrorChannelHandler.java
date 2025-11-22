@@ -4,6 +4,14 @@ import org.schlunzis.zis.stomp.client.OnErrorConsumer;
 import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
 
+/// Inbound channel handler for processing ERROR frames.
+///
+/// This handler intercepts ERROR frames.
+/// It then passes the error message and the frame to a configured [OnErrorConsumer] for further processing.
+/// The consumer is usually set by the user in the [org.schlunzis.zis.stomp.client.StompClientBuilder].
+///
+/// @see org.schlunzis.zis.stomp.client.StompClientBuilder
+/// @see org.schlunzis.zis.stomp.client.StompClientFactory
 public class InboundErrorChannelHandler extends AbstractInboundChannelHandler {
 
     private final OnErrorConsumer onErrorConsumer;

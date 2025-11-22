@@ -4,6 +4,11 @@ import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
 import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
 
+/// Inbound channel handler for processing RECEIPT frames.
+///
+/// Frames with the RECEIPT command are passed to the [ReceiptManager] for handling.
+///
+/// @see ReceiptManager
 public class ReceiptInboundChannelHandler extends AbstractInboundChannelHandler {
 
     private final ReceiptManager receiptManager;
