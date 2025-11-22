@@ -9,6 +9,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+/// This class is responsible for extracting subscription information from objects
+/// annotated with [StompSubscriber] and [Topic] annotations.
+///
+/// It creates [StompSubscription] instances for each annotated method in the subscriber object.
+///
+/// @see SubscriberInvoker
+/// @see SubscriptionManager
+/// @see StompSubscriber
+/// @see Topic
 final class AnnotatedSubscriberHandler {
 
     private final SubscriptionManager subscriptionManager;

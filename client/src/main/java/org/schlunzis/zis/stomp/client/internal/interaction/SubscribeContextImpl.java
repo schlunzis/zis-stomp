@@ -4,6 +4,11 @@ import org.schlunzis.zis.stomp.client.SubscribeContext;
 
 import java.util.function.Consumer;
 
+/// This internal class provides the implementation for the [SubscribeContext] used to subscribe to a destination.
+///
+/// The public part of the API is defined by the [SubscribeContext] interface.
+///
+/// @see org.schlunzis.zis.stomp.client.StompClient#subscribe(SubscribeContext)
 public final class SubscribeContextImpl<T> extends AbstractInteractionContext<SubscribeContext<T>> implements SubscribeContext<T> {
 
     private final String destination;

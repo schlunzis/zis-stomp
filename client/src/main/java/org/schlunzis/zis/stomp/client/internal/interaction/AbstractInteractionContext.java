@@ -10,9 +10,18 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+/// This abstract class provides a base implementation for interaction contexts used in STOMP client operations.
+///
+/// It provides common functionality for managing headers, receipts and awaiting the interactions completion.
+///
+/// @param <T> The type of the interaction context, allowing for fluent method chaining.
 public abstract sealed class AbstractInteractionContext<T> implements InteractionContext<T>
         permits EmptyInteractionContext, SendContextImpl, SubscribeContextImpl {
 
+    /// Additional headers to be included in the STOMP frame.
+    ///
+    /// @see InteractionContext#header(String, String)
+    /// @see InteractionContext#headers()
     protected final Headers headers = new HeadersImpl();
 
     @Nullable

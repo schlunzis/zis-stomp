@@ -1,6 +1,7 @@
 package org.schlunzis.zis.stomp.client.internal;
 
 import org.schlunzis.zis.stomp.client.ReceiptPolicy;
+import org.schlunzis.zis.stomp.client.StompClientBuilder;
 import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
@@ -27,6 +28,11 @@ public final class ReceiptManager {
         this.receiptPolicy = receiptPolicy;
     }
 
+    /// Attaches a receipt header to the given frame builder if the receipt policy
+    /// is enabled for the command of the frame.
+    ///
+    /// @param frameBuilder the frame builder to attach the receipt header to
+    /// @return an optional containing the CountDownLatch if a receipt was attached, or empty
     public Optional<CountDownLatch> attachReceiptIfPolicyEnabled(FrameBuilder frameBuilder) {
         Command command = frameBuilder.command();
         return switch (command) {
@@ -70,6 +76,7 @@ public final class ReceiptManager {
     /// It looks up the corresponding latch and counts it down.
     ///
     /// @param frame the `RECEIPT` frame
+    /// @see org.schlunzis.zis.stomp.client.internal.channel.inbound.ReceiptInboundChannelHandler
     public void handleReceipt(Frame frame) {
         UUID receiptId;
         try {
@@ -87,10 +94,15 @@ public final class ReceiptManager {
         }
     }
 
+    /// Returns the receipt timeout duration.
+    ///
+    /// @return the receipt timeout duration
+    /// @see StompClientBuilder#receiptTimeout()
     public Duration receiptTimeout() {
         return receiptTimeout;
     }
 
+    /// Clears all resources held by the ReceiptManager.
     public void clear() {
         receiptLatches.clear();
     }
