@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+/// Implementation of the [Headers] interface using a LinkedHashMap to maintain insertion order.
 public final class HeadersImpl extends LinkedHashMap<String, List<String>>
         implements Headers {
 

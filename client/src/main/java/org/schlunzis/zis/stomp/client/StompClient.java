@@ -44,6 +44,7 @@ public interface StompClient extends AutoCloseable {
     ///
     /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
     ///
+    /// @return a [CompletableFuture] that completes when the connection is established or fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
     CompletableFuture<Void> connect();
@@ -61,6 +62,7 @@ public interface StompClient extends AutoCloseable {
     ///
     /// @param login    the login username
     /// @param passcode the passcode (password)
+    /// @return a [CompletableFuture] that completes when the connection is established or fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
     CompletableFuture<Void> connect(String login, String passcode);
@@ -74,8 +76,10 @@ public interface StompClient extends AutoCloseable {
     ///
     /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
     ///
-    /// @param login    the login username
-    /// @param passcode the passcode (password)
+    /// @param login                the login username
+    /// @param passcode             the passcode (password)
+    /// @param authenticationMethod the authentication method to use
+    /// @return a [CompletableFuture] that completes when the connection is established or fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
     CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod);
@@ -85,7 +89,7 @@ public interface StompClient extends AutoCloseable {
     ///
     /// This method is a shorthand for:
     /// ```java
-    /// send(SendContext.create(destination, body)
+    /// stompClient.send(SendContext.create(destination, body)
     ///     .header("content-type", "text/plain;charset=UTF-8"));
     ///```
     ///
@@ -105,7 +109,7 @@ public interface StompClient extends AutoCloseable {
     /// This method is a shorthand for:
     ///
     /// ```java
-    /// send(SendContext.create(destination, body));
+    /// stompClient.send(SendContext.create(destination, body));
     ///```
     ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
@@ -126,7 +130,7 @@ public interface StompClient extends AutoCloseable {
     /// Usage could look like this:
     ///
     /// ```java
-    /// send(SendContext.create(destination, body)
+    /// stompClient.send(SendContext.create(destination, body)
     ///     .header("custom-header", "value"));
     ///```
     ///
@@ -152,14 +156,13 @@ public interface StompClient extends AutoCloseable {
     ///
     /// This method is a shorthand for:
     /// ```java
-    /// subscribeWith(destination, payloadType, messageHandler)
-    ///     .subscribe();
+    /// stompClient.subscribe(SubscribeContext.create(destination, payloadType, messageHandler));
     ///```
     ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination    the destination to subscribe to
-    /// @param payloadType    the type of the message payload
+    /// @param payloadType    the class of the message payload type
     /// @param messageHandler the handler to process received messages
     /// @param <T>            the type of the message payload
     /// @return a [Subscription] representing the subscription
@@ -174,12 +177,12 @@ public interface StompClient extends AutoCloseable {
     ///
     /// This method allows for additional configuration of the subscription via the returned [SubscribeContext].
     /// It is recommended to call the subscribe method as soon as possible after obtaining the [SubscribeContext].
-    /// Usage should look like this:
+    /// Usage could look like this:
     ///
     /// ```java
-    /// stompClient.subscribeWith("/topic/example", String.class, new Consumer<String>())
-    ///     .header("custom-header", "value")
-    ///     .subscribe();
+    /// SubscribeContext<String> context = SubscribeContext.create("/topic/example",String.class,s -> log.info("Received: " + s))
+    ///   .header("custom-header", "value");
+    /// Subscription sub = stompClient.subscribe(context);
     ///```
     ///
     /// The returned [Subscription] can be used to unsubscribe from the destination using the
@@ -251,6 +254,6 @@ public interface StompClient extends AutoCloseable {
     ///
     /// @return the message converter
     /// @since 1.0.0
-    MessageConverter getMessageConverter();
+    MessageConverter messageConverter();
 
 }

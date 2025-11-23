@@ -22,7 +22,7 @@ public abstract sealed class AbstractInteractionContext<T> implements Interactio
     ///
     /// @see InteractionContext#header(String, String)
     /// @see InteractionContext#headers()
-    protected final Headers headers = new HeadersImpl();
+    private final Headers headers = new HeadersImpl();
 
     @Nullable
     private CountDownLatch receiptLatch;

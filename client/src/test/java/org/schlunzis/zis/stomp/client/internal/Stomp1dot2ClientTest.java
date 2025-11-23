@@ -89,7 +89,7 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("http://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null,
+                subscriptionManager,
                 webSocketClient,
                 inboundChannel,
                 outboundChannel
@@ -110,7 +110,7 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null,
+                subscriptionManager,
                 webSocketClient,
                 inboundChannel,
                 outboundChannel
@@ -128,7 +128,7 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null,
+                subscriptionManager,
                 webSocketClient,
                 inboundChannel,
                 outboundChannel
@@ -147,7 +147,7 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null,
+                subscriptionManager,
                 webSocketClient,
                 inboundChannel,
                 outboundChannel
@@ -168,7 +168,7 @@ class Stomp1dot2ClientTest {
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
                 new StringMessageConverter(),
-                null,
+                subscriptionManager,
                 webSocketClient,
                 inboundChannel,
                 outboundChannel
@@ -210,7 +210,7 @@ class Stomp1dot2ClientTest {
     }
 
     @Test
-    void testGetMessageConverter() throws URISyntaxException {
+    void testMessageConverter() throws URISyntaxException {
         StringMessageConverter messageConverter = new StringMessageConverter();
         Stomp1dot2Client client = new Stomp1dot2Client(
                 new URI("ws://localhost:8080/ws"),
@@ -221,7 +221,7 @@ class Stomp1dot2ClientTest {
                 outboundChannel
         );
 
-        assertSame(messageConverter, client.getMessageConverter());
+        assertSame(messageConverter, client.messageConverter());
     }
 
     @Test

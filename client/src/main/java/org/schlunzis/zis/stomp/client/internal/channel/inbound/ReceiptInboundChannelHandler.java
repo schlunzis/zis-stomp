@@ -9,7 +9,7 @@ import org.schlunzis.zis.stomp.client.protocol.Frame;
 /// Frames with the RECEIPT command are passed to the [ReceiptManager] for handling.
 ///
 /// @see ReceiptManager
-public class ReceiptInboundChannelHandler extends AbstractInboundChannelHandler {
+public final class ReceiptInboundChannelHandler extends AbstractInboundChannelHandler {
 
     private final ReceiptManager receiptManager;
 

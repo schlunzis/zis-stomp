@@ -20,6 +20,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+/// This class implements a STOMP 1.2 client that can connect to a STOMP server over WebSocket,
+/// send messages, subscribe to destinations, and handle disconnections.
 public final class Stomp1dot2Client implements StompClient {
 
     private static final Logger log = LoggerFactory.getLogger(Stomp1dot2Client.class);
@@ -33,7 +35,8 @@ public final class Stomp1dot2Client implements StompClient {
     private final OutboundChannel outboundChannel;
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
-    private final Lock mutex = new ReentrantLock();
+    /// A mutex to synchronize connect and disconnect operations.
+    private final Lock connectDisconnectMutex = new ReentrantLock();
 
     public Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, SubscriptionManager subscriptionManager, WebSocketClient webSocketClient,
                             InboundChannel inboundChannel, OutboundChannel outboundChannel
@@ -79,7 +82,7 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     private void doConnect(FrameBuilder connectFrame, Map<String, List<String>> connectHeaders) throws ConnectionException {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             if (connectionState.get() != ConnectionState.UNUSED) {
                 throw new IllegalStateException("Client has already connected before. Current state: " + connectionState.get());
@@ -97,7 +100,7 @@ public final class Stomp1dot2Client implements StompClient {
             doClose();
             throw new ConnectionException(e);
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
@@ -106,7 +109,7 @@ public final class Stomp1dot2Client implements StompClient {
         String version = headers.getFirst("version");
         if (version == null || !version.equals("1.2")) {
             doClose();
-            throw new ConnectionException("Unsupported STOMP version: " + version);
+            throw new ConnectionException("Server responded with unsupported STOMP version: " + version);
         }
     }
 
@@ -171,18 +174,13 @@ public final class Stomp1dot2Client implements StompClient {
         Subscription subscription = subscriptionManager.create(context.destination(),
                 new SubscriberInvoker(messageConverter, context.payloadType(), context.messageHandler()));
 
-        FrameBuilder builder = Frames.subscribe(
-                context.destination(),
-                subscription.id().toString(),
-                "auto"
-        );
-        outboundChannel.handle(builder, context);
+        doSubscribe(subscription);
         return subscription;
     }
 
     @Override
     public void subscribe(Object subscriber) {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             ensureConnected();
             if (subscriptionManager.hasSubscriptionsForSubscriber(subscriber)) {
@@ -190,13 +188,19 @@ public final class Stomp1dot2Client implements StompClient {
             }
 
             Set<StompSubscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
-            subscriptions.forEach(s -> {
-                FrameBuilder subscribeFrame = Frames.subscribe(s.destination(), s.id().toString(), "auto");
-                outboundChannel.handle(subscribeFrame, new EmptyInteractionContext<>());
-            });
+            subscriptions.forEach(this::doSubscribe);
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
+    }
+
+    private void doSubscribe(Subscription subscription) {
+        FrameBuilder subscribeFrame = Frames.subscribe(
+                subscription.destination(),
+                subscription.id().toString(),
+                "auto"
+        );
+        outboundChannel.handle(subscribeFrame, new EmptyInteractionContext<>());
     }
 
     // ############
@@ -216,21 +220,20 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void unsubscribe(Object subscriber) {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             ensureConnected();
-            Set<StompSubscription> subscriptions = subscriptionManager.remove(subscriber);
-            if (subscriptions == null || subscriptions.isEmpty()) {
-                return;
-            }
-            subscriptions.forEach(this::doUnsubscribe);
+            Optional<Set<StompSubscription>> subscriptions = subscriptionManager.remove(subscriber);
+            subscriptions.ifPresent(subs -> subs.forEach(this::doUnsubscribe));
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
     private void doUnsubscribe(Subscription subscription) {
-        FrameBuilder unsubscribeFrame = Frames.unsubscribe(subscription.id().toString());
+        FrameBuilder unsubscribeFrame = Frames.unsubscribe(
+                subscription.id().toString()
+        );
         outboundChannel.handle(unsubscribeFrame, new EmptyInteractionContext<>());
     }
 
@@ -240,7 +243,7 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void close() {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             if (connectionState.get() != ConnectionState.CONNECTED) {
                 return;
@@ -251,20 +254,21 @@ public final class Stomp1dot2Client implements StompClient {
             outboundChannel.handle(disconnectFrame, new EmptyInteractionContext<>());
             doClose();
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
     private void doClose() {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             connectionState.set(ConnectionState.DISCONNECTING);
             websocketClient.close();
             connectionState.set(ConnectionState.DISCONNECTED);
             outboundChannel.close();
             inboundChannel.close();
+            subscriptionManager.clear();
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
@@ -273,10 +277,18 @@ public final class Stomp1dot2Client implements StompClient {
     // ##############
 
     @Override
-    public MessageConverter getMessageConverter() {
+    public MessageConverter messageConverter() {
         return messageConverter;
     }
 
+    /// Converts the body object to a string using the message converter if necessary.
+    ///
+    /// If the body is already a string, it is returned as is.
+    ///
+    /// @param body the body object
+    /// @return the body as a string
+    /// @see MessageConverter
+    /// @see StompClientBuilder#messageConverter(MessageConverter)
     private String convertBodyToString(Object body) {
         if (body instanceof String s) {
             return s;

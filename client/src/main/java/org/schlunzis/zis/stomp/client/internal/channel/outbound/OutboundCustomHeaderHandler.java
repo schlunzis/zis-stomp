@@ -9,7 +9,7 @@ import java.util.Map;
 /// Outbound channel handler for adding custom headers to outgoing STOMP frames.
 ///
 /// This handler adds custom headers from the interaction context to the outgoing STOMP frame.
-public class OutboundCustomHeaderHandler extends AbstractOutboundChannelHandler {
+public final class OutboundCustomHeaderHandler extends AbstractOutboundChannelHandler {
 
     @Override
     public void handle(FrameBuilder frameBuilder, InteractionContext<?> context) {

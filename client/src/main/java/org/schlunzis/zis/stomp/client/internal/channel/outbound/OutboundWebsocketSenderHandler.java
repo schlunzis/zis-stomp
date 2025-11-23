@@ -9,7 +9,7 @@ import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
 /// This handler uses a [WebSocketClient] to send the built STOMP frames.
 ///
 /// @see WebSocketClient
-public class OutboundWebsocketSenderHandler extends AbstractOutboundChannelHandler {
+public final class OutboundWebsocketSenderHandler extends AbstractOutboundChannelHandler {
 
     private final WebSocketClient webSocketClient;
 

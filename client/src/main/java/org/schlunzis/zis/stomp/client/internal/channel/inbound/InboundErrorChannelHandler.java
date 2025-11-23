@@ -12,7 +12,7 @@ import org.schlunzis.zis.stomp.client.protocol.Frame;
 ///
 /// @see org.schlunzis.zis.stomp.client.StompClientBuilder
 /// @see org.schlunzis.zis.stomp.client.StompClientFactory
-public class InboundErrorChannelHandler extends AbstractInboundChannelHandler {
+public final class InboundErrorChannelHandler extends AbstractInboundChannelHandler {
 
     private final OnErrorConsumer onErrorConsumer;
 

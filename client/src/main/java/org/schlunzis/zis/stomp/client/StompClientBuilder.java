@@ -1,6 +1,7 @@
 package org.schlunzis.zis.stomp.client;
 
 import org.jspecify.annotations.Nullable;
+import org.schlunzis.zis.stomp.client.internal.StompClientFactoryImpl;
 
 import java.net.URI;
 import java.time.Duration;
@@ -20,6 +21,8 @@ public class StompClientBuilder {
     private OnErrorConsumer onErrorConsumer;
     private Duration receiptTimeout = Duration.ofSeconds(10);
     private ReceiptPolicy receiptPolicy = ReceiptPolicy.none();
+    @Nullable
+    private StompClientFactory stompClientFactory;
 
     /// Creates a new STOMP client builder.
     ///
@@ -41,11 +44,15 @@ public class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured STOMP endpoint URI.
+    ///
+    /// @return the STOMP endpoint URI, or null if not set
+    /// @since 1.0.0
     public @Nullable URI endpoint() {
         return endpoint;
     }
 
-    /// Sets the message converter to be used by the client. If not set, the builder will attempt to
+    /// Sets the message converter to be used by the client. If not set, the [StompClientFactory] will attempt to
     /// create a suitable MessageConverter automatically.
     ///
     /// It will first look for a Jackson 3 ObjectMapper, then for a Jackson 2 ObjectMapper. If one of them is found,
@@ -60,6 +67,15 @@ public class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured message converter.
+    ///
+    /// Note that the message converter may also be created automatically by the [StompClientFactory]
+    /// if not set explicitly. In that case, this method will return null.
+    /// You can access the created message converter from the constructed StompClient instance via
+    /// [StompClient#messageConverter()].
+    ///
+    /// @return the message converter, or null if not set
+    /// @since 1.0.0
     public @Nullable MessageConverter messageConverter() {
         return messageConverter;
     }
@@ -89,6 +105,10 @@ public class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured error consumer.
+    ///
+    /// @return the error consumer, or null if not set
+    /// @since 1.0.0
     public @Nullable OnErrorConsumer onErrorConsumer() {
         return onErrorConsumer;
     }
@@ -107,6 +127,10 @@ public class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured receipt timeout duration.
+    ///
+    /// @return the receipt timeout duration
+    /// @since 1.0.0
     public Duration receiptTimeout() {
         return receiptTimeout;
     }
@@ -124,8 +148,35 @@ public class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured receipt policy.
+    ///
+    /// @return the receipt policy
+    /// @since 1.0.0
     public ReceiptPolicy receiptPolicy() {
         return receiptPolicy;
+    }
+
+    /// Sets a custom [StompClientFactory] to be used for creating the client instance.
+    ///
+    /// If this is not set, a default factory implementation will be used.
+    ///
+    /// @param stompClientFactory the STOMP client factory
+    /// @return the builder instance
+    /// @since 1.0.0
+    public StompClientBuilder stompClientFactory(StompClientFactory stompClientFactory) {
+        Objects.requireNonNull(stompClientFactory, "stompClientFactory must not be null");
+        this.stompClientFactory = stompClientFactory;
+        return this;
+    }
+
+    /// Returns the configured STOMP client factory.
+    ///
+    /// If no factory was set, this method returns null.
+    ///
+    /// @return the STOMP client factory, or null if not set
+    /// @since 1.0.0
+    public @Nullable StompClientFactory stompClientFactory() {
+        return stompClientFactory;
     }
 
     /// Builds the [StompClient] instance.
@@ -136,7 +187,10 @@ public class StompClientBuilder {
     /// @throws IllegalStateException if the endpoint is not set
     /// @since 1.0.0
     public StompClient build() throws IllegalStateException {
-        return new StompClientFactory().create(this);
+        StompClientFactory factory = stompClientFactory != null
+                ? stompClientFactory
+                : new StompClientFactoryImpl();
+        return factory.create(this);
     }
 
 }

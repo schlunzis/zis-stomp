@@ -5,7 +5,12 @@ import jakarta.websocket.ClientEndpointConfig;
 import java.util.List;
 import java.util.Map;
 
-class ConnectHeadersConfigurator extends ClientEndpointConfig.Configurator {
+/// Configurator to add custom headers to the WebSocket connection request.
+///
+/// This is primarily used to authenticate the WebSocket connection with the STOMP server via HTTP Basic.
+///
+/// @see JakartaWebsocketClient#connect(Map)
+final class ConnectHeadersConfigurator extends ClientEndpointConfig.Configurator {
 
     private final Map<String, List<String>> additionalHeaders;
 

@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 ///
 /// @see InboundChannel
 /// @see org.schlunzis.zis.stomp.client.StompClientFactory
-public class InboundConnectedChannelHandler extends AbstractInboundChannelHandler {
+public final class InboundConnectedChannelHandler extends AbstractInboundChannelHandler {
 
     @Nullable
     private Consumer<Frame> connectedFrameConsumer;

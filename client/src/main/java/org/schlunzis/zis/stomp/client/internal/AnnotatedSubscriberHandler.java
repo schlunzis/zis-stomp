@@ -32,6 +32,10 @@ final class AnnotatedSubscriberHandler {
         return create(subscriber).toList();
     }
 
+    /// Creates all subscriptions for the given subscriber object.
+    ///
+    /// @param subscriber The subscriber object containing annotated methods.
+    /// @return A stream of [StompSubscription] instances created from the annotated methods.
     private Stream<StompSubscription> create(Object subscriber) {
         final SubscriberConfiguration config = getSubscriberConfiguration(subscriber);
         final String destinationPrefix = config.destinationPrefix();
@@ -52,6 +56,11 @@ final class AnnotatedSubscriberHandler {
                 });
     }
 
+    /// Retrieves the subscriber configuration from the [StompSubscriber] annotation.
+    /// If the annotation is not present, default configuration values are used.
+    ///
+    /// @param subscriber The subscriber object.
+    /// @return The [SubscriberConfiguration] extracted from the annotation or default values.
     private SubscriberConfiguration getSubscriberConfiguration(Object subscriber) {
         Class<?> clazz = subscriber.getClass();
         StompSubscriber annotation = clazz.getAnnotation(StompSubscriber.class);
@@ -63,6 +72,12 @@ final class AnnotatedSubscriberHandler {
         );
     }
 
+    /// Retrieves the payload type from the method's parameter.
+    ///
+    /// The method must have exactly one parameter.
+    ///
+    /// @param method The method to inspect.
+    /// @return The class of the method's single parameter.
     private Class<?> getPayloadType(Method method) {
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length != 1) {
@@ -71,6 +86,9 @@ final class AnnotatedSubscriberHandler {
         return parameterTypes[0];
     }
 
+    /// Configuration data for a subscriber extracted from the [StompSubscriber] annotation.
+    ///
+    /// @param destinationPrefix The prefix to be added to all subscription destinations.
     private record SubscriberConfiguration(
             String destinationPrefix
     ) {

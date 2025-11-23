@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 /// @see ReceiptManager
 /// @see OutboundChannel
 /// @see org.schlunzis.zis.stomp.client.internal.interaction.AbstractInteractionContext
-public class ReceiptOutboundChannelHandler extends AbstractOutboundChannelHandler {
+public final class ReceiptOutboundChannelHandler extends AbstractOutboundChannelHandler {
 
     private final ReceiptManager receiptManager;
 

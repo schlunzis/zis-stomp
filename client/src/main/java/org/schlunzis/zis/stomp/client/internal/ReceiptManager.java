@@ -15,6 +15,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+/// This class manages the attachment and handling of receipts for STOMP frames.
+///
+/// A receipt id produced by this manager is always a UUID.
+/// When a frame should be sent with a receipt request, a unique receipt id is generated,
+/// attached to the frame, and a CountDownLatch is created and stored in a map with the receipt id as the key.
+/// When a RECEIPT frame is received, the manager looks up the corresponding latch and counts it down,
+/// allowing the sender to proceed.
+///
+/// Weather or not a receipt should be requested for a frame is determined by the configured ReceiptPolicy.
+///
+/// @see ReceiptPolicy
+/// @see StompClientBuilder#receiptPolicy()
 public final class ReceiptManager {
 
     private static final Logger log = LoggerFactory.getLogger(ReceiptManager.class);

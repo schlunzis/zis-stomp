@@ -5,8 +5,8 @@ import org.schlunzis.zis.stomp.client.internal.interaction.SendContextImpl;
 
 /// Context for sending a STOMP message.
 ///
-/// An instance of this interface can be obtained via [SendContext#create].
-/// It allows setting various parameters for the STOMP message to be sent, such as headers and body.
+/// An instance of this interface can be obtained via [SendContext#create(String, Object)].
+/// It allows setting various parameters for the STOMP message to be sent, such as headers.
 /// After its configuration, the [SendContext] can be passed to the [StompClient#send(SendContext)] method to send the
 /// message.
 ///
@@ -14,6 +14,14 @@ import org.schlunzis.zis.stomp.client.internal.interaction.SendContextImpl;
 /// @since 1.0.0
 public non-sealed interface SendContext extends InteractionContext<SendContext> {
 
+    /// Creates a new [SendContext] for sending a STOMP message.
+    ///
+    /// Required parameters are passed here to make sure they are always set.
+    /// Optional parameters can be set via the methods of the returned instance.
+    ///
+    /// @param destination the destination to which the message will be sent
+    /// @param body        the body of the message
+    /// @return a new [SendContext] instance
     static SendContext create(String destination, Object body) {
         return new SendContextImpl(destination, body);
     }

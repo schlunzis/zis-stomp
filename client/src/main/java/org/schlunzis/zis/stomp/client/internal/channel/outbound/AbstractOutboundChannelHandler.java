@@ -14,7 +14,8 @@ import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 /// They must call the superclass method to ensure that the next handler in the chain is also closed.
 ///
 /// @see OutboundChannel
-public abstract class AbstractOutboundChannelHandler {
+public abstract sealed class AbstractOutboundChannelHandler
+        permits OutboundCustomHeaderHandler, OutboundWebsocketSenderHandler, ReceiptOutboundChannelHandler {
 
     @Nullable
     private AbstractOutboundChannelHandler next;

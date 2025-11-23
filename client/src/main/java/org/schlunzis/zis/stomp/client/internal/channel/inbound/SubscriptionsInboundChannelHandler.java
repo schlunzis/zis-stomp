@@ -9,7 +9,7 @@ import org.schlunzis.zis.stomp.client.protocol.Frame;
 /// Frames with the MESSAGE command are passed to the [SubscriptionManager] for handling.
 ///
 /// @see SubscriptionManager
-public class SubscriptionsInboundChannelHandler extends AbstractInboundChannelHandler {
+public final class SubscriptionsInboundChannelHandler extends AbstractInboundChannelHandler {
 
     private final SubscriptionManager subscriptionManager;
 
