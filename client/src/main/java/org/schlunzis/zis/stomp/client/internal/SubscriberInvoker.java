@@ -6,6 +6,7 @@ import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -19,7 +20,7 @@ import java.util.function.Consumer;
 /// @see SubscriptionManager
 /// @see org.schlunzis.zis.stomp.client.StompClient#subscribe(SubscribeContext)
 /// @see org.schlunzis.zis.stomp.client.StompClient#subscribe(Object)
-public final class SubscriberInvoker {
+public final class SubscriberInvoker<T> {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriberInvoker.class);
 
@@ -37,7 +38,7 @@ public final class SubscriberInvoker {
     /// @param payloadType      The expected payload type for the subscriber method.
     /// @param method           The method to invoke on message receipt.
     /// @param target           The target object on which to invoke the method.
-    public SubscriberInvoker(MessageConverter messageConverter, Class<?> payloadType, Method method, Object target) {
+    public SubscriberInvoker(MessageConverter messageConverter, Class<T> payloadType, Method method, Object target) {
         this.messageConverter = messageConverter;
         this.payloadType = payloadType;
         this.method = method;
@@ -49,7 +50,7 @@ public final class SubscriberInvoker {
     /// @param messageConverter The message converter to use for payload conversion.
     /// @param payloadType      The expected payload type for the subscriber method.
     /// @param consumer         The consumer to invoke on message receipt.
-    public SubscriberInvoker(MessageConverter messageConverter, Class<?> payloadType, Consumer<?> consumer) {
+    public SubscriberInvoker(MessageConverter messageConverter, Class<T> payloadType, Consumer<T> consumer) {
         this.messageConverter = messageConverter;
         this.payloadType = payloadType;
         try {
@@ -74,8 +75,10 @@ public final class SubscriberInvoker {
 
         try {
             method.invoke(target, payload);
-        } catch (Exception e) {
+        } catch (IllegalAccessException e) {
             log.error("Could not invoke subscriber method: {}", e.getMessage(), e);
+        } catch (InvocationTargetException e) {
+            log.error("Exception thrown by subscriber method: {}", e.getTargetException().getMessage(), e.getTargetException());
         }
     }
 

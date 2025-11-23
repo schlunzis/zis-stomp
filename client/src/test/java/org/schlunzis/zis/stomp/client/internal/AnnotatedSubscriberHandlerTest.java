@@ -103,4 +103,22 @@ class AnnotatedSubscriberHandlerTest {
         assertEquals(0, subscriber.latch2.getCount());
     }
 
+    @Test
+    void testMethodWithInvalidParameterCount() {
+        class InvalidSubscriber {
+            @Topic("/invalid")
+            public void invalidMethod(String msg, Integer extra) {
+                fail("This method should not be invoked");
+            }
+        }
+
+        InvalidSubscriber subscriber = new InvalidSubscriber();
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> handler.handle(subscriber));
+
+        String expectedMessage = "Method invalidMethod must have exactly one parameter";
+        String actualMessage = exception.getMessage();
+
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
 }

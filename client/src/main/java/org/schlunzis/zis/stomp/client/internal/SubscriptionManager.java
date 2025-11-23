@@ -54,7 +54,7 @@ public class SubscriptionManager {
     /// @param destination The STOMP destination to subscribe to.
     /// @param invoker     The subscriber invoker to handle incoming messages.
     /// @return The created [StompSubscription] instance.
-    public StompSubscription create(String destination, SubscriberInvoker invoker) {
+    public StompSubscription create(String destination, SubscriberInvoker<?> invoker) {
         StompSubscription subscription = new StompSubscription(
                 this,
                 UUID.randomUUID(),

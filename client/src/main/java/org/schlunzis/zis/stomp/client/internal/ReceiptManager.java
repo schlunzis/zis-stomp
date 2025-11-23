@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +37,8 @@ public final class ReceiptManager {
     private final ReceiptPolicy receiptPolicy;
 
     public ReceiptManager(Duration receiptTimeout, ReceiptPolicy receiptPolicy) {
+        Objects.requireNonNull(receiptTimeout, "receiptTimeout must not be null");
+        Objects.requireNonNull(receiptPolicy, "receiptPolicy must not be null");
         this.receiptTimeout = receiptTimeout;
         this.receiptPolicy = receiptPolicy;
     }
@@ -92,13 +95,14 @@ public final class ReceiptManager {
     public void handleReceipt(Frame frame) {
         UUID receiptId;
         try {
-            receiptId = UUID.fromString(frame.headers().get("receipt-id").getFirst());
-        } catch (IllegalArgumentException _) {
+            String stringId = Objects.requireNonNull(frame.headers().getFirst("receipt-id"));
+            receiptId = UUID.fromString(stringId);
+        } catch (IllegalArgumentException | NullPointerException _) {
             log.warn("Received RECEIPT with invalid receipt id: {}", frame);
             return;
         }
 
-        CountDownLatch latch = receiptLatches.get(receiptId);
+        CountDownLatch latch = receiptLatches.remove(receiptId);
         if (latch != null) {
             latch.countDown();
         } else {

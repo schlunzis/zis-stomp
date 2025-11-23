@@ -47,7 +47,7 @@ final class AnnotatedSubscriberHandler {
                     final String fullDestination = destinationPrefix + annotation.value();
                     final Class<?> payloadType = getPayloadType(method);
 
-                    return subscriptionManager.create(fullDestination, new SubscriberInvoker(
+                    return subscriptionManager.create(fullDestination, new SubscriberInvoker<>(
                             messageConverter,
                             payloadType,
                             method,

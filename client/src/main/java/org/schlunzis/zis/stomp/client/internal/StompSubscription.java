@@ -14,6 +14,6 @@ public record StompSubscription(
         SubscriptionManager subscriptionManager,
         UUID id,
         String destination,
-        SubscriberInvoker invoker
+        SubscriberInvoker<?> invoker
 ) implements Subscription {
 }

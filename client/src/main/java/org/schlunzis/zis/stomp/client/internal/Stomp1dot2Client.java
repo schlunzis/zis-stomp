@@ -172,7 +172,7 @@ public final class Stomp1dot2Client implements StompClient {
         ensureConnected();
 
         Subscription subscription = subscriptionManager.create(context.destination(),
-                new SubscriberInvoker(messageConverter, context.payloadType(), context.messageHandler()));
+                new SubscriberInvoker<>(messageConverter, context.payloadType(), context.messageHandler()));
 
         doSubscribe(subscription);
         return subscription;
