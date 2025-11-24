@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.client.internal;
 
+import org.jspecify.annotations.NullUnmarked;
+import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.MessageConverter;
 import org.schlunzis.zis.stomp.client.StompSubscriber;
 import org.schlunzis.zis.stomp.client.Topic;
@@ -20,12 +22,17 @@ import java.util.stream.Stream;
 /// @see Topic
 final class AnnotatedSubscriberHandler {
 
-    private final SubscriptionManager subscriptionManager;
     private final MessageConverter messageConverter;
 
-    AnnotatedSubscriberHandler(SubscriptionManager subscriptionManager, MessageConverter messageConverter) {
-        this.subscriptionManager = subscriptionManager;
+    @Nullable
+    private SubscriptionManager subscriptionManager;
+
+    AnnotatedSubscriberHandler(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
+    }
+
+    void subscriptionManager(SubscriptionManager subscriptionManager) {
+        this.subscriptionManager = subscriptionManager;
     }
 
     List<StompSubscription> handle(Object subscriber) {

@@ -22,9 +22,9 @@ class AnnotatedSubscriberHandlerTest {
     @BeforeEach
     void setUp() {
         MessageConverter messageConverter = new StringMessageConverter();
-        subscriptionManager = new SubscriptionManager(messageConverter);
-
-        handler = new AnnotatedSubscriberHandler(subscriptionManager, messageConverter);
+        handler = new AnnotatedSubscriberHandler(messageConverter);
+        subscriptionManager = new SubscriptionManager(handler);
+        handler.subscriptionManager(subscriptionManager);
     }
 
     @Test

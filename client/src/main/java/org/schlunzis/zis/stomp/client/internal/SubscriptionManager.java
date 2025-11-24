@@ -1,6 +1,5 @@
 package org.schlunzis.zis.stomp.client.internal;
 
-import org.schlunzis.zis.stomp.client.MessageConverter;
 import org.schlunzis.zis.stomp.client.Subscription;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.slf4j.Logger;
@@ -29,8 +28,8 @@ public class SubscriptionManager {
 
     private final AnnotatedSubscriberHandler annotatedSubscriberHandler;
 
-    public SubscriptionManager(MessageConverter messageConverter) {
-        this.annotatedSubscriberHandler = new AnnotatedSubscriberHandler(this, messageConverter);
+    SubscriptionManager(AnnotatedSubscriberHandler annotatedSubscriberHandler) {
+        this.annotatedSubscriberHandler = annotatedSubscriberHandler;
     }
 
     /// Creates subscriptions for all annotated methods in the given subscriber object.
@@ -40,7 +39,7 @@ public class SubscriptionManager {
     ///
     /// @param subscriber The subscriber object containing annotated methods.
     /// @return A set of [StompSubscription] instances created from the annotated methods.
-    public Set<StompSubscription> createAnnotatedSubscriptions(Object subscriber) {
+    Set<StompSubscription> createAnnotatedSubscriptions(Object subscriber) {
         Set<StompSubscription> s = new HashSet<>(annotatedSubscriberHandler.handle(subscriber));
         subscriberSubscriptions.put(subscriber, s);
         return s;
@@ -54,7 +53,7 @@ public class SubscriptionManager {
     /// @param destination The STOMP destination to subscribe to.
     /// @param invoker     The subscriber invoker to handle incoming messages.
     /// @return The created [StompSubscription] instance.
-    public StompSubscription create(String destination, SubscriberInvoker<?> invoker) {
+    StompSubscription create(String destination, SubscriberInvoker<?> invoker) {
         StompSubscription subscription = new StompSubscription(
                 this,
                 UUID.randomUUID(),
@@ -86,7 +85,7 @@ public class SubscriptionManager {
             } else {
                 log.warn("No subscription found for id {}", subscriptionId);
             }
-        } catch (ClassCastException e) {
+        } catch (ClassCastException | IllegalArgumentException e) {
             log.error("Failed to cast subscription for id {}: {}", subscriptionId, e.getMessage());
         }
     }

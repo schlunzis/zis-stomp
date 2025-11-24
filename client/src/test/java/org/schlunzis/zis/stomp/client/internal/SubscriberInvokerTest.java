@@ -45,7 +45,7 @@ class SubscriberInvokerTest {
 
         invoker.invoke(frame);
 
-        if (!latch.await(1, TimeUnit.SECONDS)) {
+        if (!latch.await(1, TimeUnit.MILLISECONDS)) {
             fail();
         }
     }
@@ -69,7 +69,7 @@ class SubscriberInvokerTest {
 
         invoker.invoke(frame);
 
-        if (!latch.await(1, TimeUnit.SECONDS)) {
+        if (!latch.await(1, TimeUnit.MILLISECONDS)) {
             fail();
         }
 
@@ -99,9 +99,67 @@ class SubscriberInvokerTest {
 
         invoker.invoke(frame);
 
-        if (!latch.await(1, TimeUnit.SECONDS)) {
+        if (!latch.await(1, TimeUnit.MILLISECONDS)) {
             fail();
         }
+    }
+
+    @Test
+    void testMethodThrowingException() {
+        SubscriberInvoker<String> invoker = new SubscriberInvoker<>(
+                messageConverter,
+                String.class,
+                s -> {
+                    throw new RuntimeException("Simulated exception");
+                }
+        );
+
+        Frame frame = Frame.builder()
+                .command(Command.MESSAGE)
+                .body("test")
+                .build();
+
+        assertDoesNotThrow(() -> invoker.invoke(frame));
+    }
+
+    @Test
+    void testInvalidMethodInvocation() throws NoSuchMethodException {
+        SubscriberInvoker<String> invoker = new SubscriberInvoker<>(
+                messageConverter,
+                String.class,
+                TestSubscriber.class.getMethod("onMessage", String.class),
+                new Object() // Invalid target object
+        );
+
+        Frame frame = Frame.builder()
+                .command(Command.MESSAGE)
+                .body("test")
+                .build();
+
+        assertDoesNotThrow(() -> invoker.invoke(frame));
+    }
+
+    @Test
+    void testInaccessibleMethodInvocation() throws NoSuchMethodException {
+        class PrivateSubscriber {
+            private void privateOnMessage(String ignored) {
+                fail();
+            }
+        }
+
+        SubscriberInvoker<String> invoker = new SubscriberInvoker<>(
+                messageConverter,
+                String.class,
+                PrivateSubscriber.class.getDeclaredMethod("privateOnMessage", String.class),
+                new PrivateSubscriber()
+        );
+
+        Frame frame = Frame.builder()
+                .command(Command.MESSAGE)
+                .body("test")
+                .build();
+
+        assertDoesNotThrow(() -> invoker.invoke(frame));
     }
 
     record TestPayload(

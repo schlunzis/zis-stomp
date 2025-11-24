@@ -26,7 +26,9 @@ public class StompClientFactoryImpl implements StompClientFactory {
     public StompClient create(StompClientBuilder builder) {
         final URI endpoint = extractEndpoint(builder);
         final MessageConverter messageConverter = extractMessageConverter(builder);
-        final SubscriptionManager subscriptionManager = new SubscriptionManager(messageConverter);
+        final AnnotatedSubscriberHandler annotatedSubscriberHandler = new AnnotatedSubscriberHandler(messageConverter);
+        final SubscriptionManager subscriptionManager = new SubscriptionManager(annotatedSubscriberHandler);
+        annotatedSubscriberHandler.subscriptionManager(subscriptionManager);
         final ReceiptManager receiptManager = new ReceiptManager(
                 builder.receiptTimeout(),
                 builder.receiptPolicy()

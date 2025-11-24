@@ -75,7 +75,7 @@ public final class SubscriberInvoker<T> {
 
         try {
             method.invoke(target, payload);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | IllegalArgumentException e) {
             log.error("Could not invoke subscriber method: {}", e.getMessage(), e);
         } catch (InvocationTargetException e) {
             log.error("Exception thrown by subscriber method: {}", e.getTargetException().getMessage(), e.getTargetException());
