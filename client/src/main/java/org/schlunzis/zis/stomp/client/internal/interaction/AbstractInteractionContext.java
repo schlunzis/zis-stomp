@@ -2,13 +2,10 @@ package org.schlunzis.zis.stomp.client.internal.interaction;
 
 import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.Headers;
-import org.schlunzis.zis.stomp.client.ReceiptTimeoutException;
+import org.schlunzis.zis.stomp.client.internal.Receiptable;
 import org.schlunzis.zis.stomp.client.protocol.HeadersImpl;
 
-import java.time.Duration;
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /// This abstract class provides a base implementation for interaction contexts used in STOMP client operations.
 ///
@@ -25,9 +22,7 @@ public abstract sealed class AbstractInteractionContext<T> implements Interactio
     private final Headers headers = new HeadersImpl();
 
     @Nullable
-    private CountDownLatch receiptLatch;
-    @Nullable
-    private Duration receiptTimeout;
+    private Receiptable receiptable;
 
     @Override
     public T header(String key, String value) {
@@ -44,26 +39,15 @@ public abstract sealed class AbstractInteractionContext<T> implements Interactio
     }
 
     @Override
-    public void receiptLatch(CountDownLatch countDownLatch) {
-        this.receiptLatch = countDownLatch;
-    }
-
-    @Override
-    public void receiptTimeout(Duration duration) {
-        this.receiptTimeout = duration;
+    public void receiptable(Receiptable receiptable) {
+        this.receiptable = receiptable;
     }
 
     @Override
     public void awaitCompletion() {
-        if (receiptLatch != null) {
-            if (receiptTimeout == null) {
-                throw new IllegalStateException("No timeout duration provided"); // this should never happen
-            }
+        if (receiptable != null) {
             try {
-                boolean completed = receiptLatch.await(receiptTimeout.toMillis(), TimeUnit.MILLISECONDS);
-                if (!completed) {
-                    throw new ReceiptTimeoutException("Receipt not received within timeout of " + receiptTimeout);
-                }
+                receiptable.await();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Thread interrupted while waiting for receipt", e);

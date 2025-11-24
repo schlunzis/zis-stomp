@@ -32,7 +32,7 @@ public final class ReceiptManager {
 
     private static final Logger log = LoggerFactory.getLogger(ReceiptManager.class);
 
-    private final Map<UUID, CountDownLatch> receiptLatches = new ConcurrentHashMap<>();
+    private final Map<UUID, Receiptable> receiptables = new ConcurrentHashMap<>();
     private final Duration receiptTimeout;
     private final ReceiptPolicy receiptPolicy;
 
@@ -48,7 +48,7 @@ public final class ReceiptManager {
     ///
     /// @param frameBuilder the frame builder to attach the receipt header to
     /// @return an optional containing the CountDownLatch if a receipt was attached, or empty
-    public Optional<CountDownLatch> attachReceiptIfPolicyEnabled(FrameBuilder frameBuilder) {
+    public Optional<Receiptable> attachReceiptIfPolicyEnabled(FrameBuilder frameBuilder) {
         Command command = frameBuilder.command();
         return switch (command) {
             case SEND -> {
@@ -79,12 +79,13 @@ public final class ReceiptManager {
         };
     }
 
-    private CountDownLatch attachReceipt(FrameBuilder frameBuilder) {
+    private Receiptable attachReceipt(FrameBuilder frameBuilder) {
         UUID receiptId = UUID.randomUUID();
         frameBuilder.header("receipt", receiptId.toString());
         CountDownLatch latch = new CountDownLatch(1);
-        receiptLatches.put(receiptId, latch);
-        return latch;
+        Receiptable receiptable = new Receiptable(receiptTimeout, latch);
+        receiptables.put(receiptId, receiptable);
+        return receiptable;
     }
 
     /// Handles an incoming `RECEIPT` frame.
@@ -102,9 +103,9 @@ public final class ReceiptManager {
             return;
         }
 
-        CountDownLatch latch = receiptLatches.remove(receiptId);
-        if (latch != null) {
-            latch.countDown();
+        Receiptable receiptable = receiptables.remove(receiptId);
+        if (receiptable != null) {
+            receiptable.signal();
         } else {
             log.warn("Received RECEIPT for unknown receipt id: {}", receiptId);
         }
@@ -120,7 +121,7 @@ public final class ReceiptManager {
 
     /// Clears all resources held by the ReceiptManager.
     public void clear() {
-        receiptLatches.clear();
+        receiptables.clear();
     }
 
 }

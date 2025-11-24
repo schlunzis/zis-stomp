@@ -12,7 +12,6 @@ import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,11 +39,10 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(command);
 
-        Optional<CountDownLatch> latch = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        Optional<Receiptable> receiptable = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
 
-        assertTrue(latch.isPresent());
-        assertNotNull(latch.get());
-        assertEquals(1, latch.get().getCount());
+        assertTrue(receiptable.isPresent());
+        assertEquals(1, receiptable.get().latch().getCount());
         Headers headers = frameBuilder.build().headers();
         assertTrue(headers.containsKey("receipt"));
         String receiptId = headers.getFirst("receipt");
@@ -63,9 +61,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(command);
 
-        Optional<CountDownLatch> latch = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        Optional<Receiptable> receiptable = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
 
-        assertTrue(latch.isEmpty());
+        assertTrue(receiptable.isEmpty());
         Headers headers = frameBuilder.build().headers();
         assertFalse(headers.containsKey("receipt"));
         String receiptId = headers.getFirst("receipt");
@@ -81,9 +79,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(Command.CONNECTED); // A command not legible for receipts
 
-        Optional<CountDownLatch> latch = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        Optional<Receiptable> receiptable = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
 
-        assertTrue(latch.isEmpty());
+        assertTrue(receiptable.isEmpty());
         Headers headers = frameBuilder.build().headers();
         assertFalse(headers.containsKey("receipt"));
         String receiptId = headers.getFirst("receipt");
@@ -99,9 +97,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(Command.SEND);
 
-        Optional<CountDownLatch> latchOpt = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
-        assertTrue(latchOpt.isPresent());
-        CountDownLatch latch = latchOpt.get();
+        Optional<Receiptable> receiptableOptional = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        assertTrue(receiptableOptional.isPresent());
+        Receiptable receiptable = receiptableOptional.get();
 
         Headers headers = frameBuilder.build().headers();
         String receiptId = headers.getFirst("receipt");
@@ -114,7 +112,7 @@ class ReceiptManagerTest {
 
         receiptManager.handleReceipt(receiptFrame);
 
-        assertEquals(0, latch.getCount());
+        assertEquals(0, receiptable.latch().getCount());
     }
 
     @Test
@@ -126,9 +124,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(Command.SEND);
 
-        Optional<CountDownLatch> latchOpt = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
-        assertTrue(latchOpt.isPresent());
-        CountDownLatch latch = latchOpt.get();
+        Optional<Receiptable> receiptableOptional = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        assertTrue(receiptableOptional.isPresent());
+        Receiptable receiptable = receiptableOptional.get();
 
         Headers headers = frameBuilder.build().headers();
         String receiptId = headers.getFirst("receipt");
@@ -141,7 +139,7 @@ class ReceiptManagerTest {
 
         receiptManager.handleReceipt(receiptFrame);
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, receiptable.latch().getCount());
     }
 
     @Test
@@ -153,9 +151,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(Command.SEND);
 
-        Optional<CountDownLatch> latchOpt = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
-        assertTrue(latchOpt.isPresent());
-        CountDownLatch latch = latchOpt.get();
+        Optional<Receiptable> receiptableOptional = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        assertTrue(receiptableOptional.isPresent());
+        Receiptable receiptable = receiptableOptional.get();
 
         Headers headers = frameBuilder.build().headers();
         String receiptId = headers.getFirst("receipt");
@@ -168,7 +166,7 @@ class ReceiptManagerTest {
 
         receiptManager.handleReceipt(receiptFrame);
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, receiptable.latch().getCount());
     }
 
     @Test
@@ -190,9 +188,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(Command.SEND);
 
-        Optional<CountDownLatch> latchOpt = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
-        assertTrue(latchOpt.isPresent());
-        CountDownLatch latch = latchOpt.get();
+        Optional<Receiptable> receiptableOptional = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        assertTrue(receiptableOptional.isPresent());
+        Receiptable receiptable = receiptableOptional.get();
 
         Headers headers = frameBuilder.build().headers();
         String receiptId = headers.getFirst("receipt");
@@ -207,7 +205,7 @@ class ReceiptManagerTest {
 
         receiptManager.handleReceipt(receiptFrame);
 
-        assertEquals(1, latch.getCount());
+        assertEquals(1, receiptable.latch().getCount());
     }
 
     @Test
@@ -219,9 +217,9 @@ class ReceiptManagerTest {
         FrameBuilder frameBuilder = Frame.builder()
                 .command(Command.SEND);
 
-        Optional<CountDownLatch> latchOpt = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
-        assertTrue(latchOpt.isPresent());
-        CountDownLatch latch = latchOpt.get();
+        Optional<Receiptable> receiptableOptional = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        assertTrue(receiptableOptional.isPresent());
+        Receiptable receiptable = receiptableOptional.get();
 
         Headers headers = frameBuilder.build().headers();
         String receiptId = headers.getFirst("receipt");
@@ -233,7 +231,7 @@ class ReceiptManagerTest {
                 .build();
 
         receiptManager.handleReceipt(receiptFrame);
-        assertEquals(0, latch.getCount());
+        assertEquals(0, receiptable.latch().getCount());
 
         assertDoesNotThrow(() -> receiptManager.handleReceipt(receiptFrame));
     }

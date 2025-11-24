@@ -1,11 +1,11 @@
 package org.schlunzis.zis.stomp.client.internal.channel.outbound;
 
 import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
+import org.schlunzis.zis.stomp.client.internal.Receiptable;
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
 import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
 /// Outbound channel handler for attaching receipts to outgoing STOMP frames.
 ///
@@ -28,11 +28,8 @@ public final class ReceiptOutboundChannelHandler extends AbstractOutboundChannel
 
     @Override
     public void handle(FrameBuilder frameBuilder, InteractionContext<?> context) {
-        Optional<CountDownLatch> latch = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
-        latch.ifPresent(l -> {
-            context.receiptLatch(l);
-            context.receiptTimeout(receiptManager.receiptTimeout());
-        });
+        Optional<Receiptable> receiptable = receiptManager.attachReceiptIfPolicyEnabled(frameBuilder);
+        receiptable.ifPresent(context::receiptable);
 
         super.handle(frameBuilder, context);
     }

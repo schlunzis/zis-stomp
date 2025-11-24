@@ -3,9 +3,7 @@ package org.schlunzis.zis.stomp.client.internal.interaction;
 import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.SendContext;
 import org.schlunzis.zis.stomp.client.SubscribeContext;
-
-import java.time.Duration;
-import java.util.concurrent.CountDownLatch;
+import org.schlunzis.zis.stomp.client.internal.Receiptable;
 
 /// This internal interface defines the contract for interaction contexts used in STOMP client operations.
 ///
@@ -33,23 +31,14 @@ public sealed interface InteractionContext<T> permits AbstractInteractionContext
     /// @return the headers
     Headers headers();
 
-    /// Sets the latch to be used for receipt acknowledgment.
+    /// Sets the receiptable containing the latch and timeout for receipt acknowledgment.
     ///
-    /// @param countDownLatch The latch to be counted down upon receipt.
-    /// @see org.schlunzis.zis.stomp.client.internal.ReceiptManager
-    /// @see org.schlunzis.zis.stomp.client.internal.channel.inbound.ReceiptInboundChannelHandler
-    void receiptLatch(CountDownLatch countDownLatch);
-
-    /// Sets the timeout duration for waiting for a receipt acknowledgment.
-    ///
-    /// @param duration The timeout duration.
-    /// @see org.schlunzis.zis.stomp.client.internal.channel.inbound.ReceiptInboundChannelHandler
-    void receiptTimeout(Duration duration);
+    /// @param receiptable The receiptable.
+    void receiptable(Receiptable receiptable);
 
     /// Awaits the completion of the interaction, typically by waiting for a receipt acknowledgment.
     ///
     /// @throws org.schlunzis.zis.stomp.client.ReceiptTimeoutException if the receipt is not received within the
-    ///                                                                specified timeout.
     void awaitCompletion();
 
 }
