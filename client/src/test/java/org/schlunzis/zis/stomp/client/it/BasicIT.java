@@ -6,9 +6,7 @@ import org.schlunzis.zis.stomp.client.StompClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,16 +22,18 @@ class BasicIT {
     }
 
     @Test
-    void simpleSendAndSubscribe() throws InterruptedException {
+    void simpleSendAndSubscribe() throws InterruptedException, ExecutionException, TimeoutException {
         CompletableFuture<Void> future = stompClient.connect();
         future.join();
         CountDownLatch latch = new CountDownLatch(1);
         stompClient.subscribe("/insight/client/BasicIT/simpleSendAndSubscribe", String.class, message -> {
-            if ("received".equals(message))
-                latch.countDown();
-        });
+                    if ("received".equals(message))
+                        latch.countDown();
+                })
+                .get(1, TimeUnit.SECONDS);
 
-        stompClient.send("/server/test/client/BasicIT/simpleSendAndSubscribe", "message");
+        stompClient.send("/server/test/client/BasicIT/simpleSendAndSubscribe", "message")
+                .get(1, TimeUnit.SECONDS);
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         stompClient.close();

@@ -97,11 +97,12 @@ public interface StompClient extends AutoCloseable {
     ///
     /// @param destination the destination to end the message to
     /// @param body        the body of the message
+    /// @return a [CompletableFuture] that completes when the message is sent
     /// @throws IllegalStateException   if the client is not connected
     /// @throws SendException           if sending the message fails
     /// @throws ReceiptTimeoutException if a receipt was requested but not received in time
     /// @since 1.0.0
-    void send(String destination, String body);
+    CompletableFuture<Void> send(String destination, String body);
 
     /// Sends a message to the specified destination with the given body. The body is converted to a string using the
     /// client's configured message converter.
@@ -116,12 +117,13 @@ public interface StompClient extends AutoCloseable {
     ///
     /// @param destination the destination to send the message to
     /// @param body        the body of the message
+    /// @return a [CompletableFuture] that completes when the message is sent
     /// @throws IllegalStateException   if the client is not connected
     /// @throws SendException           if sending the message fails
     /// @throws ConversionException     if the body cannot be converted to a string
     /// @throws ReceiptTimeoutException if a receipt was requested but not received in time
     /// @since 1.0.0
-    void send(String destination, Object body);
+    CompletableFuture<Void> send(String destination, Object body);
 
     /// Takes a [SendContext] for sending a message to the specified destination with the given body.
     ///
@@ -139,12 +141,13 @@ public interface StompClient extends AutoCloseable {
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param sendContext the context for configuring the message to be sent
+    /// @return a [CompletableFuture] that completes when the message is sent
     /// @throws IllegalStateException   if the client is not connected
     /// @throws SendException           if sending the message fails
     /// @throws ConversionException     if the body cannot be converted to a string
     /// @throws ReceiptTimeoutException if a receipt was requested but not received in time
     /// @since 1.0.0
-    void send(SendContext sendContext) throws SendException;
+    CompletableFuture<Void> send(SendContext sendContext) throws SendException;
 
     /// Subscribes to the specified destination to receive messages of the given payload type.
     ///
@@ -165,10 +168,10 @@ public interface StompClient extends AutoCloseable {
     /// @param payloadType    the class of the message payload type
     /// @param messageHandler the handler to process received messages
     /// @param <T>            the type of the message payload
-    /// @return a [Subscription] representing the subscription
+    /// @return a [CompletableFuture] that completes with the created [Subscription]
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler);
+    <T> CompletableFuture<Subscription> subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler);
 
     /// Subscribes to the specified destination to receive messages of the given payload type.
     ///
@@ -194,10 +197,10 @@ public interface StompClient extends AutoCloseable {
     ///
     /// @param <T></T>          the type of the message payload
     /// @param subscribeContext the context for configuring the subscription
-    /// @return a [SubscribeContext] for configuring and creating the subscription
+    /// @return a [CompletableFuture] that completes with the created [Subscription]
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    <T> Subscription subscribe(SubscribeContext<T> subscribeContext);
+    <T> CompletableFuture<Subscription> subscribe(SubscribeContext<T> subscribeContext);
 
     /// Subscribes all methods annotated with [Topic] in the given subscriber object.
     /// You can unsubscribe all created subscriptions by calling [#unsubscribe(Object)] with the same subscriber
@@ -211,9 +214,10 @@ public interface StompClient extends AutoCloseable {
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param subscriber the subscriber object containing methods annotated with [Topic]
+    /// @return a [CompletableFuture] that completes when all subscriptions are created
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    void subscribe(Object subscriber);
+    CompletableFuture<Void> subscribe(Object subscriber);
 
     /// Unsubscribes from the specified subscription.
     ///
@@ -223,9 +227,10 @@ public interface StompClient extends AutoCloseable {
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param subscription the subscription to unsubscribe from
+    /// @return a [CompletableFuture] that completes when the unsubscription is done
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    void unsubscribe(Subscription subscription);
+    CompletableFuture<Void> unsubscribe(Subscription subscription);
 
     /// Unsubscribes all subscriptions created from the given subscriber object.
     ///
@@ -236,9 +241,10 @@ public interface StompClient extends AutoCloseable {
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param subscriber the subscriber object whose subscriptions should be unsubscribed
+    /// @return a [CompletableFuture] that completes when all subscriptions are unsubscribed
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
-    void unsubscribe(Object subscriber);
+    CompletableFuture<Void> unsubscribe(Object subscriber);
 
     /// Closes the STOMP client and releases all associated resources.
     ///

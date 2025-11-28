@@ -3,7 +3,6 @@ package org.schlunzis.zis.stomp.client.it;
 import org.schlunzis.zis.stomp.client.StompClient;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
-    public static void main(String[] args) throws URISyntaxException, InterruptedException, IllegalAccessException {
+    public static void main(String[] args) throws Exception {
         StompClient stompClient = StompClient.builder()
                 .endpoint(new URI("ws://localhost:8080/ws"))
                 .build();
@@ -19,14 +18,15 @@ public class Main {
         PublisherImpl publisher = new PublisherImpl(stompClient);
 
         CompletableFuture<Void> future = stompClient.connect();
-        future.join();
+        future.get(1, TimeUnit.SECONDS);
         CountDownLatch latch = new CountDownLatch(1);
         Model model = new Model(UUID.randomUUID(), "Test");
 
         stompClient.subscribe("/insight/simple/echo", Model.class, m -> {
-            if (m.equals(model))
-                latch.countDown();
-        });
+                    if (m.equals(model))
+                        latch.countDown();
+                })
+                .get(1, TimeUnit.SECONDS);
         publisher.sendSimpleEcho(model);
 
         if (!latch.await(10, TimeUnit.SECONDS))

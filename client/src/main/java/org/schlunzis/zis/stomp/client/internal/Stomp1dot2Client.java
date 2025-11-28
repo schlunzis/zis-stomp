@@ -118,24 +118,24 @@ public final class Stomp1dot2Client implements StompClient {
     // #####
 
     @Override
-    public void send(String destination, String body) {
+    public CompletableFuture<Void> send(String destination, String body) {
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(body, "body must not be null");
         SendContext sendContext = SendContext.create(destination, body)
                 .header("content-type", STRING_CONTENT_TYPE);
-        send(sendContext);
+        return send(sendContext);
     }
 
     @Override
-    public void send(String destination, Object body) {
+    public CompletableFuture<Void> send(String destination, Object body) {
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(body, "body must not be null");
         SendContext sendContext = SendContext.create(destination, body);
-        send(sendContext);
+        return send(sendContext);
     }
 
     @Override
-    public void send(SendContext context) {
+    public CompletableFuture<Void> send(SendContext context) {
         Objects.requireNonNull(context, "SendContext must not be null");
         ensureConnected();
         FrameBuilder builder = Frame.builder()
@@ -146,7 +146,7 @@ public final class Stomp1dot2Client implements StompClient {
                         ? STRING_CONTENT_TYPE
                         : messageConverter.contentType()
                 );
-        outboundChannel.handle(builder, context);
+        return CompletableFuture.runAsync(() -> outboundChannel.handle(builder, context));
     }
 
     // ##########
@@ -154,7 +154,7 @@ public final class Stomp1dot2Client implements StompClient {
     // ##########
 
     @Override
-    public <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
+    public <T> CompletableFuture<Subscription> subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(payloadType, "payloadType must not be null");
         Objects.requireNonNull(messageHandler, "messageHandler must not be null");
@@ -167,19 +167,21 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     @Override
-    public <T> Subscription subscribe(SubscribeContext<T> context) {
+    public <T> CompletableFuture<Subscription> subscribe(SubscribeContext<T> context) {
         Objects.requireNonNull(context, "SubscribeContext must not be null");
         ensureConnected();
 
         Subscription subscription = subscriptionManager.create(context.destination(),
                 new SubscriberInvoker<>(messageConverter, context.payloadType(), context.messageHandler()));
 
-        doSubscribe(subscription);
-        return subscription;
+        return CompletableFuture.supplyAsync(() -> {
+            doSubscribe(subscription);
+            return subscription;
+        });
     }
 
     @Override
-    public void subscribe(Object subscriber) {
+    public CompletableFuture<Void> subscribe(Object subscriber) {
         connectDisconnectMutex.lock();
         try {
             ensureConnected();
@@ -188,7 +190,7 @@ public final class Stomp1dot2Client implements StompClient {
             }
 
             Set<StompSubscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
-            subscriptions.forEach(this::doSubscribe);
+            return CompletableFuture.runAsync(() -> subscriptions.forEach(this::doSubscribe));
         } finally {
             connectDisconnectMutex.unlock();
         }
@@ -208,23 +210,24 @@ public final class Stomp1dot2Client implements StompClient {
     // ############
 
     @Override
-    public void unsubscribe(Subscription subscription) {
+    public CompletableFuture<Void> unsubscribe(Subscription subscription) {
         ensureConnected();
 
         if (!subscriptionManager.contains(subscription.id())) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
-        doUnsubscribe(subscription);
         subscriptionManager.remove(subscription);
+        return CompletableFuture.runAsync(() -> doUnsubscribe(subscription));
     }
 
     @Override
-    public void unsubscribe(Object subscriber) {
+    public CompletableFuture<Void> unsubscribe(Object subscriber) {
         connectDisconnectMutex.lock();
         try {
             ensureConnected();
             Optional<Set<StompSubscription>> subscriptions = subscriptionManager.remove(subscriber);
-            subscriptions.ifPresent(subs -> subs.forEach(this::doUnsubscribe));
+            return CompletableFuture.runAsync(() ->
+                    subscriptions.ifPresent(subs -> subs.forEach(this::doUnsubscribe)));
         } finally {
             connectDisconnectMutex.unlock();
         }
