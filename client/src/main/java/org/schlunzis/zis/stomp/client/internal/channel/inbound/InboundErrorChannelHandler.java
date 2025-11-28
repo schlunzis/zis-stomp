@@ -4,6 +4,8 @@ import org.schlunzis.zis.stomp.client.OnErrorConsumer;
 import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
 
+import java.util.Objects;
+
 /// Inbound channel handler for processing ERROR frames.
 ///
 /// This handler intercepts ERROR frames.
@@ -17,6 +19,7 @@ public final class InboundErrorChannelHandler extends AbstractInboundChannelHand
     private final OnErrorConsumer onErrorConsumer;
 
     public InboundErrorChannelHandler(OnErrorConsumer onErrorConsumer) {
+        Objects.requireNonNull(onErrorConsumer, "onErrorConsumer must not be null");
         this.onErrorConsumer = onErrorConsumer;
     }
 

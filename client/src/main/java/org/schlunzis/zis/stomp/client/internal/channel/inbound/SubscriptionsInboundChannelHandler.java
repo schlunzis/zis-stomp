@@ -26,4 +26,10 @@ public final class SubscriptionsInboundChannelHandler extends AbstractInboundCha
         super.handle(frame);
     }
 
+    @Override
+    public void close() {
+        subscriptionManager.clear();
+        super.close();
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.schlunzis.zis.stomp.client.internal.interaction;
 
+import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.SendContext;
 import org.schlunzis.zis.stomp.client.SubscribeContext;
@@ -35,6 +36,12 @@ public sealed interface InteractionContext<T> permits AbstractInteractionContext
     ///
     /// @param receiptable The receiptable.
     void receiptable(Receiptable receiptable);
+
+    /// Retrieves the receiptable associated with this interaction, if any.
+    ///
+    /// @return The receiptable, or null if none is set.
+    @Nullable
+    Receiptable receiptable();
 
     /// Awaits the completion of the interaction, typically by waiting for a receipt acknowledgment.
     ///

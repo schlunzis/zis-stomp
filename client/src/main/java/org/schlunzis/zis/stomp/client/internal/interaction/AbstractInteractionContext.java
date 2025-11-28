@@ -44,6 +44,12 @@ public abstract sealed class AbstractInteractionContext<T> implements Interactio
     }
 
     @Override
+    @Nullable
+    public Receiptable receiptable() {
+        return receiptable;
+    }
+
+    @Override
     public void awaitCompletion() {
         if (receiptable != null) {
             try {
