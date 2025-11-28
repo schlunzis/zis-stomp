@@ -3,7 +3,7 @@ package org.schlunzis.zis.stomp.client;
 /// Exception thrown for errors related to STOMP subscriptions.
 ///
 /// @since 1.0.0
-public final class SubscriptionException extends RuntimeException {
+public class SubscriptionException extends RuntimeException {
 
     /// Constructs a new SubscriptionException with the specified detail message.
     ///

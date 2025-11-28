@@ -1,7 +1,6 @@
 package org.schlunzis.zis.stomp.client;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.client.protocol.HeadersImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ import java.util.Map;
 /// Implementations may not be thread-safe.
 ///
 /// @since 1.0.0
-public sealed interface Headers extends Map<String, List<String>> permits HeadersImpl {
+public interface Headers extends Map<String, List<String>> {
 
     /// Adds a header with the specified key and value.
     /// If the key already exists, the new value is added as the first value for that key

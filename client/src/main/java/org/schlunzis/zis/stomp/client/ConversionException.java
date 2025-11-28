@@ -2,6 +2,8 @@ package org.schlunzis.zis.stomp.client;
 
 /// Exception thrown for errors related to message conversion in STOMP client.
 ///
+/// This exception may be extended by custom message converters to indicate conversion failures.
+///
 /// @since 1.0.0
 public class ConversionException extends RuntimeException {
 

@@ -1,23 +1,17 @@
 package org.schlunzis.zis.stomp.client;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.client.internal.Stomp1dot2Client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.schlunzis.zis.stomp.client.internal.StompClientFactoryImpl;
 
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
 
 /// Builder for [StompClient] instances.
 ///
 /// @see StompClient#builder()
 /// @since 1.0.0
-public final class StompClientBuilder {
-
-    private static final Logger log = LoggerFactory.getLogger(StompClientBuilder.class);
+public class StompClientBuilder {
 
     @Nullable
     private URI endpoint;
@@ -27,6 +21,8 @@ public final class StompClientBuilder {
     private OnErrorConsumer onErrorConsumer;
     private Duration receiptTimeout = Duration.ofSeconds(10);
     private ReceiptPolicy receiptPolicy = ReceiptPolicy.none();
+    @Nullable
+    private StompClientFactory stompClientFactory;
 
     /// Creates a new STOMP client builder.
     ///
@@ -48,7 +44,15 @@ public final class StompClientBuilder {
         return this;
     }
 
-    /// Sets the message converter to be used by the client. If not set, the builder will attempt to
+    /// Returns the configured STOMP endpoint URI.
+    ///
+    /// @return the STOMP endpoint URI, or null if not set
+    /// @since 1.0.0
+    public @Nullable URI endpoint() {
+        return endpoint;
+    }
+
+    /// Sets the message converter to be used by the client. If not set, the [StompClientFactory] will attempt to
     /// create a suitable MessageConverter automatically.
     ///
     /// It will first look for a Jackson 3 ObjectMapper, then for a Jackson 2 ObjectMapper. If one of them is found,
@@ -61,6 +65,19 @@ public final class StompClientBuilder {
     public StompClientBuilder messageConverter(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
         return this;
+    }
+
+    /// Returns the configured message converter.
+    ///
+    /// Note that the message converter may also be created automatically by the [StompClientFactory]
+    /// if not set explicitly. In that case, this method will return null.
+    /// You can access the created message converter from the constructed StompClient instance via
+    /// [StompClient#messageConverter()].
+    ///
+    /// @return the message converter, or null if not set
+    /// @since 1.0.0
+    public @Nullable MessageConverter messageConverter() {
+        return messageConverter;
     }
 
     /// Sets the consumer to run when a STOMP ERROR frame is received.
@@ -88,6 +105,14 @@ public final class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured error consumer.
+    ///
+    /// @return the error consumer, or null if not set
+    /// @since 1.0.0
+    public @Nullable OnErrorConsumer onErrorConsumer() {
+        return onErrorConsumer;
+    }
+
     /// Sets the receipt timeout duration.
     /// If a receipt is requested, this timeout defines how long the client
     /// will wait for the receipt frame from the server before considering it a failure.
@@ -100,6 +125,14 @@ public final class StompClientBuilder {
         Objects.requireNonNull(receiptTimeout, "receiptTimeout must not be null");
         this.receiptTimeout = receiptTimeout;
         return this;
+    }
+
+    /// Returns the configured receipt timeout duration.
+    ///
+    /// @return the receipt timeout duration
+    /// @since 1.0.0
+    public Duration receiptTimeout() {
+        return receiptTimeout;
     }
 
     /// Sets the receipt policy for the client.
@@ -115,6 +148,37 @@ public final class StompClientBuilder {
         return this;
     }
 
+    /// Returns the configured receipt policy.
+    ///
+    /// @return the receipt policy
+    /// @since 1.0.0
+    public ReceiptPolicy receiptPolicy() {
+        return receiptPolicy;
+    }
+
+    /// Sets a custom [StompClientFactory] to be used for creating the client instance.
+    ///
+    /// If this is not set, a default factory implementation will be used.
+    ///
+    /// @param stompClientFactory the STOMP client factory
+    /// @return the builder instance
+    /// @since 1.0.0
+    public StompClientBuilder stompClientFactory(StompClientFactory stompClientFactory) {
+        Objects.requireNonNull(stompClientFactory, "stompClientFactory must not be null");
+        this.stompClientFactory = stompClientFactory;
+        return this;
+    }
+
+    /// Returns the configured STOMP client factory.
+    ///
+    /// If no factory was set, this method returns null.
+    ///
+    /// @return the STOMP client factory, or null if not set
+    /// @since 1.0.0
+    public @Nullable StompClientFactory stompClientFactory() {
+        return stompClientFactory;
+    }
+
     /// Builds the [StompClient] instance.
     ///
     /// You may call this method multiple times to create multiple clients with the same configuration.
@@ -123,51 +187,10 @@ public final class StompClientBuilder {
     /// @throws IllegalStateException if the endpoint is not set
     /// @since 1.0.0
     public StompClient build() throws IllegalStateException {
-        if (endpoint == null) {
-            throw new IllegalStateException("Endpoint must be set");
-        }
-        if (messageConverter == null) {
-            messageConverter = findMessageConverter();
-        }
-
-        return new Stomp1dot2Client(
-                endpoint,
-                messageConverter,
-                onErrorConsumer,
-                receiptTimeout,
-                receiptPolicy
-        );
-    }
-
-    private MessageConverter findMessageConverter() {
-        Class<?> mapperClass;
-        boolean jackson3 = false;
-        try {
-            mapperClass = Class.forName("tools.jackson.databind.ObjectMapper");
-            jackson3 = true;
-            log.debug("Found Jackson 3 ObjectMapper");
-        } catch (ClassNotFoundException _) {
-            try {
-                mapperClass = Class.forName("com.fasterxml.jackson.core.ObjectCodec");
-                log.debug("Found Jackson 2 ObjectMapper");
-            } catch (ClassNotFoundException _) {
-                log.debug("No Jackson ObjectMapper found");
-                return new StringMessageConverter();
-            }
-        }
-
-        ServiceLoader<?> loader = ServiceLoader.load(mapperClass);
-        Optional<?> mapper = loader.findFirst();
-        if (mapper.isPresent()) {
-            log.debug("Found {} via ServiceLoader", mapperClass);
-            if (jackson3)
-                return new Jackson3MessageConverter((tools.jackson.databind.ObjectMapper) mapper.get());
-            else
-                return new Jackson2MessageConverter((com.fasterxml.jackson.databind.ObjectMapper) mapper.get());
-        }
-
-        log.debug("No MessageConverter found via ServiceLoader");
-        return new StringMessageConverter();
+        StompClientFactory factory = stompClientFactory != null
+                ? stompClientFactory
+                : new StompClientFactoryImpl();
+        return factory.create(this);
     }
 
 }

@@ -1,14 +1,12 @@
 package org.schlunzis.zis.stomp.client;
 
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-
 import java.util.Optional;
 
 /// Represents a STOMP message with headers and a body.
 ///
 /// @param <T> the type of the message body
 /// @since 1.0.0
-public sealed interface Message<T> permits Frame {
+public interface Message<T> {
 
     /// Returns the headers of the message.
     ///

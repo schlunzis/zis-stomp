@@ -3,7 +3,7 @@ package org.schlunzis.zis.stomp.client;
 /// Exception thrown for errors related to sending STOMP messages.
 ///
 /// @since 1.0.0
-public final class SendException extends RuntimeException {
+public class SendException extends RuntimeException {
 
     /// Constructs a new SendException with the specified detail message.
     ///

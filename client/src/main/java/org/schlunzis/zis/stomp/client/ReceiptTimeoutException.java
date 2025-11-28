@@ -3,7 +3,7 @@ package org.schlunzis.zis.stomp.client;
 /// Exception thrown when a receipt is not received within the configured timeout period.
 ///
 /// @since 1.0.0
-public final class ReceiptTimeoutException extends RuntimeException {
+public class ReceiptTimeoutException extends RuntimeException {
 
     /// Constructs a new ReceiptTimeoutException with the specified detail message.
     ///

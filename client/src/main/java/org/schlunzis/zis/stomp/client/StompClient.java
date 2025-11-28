@@ -40,17 +40,14 @@ public interface StompClient extends AutoCloseable {
     /// Connects to the STOMP server.
     ///
     /// This method establishes a connection to the STOMP server specified in the client's configuration.
-    /// It blocks until the connection is successfully established or fails.
+    /// It returns a [CompletableFuture] that completes when the connection is established or fails.
     ///
     /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
     ///
-    /// If the thread is interrupted while waiting for the connection to be established,
-    /// an [ConnectionException] is thrown. The interrupt status of the thread is preserved.
-    ///
-    /// @throws ConnectionException   if the connection fails
+    /// @return a [CompletableFuture] that completes when the connection is established or fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
-    CompletableFuture<Void> connect() throws ConnectionException;
+    CompletableFuture<Void> connect();
 
     /// Connects to the STOMP server using the provided login and passcode.
     ///
@@ -60,18 +57,15 @@ public interface StompClient extends AutoCloseable {
     ///
     /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
     ///
-    /// If the thread is interrupted while waiting for the connection to be established,
-    /// an [ConnectionException] is thrown. The interrupt status of the thread is preserved.
-    ///
     /// This method is a shorthand for calling [#connect(String, String, AuthenticationMethod)] with
     /// [AuthenticationMethod#STOMP] as the authentication method.
     ///
     /// @param login    the login username
     /// @param passcode the passcode (password)
-    /// @throws ConnectionException   if the connection fails
+    /// @return a [CompletableFuture] that completes when the connection is established or fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
-    CompletableFuture<Void> connect(String login, String passcode) throws ConnectionException;
+    CompletableFuture<Void> connect(String login, String passcode);
 
     /// Connects to the STOMP server using the provided login, passcode and authentication method.
     ///
@@ -82,39 +76,75 @@ public interface StompClient extends AutoCloseable {
     ///
     /// If the method is called a second time on the same client instance, an [IllegalStateException] is thrown.
     ///
-    /// If the thread is interrupted while waiting for the connection to be established,
-    /// an [ConnectionException] is thrown. The interrupt status of the thread is preserved.
-    ///
-    /// @param login    the login username
-    /// @param passcode the passcode (password)
-    /// @throws ConnectionException   if the connection fails
+    /// @param login                the login username
+    /// @param passcode             the passcode (password)
+    /// @param authenticationMethod the authentication method to use
+    /// @return a [CompletableFuture] that completes when the connection is established or fails
     /// @throws IllegalStateException if the client has already been connected before
     /// @since 1.0.0
-    CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod) throws ConnectionException;
+    CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod);
 
     /// Sends a message to the specified destination with the given body. This method does not use the provided message
     /// converter. It sends the body directly as a string and indicates a content type of `text/plain;charset=UTF-8`.
+    ///
+    /// This method is a shorthand for:
+    /// ```java
+    /// stompClient.send(SendContext.create(destination, body)
+    ///     .header("content-type", "text/plain;charset=UTF-8"));
+    ///```
     ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination the destination to end the message to
     /// @param body        the body of the message
-    /// @throws IllegalStateException if the client is not connected
-    /// @throws SendException         if sending the message fails or the message cannot be encoded
+    /// @throws IllegalStateException   if the client is not connected
+    /// @throws SendException           if sending the message fails
+    /// @throws ReceiptTimeoutException if a receipt was requested but not received in time
     /// @since 1.0.0
-    void send(String destination, String body) throws SendException;
+    void send(String destination, String body);
 
     /// Sends a message to the specified destination with the given body. The body is converted to a string using the
     /// client's configured message converter.
+    ///
+    /// This method is a shorthand for:
+    ///
+    /// ```java
+    /// stompClient.send(SendContext.create(destination, body));
+    ///```
     ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination the destination to send the message to
     /// @param body        the body of the message
-    /// @throws IllegalStateException if the client is not connected
-    /// @throws SendException         if sending the message fails or the message cannot be encoded
+    /// @throws IllegalStateException   if the client is not connected
+    /// @throws SendException           if sending the message fails
+    /// @throws ConversionException     if the body cannot be converted to a string
+    /// @throws ReceiptTimeoutException if a receipt was requested but not received in time
     /// @since 1.0.0
-    void send(String destination, Object body) throws SendException;
+    void send(String destination, Object body);
+
+    /// Takes a [SendContext] for sending a message to the specified destination with the given body.
+    ///
+    /// The [SendContext] allows for further configuration of the message, such as adding custom headers,
+    /// before sending it.
+    /// Usage could look like this:
+    ///
+    /// ```java
+    /// stompClient.send(SendContext.create(destination, body)
+    ///     .header("custom-header", "value"));
+    ///```
+    ///
+    /// The body is converted to a string using the client's configured message converter when the message is sent.
+    ///
+    /// If the client is not connected, an [IllegalStateException] is thrown.
+    ///
+    /// @param sendContext the context for configuring the message to be sent
+    /// @throws IllegalStateException   if the client is not connected
+    /// @throws SendException           if sending the message fails
+    /// @throws ConversionException     if the body cannot be converted to a string
+    /// @throws ReceiptTimeoutException if a receipt was requested but not received in time
+    /// @since 1.0.0
+    void send(SendContext sendContext) throws SendException;
 
     /// Subscribes to the specified destination to receive messages of the given payload type.
     ///
@@ -124,16 +154,50 @@ public interface StompClient extends AutoCloseable {
     /// The returned [Subscription] can be used to unsubscribe from the destination using the
     /// [#unsubscribe(Subscription)] method.
     ///
+    /// This method is a shorthand for:
+    /// ```java
+    /// stompClient.subscribe(SubscribeContext.create(destination, payloadType, messageHandler));
+    ///```
+    ///
     /// If the client is not connected, an [IllegalStateException] is thrown.
     ///
     /// @param destination    the destination to subscribe to
-    /// @param payloadType    the type of the message payload
+    /// @param payloadType    the class of the message payload type
     /// @param messageHandler the handler to process received messages
     /// @param <T>            the type of the message payload
     /// @return a [Subscription] representing the subscription
     /// @throws IllegalStateException if the client is not connected
     /// @since 1.0.0
     <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler);
+
+    /// Subscribes to the specified destination to receive messages of the given payload type.
+    ///
+    /// The provided message handler is invoked for each received message, with the message payload converted to
+    /// the specified type.
+    ///
+    /// This method allows for additional configuration of the subscription via the returned [SubscribeContext].
+    /// It is recommended to call the subscribe method as soon as possible after obtaining the [SubscribeContext].
+    /// Usage could look like this:
+    ///
+    /// ```java
+    /// SubscribeContext<String> context = SubscribeContext.create("/topic/example",String.class,s -> log.info("Received: " + s))
+    ///   .header("custom-header", "value");
+    /// Subscription sub = stompClient.subscribe(context);
+    ///```
+    ///
+    /// The returned [Subscription] can be used to unsubscribe from the destination using the
+    /// [#unsubscribe(Subscription)] method.
+    ///
+    /// The [SubscribeContext] is not thread-safe and should not be shared between threads.
+    ///
+    /// If the client is not connected, an [IllegalStateException] is thrown.
+    ///
+    /// @param <T></T>          the type of the message payload
+    /// @param subscribeContext the context for configuring the subscription
+    /// @return a [SubscribeContext] for configuring and creating the subscription
+    /// @throws IllegalStateException if the client is not connected
+    /// @since 1.0.0
+    <T> Subscription subscribe(SubscribeContext<T> subscribeContext);
 
     /// Subscribes all methods annotated with [Topic] in the given subscriber object.
     /// You can unsubscribe all created subscriptions by calling [#unsubscribe(Object)] with the same subscriber
@@ -190,6 +254,6 @@ public interface StompClient extends AutoCloseable {
     ///
     /// @return the message converter
     /// @since 1.0.0
-    MessageConverter getMessageConverter();
+    MessageConverter messageConverter();
 
 }

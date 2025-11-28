@@ -1,55 +1,52 @@
 package org.schlunzis.zis.stomp.client.internal;
 
-import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.*;
+import org.schlunzis.zis.stomp.client.internal.channel.inbound.InboundChannel;
+import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundChannel;
+import org.schlunzis.zis.stomp.client.internal.interaction.EmptyInteractionContext;
+import org.schlunzis.zis.stomp.client.protocol.Command;
 import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import org.schlunzis.zis.stomp.client.protocol.Frames;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
-import org.schlunzis.zis.stomp.client.websocket.jakarta.JakartaWebsocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.time.Duration;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+/// This class implements a STOMP 1.2 client that can connect to a STOMP server over WebSocket,
+/// send messages, subscribe to destinations, and handle disconnections.
 public final class Stomp1dot2Client implements StompClient {
 
     private static final Logger log = LoggerFactory.getLogger(Stomp1dot2Client.class);
     private static final String STRING_CONTENT_TYPE = "text/plain;charset=UTF-8";
 
     private final URI endpoint;
-    private final WebSocketClient websocketClient;
     private final MessageConverter messageConverter;
     private final SubscriptionManager subscriptionManager;
-    private final ReceiptManager receiptManager;
-
-    @Nullable
-    private final OnErrorConsumer onErrorConsumer;
+    private final WebSocketClient websocketClient;
+    private final InboundChannel inboundChannel;
+    private final OutboundChannel outboundChannel;
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
-    private final TransferQueue<Frame> connectedFrames = new LinkedTransferQueue<>();
-    private final Lock mutex = new ReentrantLock();
+    /// A mutex to synchronize connect and disconnect operations.
+    private final Lock connectDisconnectMutex = new ReentrantLock();
 
-    public Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, @Nullable OnErrorConsumer onErrorConsumer,
-                            Duration receiptTimeout, ReceiptPolicy receiptPolicy
+    public Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, SubscriptionManager subscriptionManager, WebSocketClient webSocketClient,
+                            InboundChannel inboundChannel, OutboundChannel outboundChannel
     ) {
         this.endpoint = endpoint;
-        this.websocketClient = new JakartaWebsocketClient(endpoint, this::handle);
         this.messageConverter = messageConverter;
-        this.onErrorConsumer = onErrorConsumer;
-        this.receiptManager = new ReceiptManager(websocketClient, receiptTimeout, receiptPolicy);
-        this.subscriptionManager = new SubscriptionManager(messageConverter);
+        this.subscriptionManager = subscriptionManager;
+        this.websocketClient = webSocketClient;
+        this.inboundChannel = inboundChannel;
+        this.outboundChannel = outboundChannel;
     }
 
     // ########
@@ -58,7 +55,7 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public CompletableFuture<Void> connect() throws ConnectionException {
-        Frame connectFrame = Frames.connect(endpoint);
+        FrameBuilder connectFrame = Frames.connect(endpoint);
         return CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
     }
 
@@ -71,21 +68,21 @@ public final class Stomp1dot2Client implements StompClient {
     public CompletableFuture<Void> connect(String login, String passcode, AuthenticationMethod authenticationMethod) throws ConnectionException {
         return switch (authenticationMethod) {
             case STOMP -> {
-                Frame connectFrame = Frames.connect(endpoint, login, passcode);
+                FrameBuilder connectFrame = Frames.connect(endpoint, login, passcode);
                 yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
             }
             case HTTP_BASIC -> {
                 String credentials = login + ":" + passcode;
                 String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
                 String authHeaderValue = "Basic " + encodedCredentials;
-                Frame connectFrame = Frames.connect(endpoint);
+                FrameBuilder connectFrame = Frames.connect(endpoint);
                 yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of("Authorization", List.of(authHeaderValue))));
             }
         };
     }
 
-    private void doConnect(Frame connectFrame, Map<String, List<String>> connectHeaders) throws ConnectionException {
-        mutex.lock();
+    private void doConnect(FrameBuilder connectFrame, Map<String, List<String>> connectHeaders) throws ConnectionException {
+        connectDisconnectMutex.lock();
         try {
             if (connectionState.get() != ConnectionState.UNUSED) {
                 throw new IllegalStateException("Client has already connected before. Current state: " + connectionState.get());
@@ -93,9 +90,9 @@ public final class Stomp1dot2Client implements StompClient {
             connectionState.set(ConnectionState.CONNECTING);
 
             websocketClient.connect(connectHeaders);
-            websocketClient.send(connectFrame);
+            outboundChannel.handle(connectFrame, new EmptyInteractionContext<>());
 
-            Frame connectedFrame = connectedFrames.take();
+            Frame connectedFrame = inboundChannel.waitForConnectedFrame();
             postProcessConnectedFrame(connectedFrame);
             connectionState.set(ConnectionState.CONNECTED);
         } catch (InterruptedException e) {
@@ -103,7 +100,7 @@ public final class Stomp1dot2Client implements StompClient {
             doClose();
             throw new ConnectionException(e);
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
@@ -112,7 +109,7 @@ public final class Stomp1dot2Client implements StompClient {
         String version = headers.getFirst("version");
         if (version == null || !version.equals("1.2")) {
             doClose();
-            throw new ConnectionException("Unsupported STOMP version: " + version);
+            throw new ConnectionException("Server responded with unsupported STOMP version: " + version);
         }
     }
 
@@ -122,20 +119,34 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void send(String destination, String body) {
-        ensureConnected();
-        doSend(destination, body, STRING_CONTENT_TYPE);
+        Objects.requireNonNull(destination, "destination must not be null");
+        Objects.requireNonNull(body, "body must not be null");
+        SendContext sendContext = SendContext.create(destination, body)
+                .header("content-type", STRING_CONTENT_TYPE);
+        send(sendContext);
     }
 
     @Override
     public void send(String destination, Object body) {
-        ensureConnected();
-        String convertedBody = messageConverter.convertToString(body);
-        doSend(destination, convertedBody, messageConverter.contentType());
+        Objects.requireNonNull(destination, "destination must not be null");
+        Objects.requireNonNull(body, "body must not be null");
+        SendContext sendContext = SendContext.create(destination, body);
+        send(sendContext);
     }
 
-    private void doSend(String destination, String body, String contentType) {
-        Frame sendFrame = Frames.send(destination, body, contentType);
-        receiptManager.sendAndAwaitReceiptIfPolicy(sendFrame, ReceiptPolicy.Policy.FOR_SEND);
+    @Override
+    public void send(SendContext context) {
+        Objects.requireNonNull(context, "SendContext must not be null");
+        ensureConnected();
+        FrameBuilder builder = Frame.builder()
+                .command(Command.SEND)
+                .header("destination", context.destination())
+                .body(convertBodyToString(context.body()))
+                .header("content-type", context.body() instanceof String
+                        ? STRING_CONTENT_TYPE
+                        : messageConverter.contentType()
+                );
+        outboundChannel.handle(builder, context);
     }
 
     // ##########
@@ -144,19 +155,32 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
+        Objects.requireNonNull(destination, "destination must not be null");
+        Objects.requireNonNull(payloadType, "payloadType must not be null");
+        Objects.requireNonNull(messageHandler, "messageHandler must not be null");
+        SubscribeContext<T> subscribeContext = SubscribeContext.create(
+                destination,
+                payloadType,
+                messageHandler
+        );
+        return subscribe(subscribeContext);
+    }
+
+    @Override
+    public <T> Subscription subscribe(SubscribeContext<T> context) {
+        Objects.requireNonNull(context, "SubscribeContext must not be null");
         ensureConnected();
 
-        Subscription subscription = subscriptionManager.create(
-                destination,
-                new SubscriberInvoker(messageConverter, payloadType, messageHandler)
-        );
+        Subscription subscription = subscriptionManager.create(context.destination(),
+                new SubscriberInvoker<>(messageConverter, context.payloadType(), context.messageHandler()));
+
         doSubscribe(subscription);
         return subscription;
     }
 
     @Override
     public void subscribe(Object subscriber) {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             ensureConnected();
             if (subscriptionManager.hasSubscriptionsForSubscriber(subscriber)) {
@@ -166,13 +190,17 @@ public final class Stomp1dot2Client implements StompClient {
             Set<StompSubscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
             subscriptions.forEach(this::doSubscribe);
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
     private void doSubscribe(Subscription subscription) {
-        Frame subscribeFrame = Frames.subscribe(subscription.destination(), subscription.id().toString(), "auto");
-        receiptManager.sendAndAwaitReceiptIfPolicy(subscribeFrame, ReceiptPolicy.Policy.FOR_SUBSCRIBE);
+        FrameBuilder subscribeFrame = Frames.subscribe(
+                subscription.destination(),
+                subscription.id().toString(),
+                "auto"
+        );
+        outboundChannel.handle(subscribeFrame, new EmptyInteractionContext<>());
     }
 
     // ############
@@ -192,22 +220,21 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void unsubscribe(Object subscriber) {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             ensureConnected();
-            Set<StompSubscription> subscriptions = subscriptionManager.remove(subscriber);
-            if (subscriptions == null || subscriptions.isEmpty()) {
-                return;
-            }
-            subscriptions.forEach(this::doUnsubscribe);
+            Optional<Set<StompSubscription>> subscriptions = subscriptionManager.remove(subscriber);
+            subscriptions.ifPresent(subs -> subs.forEach(this::doUnsubscribe));
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
     private void doUnsubscribe(Subscription subscription) {
-        Frame unsubscribeFrame = Frames.unsubscribe(subscription.id().toString());
-        receiptManager.sendAndAwaitReceiptIfPolicy(unsubscribeFrame, ReceiptPolicy.Policy.FOR_UNSUBSCRIBE);
+        FrameBuilder unsubscribeFrame = Frames.unsubscribe(
+                subscription.id().toString()
+        );
+        outboundChannel.handle(unsubscribeFrame, new EmptyInteractionContext<>());
     }
 
     // ###########
@@ -216,31 +243,32 @@ public final class Stomp1dot2Client implements StompClient {
 
     @Override
     public void close() {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             if (connectionState.get() != ConnectionState.CONNECTED) {
                 return;
             }
             connectionState.set(ConnectionState.DISCONNECTING);
 
-            Frame disconnectFrame = Frames.disconnect();
-            receiptManager.sendAndAwaitReceiptIfPolicy(disconnectFrame, ReceiptPolicy.Policy.FOR_DISCONNECT);
+            FrameBuilder disconnectFrame = Frames.disconnect();
+            outboundChannel.handle(disconnectFrame, new EmptyInteractionContext<>());
             doClose();
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
     private void doClose() {
-        mutex.lock();
+        connectDisconnectMutex.lock();
         try {
             connectionState.set(ConnectionState.DISCONNECTING);
             websocketClient.close();
             connectionState.set(ConnectionState.DISCONNECTED);
-            receiptManager.clear();
+            outboundChannel.close();
+            inboundChannel.close();
             subscriptionManager.clear();
         } finally {
-            mutex.unlock();
+            connectDisconnectMutex.unlock();
         }
     }
 
@@ -249,8 +277,23 @@ public final class Stomp1dot2Client implements StompClient {
     // ##############
 
     @Override
-    public MessageConverter getMessageConverter() {
+    public MessageConverter messageConverter() {
         return messageConverter;
+    }
+
+    /// Converts the body object to a string using the message converter if necessary.
+    ///
+    /// If the body is already a string, it is returned as is.
+    ///
+    /// @param body the body object
+    /// @return the body as a string
+    /// @see MessageConverter
+    /// @see StompClientBuilder#messageConverter(MessageConverter)
+    private String convertBodyToString(Object body) {
+        if (body instanceof String s) {
+            return s;
+        }
+        return messageConverter.convertToString(body);
     }
 
     /// If the client is not connected, this method throws an [IllegalStateException].
@@ -260,36 +303,10 @@ public final class Stomp1dot2Client implements StompClient {
     /// @throws IllegalStateException if the client is not connected
     private void ensureConnected() {
         if (connectionState.get() != ConnectionState.CONNECTED) {
+            log.trace("ensureConnected() - client is not connected");
             throw new IllegalStateException("Client is not connected");
         }
-    }
-
-    /// This is the entry point for incoming STOMP frames from the WebSocket.
-    ///
-    /// @param frame the received STOMP frame
-    private void handle(Frame frame) {
-        switch (frame.command()) {
-            case CONNECTED -> {
-                if (connectionState.get() != ConnectionState.CONNECTING) {
-                    log.warn("Received CONNECTED frame while not connecting: {}", frame);
-                    return;
-                }
-                connectedFrames.add(frame);
-            }
-            case MESSAGE -> subscriptionManager.handleMessage(frame);
-            case RECEIPT -> receiptManager.handleReceipt(frame);
-            case ERROR -> {
-                if (onErrorConsumer != null) {
-                    String message = frame.headers().getFirst("message");
-                    onErrorConsumer.accept(message != null ? message : "Unknown Error", frame);
-                } else {
-                    log.error("Received STOMP ERROR frame: {}", frame);
-                }
-                doClose();
-            }
-            case CONNECT, STOMP, SEND, SUBSCRIBE, UNSUBSCRIBE, ACK, NACK, BEGIN, COMMIT, ABORT, DISCONNECT ->
-                    log.warn("Received frame with client command: {}", frame.command());
-        }
+        log.trace("ensureConnected() - client is connected");
     }
 
 }

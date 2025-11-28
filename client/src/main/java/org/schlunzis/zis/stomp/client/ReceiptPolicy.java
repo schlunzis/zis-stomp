@@ -14,10 +14,15 @@ import java.util.Set;
 /// A ReceiptPolicy can be set on the [StompClientBuilder] to define the default receipt policy for the client.
 ///
 /// @since 1.0.0
-public final class ReceiptPolicy {
+public class ReceiptPolicy {
 
     private final Set<Policy> policies = EnumSet.noneOf(Policy.class);
 
+    /// Private constructor to prevent direct instantiation.
+    ///
+    /// Use the [#all()] or [#none()] methods to create instances.
+    ///
+    /// @since 1.0.0
     private ReceiptPolicy() {
     }
 
@@ -63,12 +68,20 @@ public final class ReceiptPolicy {
     /// @since 1.0.0
     public enum Policy {
         /// Request receipt for SEND commands.
+        ///
+        /// @since 1.0.0
         FOR_SEND,
         /// Request receipt for SUBSCRIBE commands.
+        ///
+        /// @since 1.0.0
         FOR_SUBSCRIBE,
         /// Request receipt for UNSUBSCRIBE commands.
+        ///
+        /// @since 1.0.0
         FOR_UNSUBSCRIBE,
         /// Request receipt for DISCONNECT commands.
+        ///
+        /// @since 1.0.0
         FOR_DISCONNECT,
     }
 

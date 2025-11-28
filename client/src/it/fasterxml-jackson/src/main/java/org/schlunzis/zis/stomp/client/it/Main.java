@@ -18,7 +18,7 @@ public class Main {
                 .endpoint(new URI("ws://localhost:8080/ws"))
                 .build();
 
-        MessageConverter messageConverter = stompClient.getMessageConverter();
+        MessageConverter messageConverter = stompClient.messageConverter();
         if (!(messageConverter instanceof Jackson2MessageConverter))
             throw new IllegalStateException("messageConverter is not of type Jackson2MessageConverter");
 
