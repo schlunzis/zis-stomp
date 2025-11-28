@@ -19,6 +19,7 @@ import java.net.URISyntaxException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ForkJoinPool;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,7 +47,8 @@ class Stomp1dot2ClientTest {
                 null,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
         Object dummy = new Object();
         @SuppressWarnings("DataFlowIssue")
@@ -74,7 +76,8 @@ class Stomp1dot2ClientTest {
                 null,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
 
         CompletableFuture<Void> future = client.connect();
@@ -92,7 +95,8 @@ class Stomp1dot2ClientTest {
                 subscriptionManager,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
 
         CompletableFuture<Void> future = client.connect();
@@ -113,7 +117,8 @@ class Stomp1dot2ClientTest {
                 subscriptionManager,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
@@ -131,7 +136,8 @@ class Stomp1dot2ClientTest {
                 subscriptionManager,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
 
         assertDoesNotThrow(client::close);
@@ -150,7 +156,8 @@ class Stomp1dot2ClientTest {
                 subscriptionManager,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
@@ -171,7 +178,8 @@ class Stomp1dot2ClientTest {
                 subscriptionManager,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
         CompletableFuture<Void> future = client.connect();
         future.join();
@@ -188,7 +196,8 @@ class Stomp1dot2ClientTest {
                 null,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
 
         assertThrows(IllegalStateException.class, () -> client.send("/topic", "Message"));
@@ -202,7 +211,8 @@ class Stomp1dot2ClientTest {
                 null,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
 
         assertThrows(IllegalStateException.class, () -> client.subscribe("/topic", String.class,
@@ -218,7 +228,8 @@ class Stomp1dot2ClientTest {
                 null,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
 
         assertSame(messageConverter, client.messageConverter());
@@ -238,7 +249,8 @@ class Stomp1dot2ClientTest {
                 subscriptionManager,
                 webSocketClient,
                 inboundChannel,
-                outboundChannel
+                outboundChannel,
+                ForkJoinPool.commonPool()
         );
         CompletableFuture<Void> future = client.connect();
         future.join();

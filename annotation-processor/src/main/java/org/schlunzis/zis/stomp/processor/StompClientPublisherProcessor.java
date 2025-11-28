@@ -30,7 +30,7 @@ import java.util.Set;
 @SupportedAnnotationTypes({
         "org.schlunzis.zis.stomp.client.StompPublisher"
 })
-@SupportedSourceVersion(SourceVersion.RELEASE_17)
+@SupportedSourceVersion(SourceVersion.RELEASE_25)
 public class StompClientPublisherProcessor extends AbstractProcessor {
 
     /// Constructs a new StompClientPublisherProcessor.
@@ -93,15 +93,24 @@ public class StompClientPublisherProcessor extends AbstractProcessor {
                             if (parameterTypes.size() != 1) {
                                 throw new IllegalStateException("Method must have exactly one parameter");
                             }
-                            return parameterTypes.get(0).toString();
+                            return parameterTypes.getFirst().toString();
                         }
                     }, null);
+                    final String returnType = em.accept(new SimpleTypeVisitor9<String, Void>() {
+                        @Override
+                        public String visitExecutable(ExecutableType t, Void p) {
+                            return t.getReturnType().toString();
+                        }
+                    }, null);
+                    boolean isCompletableFuture = returnType.startsWith("java.util.concurrent.CompletableFuture<");
 
                     return new Subscriber(
                             topic,
                             methodName,
                             parameterType,
-                            "arg0"
+                            "arg0",
+                            returnType,
+                            isCompletableFuture
                     );
                 })
                 .toList();

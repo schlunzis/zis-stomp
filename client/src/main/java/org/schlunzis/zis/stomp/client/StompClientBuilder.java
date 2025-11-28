@@ -6,6 +6,7 @@ import org.schlunzis.zis.stomp.client.internal.StompClientFactoryImpl;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /// Builder for [StompClient] instances.
 ///
@@ -23,6 +24,8 @@ public class StompClientBuilder {
     private ReceiptPolicy receiptPolicy = ReceiptPolicy.none();
     @Nullable
     private StompClientFactory stompClientFactory;
+    @Nullable
+    private Executor executor;
 
     /// Creates a new STOMP client builder.
     ///
@@ -177,6 +180,29 @@ public class StompClientBuilder {
     /// @since 1.0.0
     public @Nullable StompClientFactory stompClientFactory() {
         return stompClientFactory;
+    }
+
+    /// Sets the executor to be used for asynchronous operations.
+    ///
+    /// If not set, an executor will be created.
+    ///
+    /// @param executor the executor
+    /// @return the builder instance
+    /// @since 1.0.0
+    public StompClientBuilder executor(Executor executor) {
+        Objects.requireNonNull(executor, "executor must not be null");
+        this.executor = executor;
+        return this;
+    }
+
+    /// Returns the configured executor.
+    ///
+    /// If no executor was set, this method returns null.
+    ///
+    /// @return the executor, or null if not set
+    /// @since 1.0.0
+    public @Nullable Executor executor() {
+        return executor;
     }
 
     /// Builds the [StompClient] instance.

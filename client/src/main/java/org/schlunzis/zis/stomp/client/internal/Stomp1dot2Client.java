@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,13 +34,14 @@ public final class Stomp1dot2Client implements StompClient {
     private final WebSocketClient websocketClient;
     private final InboundChannel inboundChannel;
     private final OutboundChannel outboundChannel;
+    private final Executor executor;
 
     private final AtomicReference<ConnectionState> connectionState = new AtomicReference<>(ConnectionState.UNUSED);
     /// A mutex to synchronize connect and disconnect operations.
     private final Lock connectDisconnectMutex = new ReentrantLock();
 
     public Stomp1dot2Client(URI endpoint, MessageConverter messageConverter, SubscriptionManager subscriptionManager, WebSocketClient webSocketClient,
-                            InboundChannel inboundChannel, OutboundChannel outboundChannel
+                            InboundChannel inboundChannel, OutboundChannel outboundChannel, Executor executor
     ) {
         this.endpoint = endpoint;
         this.messageConverter = messageConverter;
@@ -47,6 +49,7 @@ public final class Stomp1dot2Client implements StompClient {
         this.websocketClient = webSocketClient;
         this.inboundChannel = inboundChannel;
         this.outboundChannel = outboundChannel;
+        this.executor = executor;
     }
 
     // ########
@@ -56,7 +59,7 @@ public final class Stomp1dot2Client implements StompClient {
     @Override
     public CompletableFuture<Void> connect() throws ConnectionException {
         FrameBuilder connectFrame = Frames.connect(endpoint);
-        return CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
+        return CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()), executor);
     }
 
     @Override
@@ -69,14 +72,14 @@ public final class Stomp1dot2Client implements StompClient {
         return switch (authenticationMethod) {
             case STOMP -> {
                 FrameBuilder connectFrame = Frames.connect(endpoint, login, passcode);
-                yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()));
+                yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of()), executor);
             }
             case HTTP_BASIC -> {
                 String credentials = login + ":" + passcode;
                 String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
                 String authHeaderValue = "Basic " + encodedCredentials;
                 FrameBuilder connectFrame = Frames.connect(endpoint);
-                yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of("Authorization", List.of(authHeaderValue))));
+                yield CompletableFuture.runAsync(() -> doConnect(connectFrame, Map.of("Authorization", List.of(authHeaderValue))), executor);
             }
         };
     }
@@ -118,24 +121,24 @@ public final class Stomp1dot2Client implements StompClient {
     // #####
 
     @Override
-    public void send(String destination, String body) {
+    public CompletableFuture<Void> send(String destination, String body) {
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(body, "body must not be null");
         SendContext sendContext = SendContext.create(destination, body)
                 .header("content-type", STRING_CONTENT_TYPE);
-        send(sendContext);
+        return send(sendContext);
     }
 
     @Override
-    public void send(String destination, Object body) {
+    public CompletableFuture<Void> send(String destination, Object body) {
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(body, "body must not be null");
         SendContext sendContext = SendContext.create(destination, body);
-        send(sendContext);
+        return send(sendContext);
     }
 
     @Override
-    public void send(SendContext context) {
+    public CompletableFuture<Void> send(SendContext context) {
         Objects.requireNonNull(context, "SendContext must not be null");
         ensureConnected();
         FrameBuilder builder = Frame.builder()
@@ -146,7 +149,7 @@ public final class Stomp1dot2Client implements StompClient {
                         ? STRING_CONTENT_TYPE
                         : messageConverter.contentType()
                 );
-        outboundChannel.handle(builder, context);
+        return CompletableFuture.runAsync(() -> outboundChannel.handle(builder, context), executor);
     }
 
     // ##########
@@ -154,7 +157,7 @@ public final class Stomp1dot2Client implements StompClient {
     // ##########
 
     @Override
-    public <T> Subscription subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
+    public <T> CompletableFuture<Subscription> subscribe(String destination, Class<T> payloadType, Consumer<T> messageHandler) {
         Objects.requireNonNull(destination, "destination must not be null");
         Objects.requireNonNull(payloadType, "payloadType must not be null");
         Objects.requireNonNull(messageHandler, "messageHandler must not be null");
@@ -167,19 +170,21 @@ public final class Stomp1dot2Client implements StompClient {
     }
 
     @Override
-    public <T> Subscription subscribe(SubscribeContext<T> context) {
+    public <T> CompletableFuture<Subscription> subscribe(SubscribeContext<T> context) {
         Objects.requireNonNull(context, "SubscribeContext must not be null");
         ensureConnected();
 
         Subscription subscription = subscriptionManager.create(context.destination(),
                 new SubscriberInvoker<>(messageConverter, context.payloadType(), context.messageHandler()));
 
-        doSubscribe(subscription);
-        return subscription;
+        return CompletableFuture.supplyAsync(() -> {
+            doSubscribe(subscription);
+            return subscription;
+        }, executor);
     }
 
     @Override
-    public void subscribe(Object subscriber) {
+    public CompletableFuture<Void> subscribe(Object subscriber) {
         connectDisconnectMutex.lock();
         try {
             ensureConnected();
@@ -188,7 +193,7 @@ public final class Stomp1dot2Client implements StompClient {
             }
 
             Set<StompSubscription> subscriptions = subscriptionManager.createAnnotatedSubscriptions(subscriber);
-            subscriptions.forEach(this::doSubscribe);
+            return CompletableFuture.runAsync(() -> subscriptions.forEach(this::doSubscribe), executor);
         } finally {
             connectDisconnectMutex.unlock();
         }
@@ -208,23 +213,24 @@ public final class Stomp1dot2Client implements StompClient {
     // ############
 
     @Override
-    public void unsubscribe(Subscription subscription) {
+    public CompletableFuture<Void> unsubscribe(Subscription subscription) {
         ensureConnected();
 
         if (!subscriptionManager.contains(subscription.id())) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
-        doUnsubscribe(subscription);
         subscriptionManager.remove(subscription);
+        return CompletableFuture.runAsync(() -> doUnsubscribe(subscription), executor);
     }
 
     @Override
-    public void unsubscribe(Object subscriber) {
+    public CompletableFuture<Void> unsubscribe(Object subscriber) {
         connectDisconnectMutex.lock();
         try {
             ensureConnected();
             Optional<Set<StompSubscription>> subscriptions = subscriptionManager.remove(subscriber);
-            subscriptions.ifPresent(subs -> subs.forEach(this::doUnsubscribe));
+            return CompletableFuture.runAsync(() ->
+                    subscriptions.ifPresent(subs -> subs.forEach(this::doUnsubscribe)), executor);
         } finally {
             connectDisconnectMutex.unlock();
         }
