@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /// Factory class for creating STOMP clients.
 ///
@@ -37,8 +39,23 @@ public class StompClientFactoryImpl implements StompClientFactory {
         final InboundChannel inboundChannel = createInboundChannel(builder, subscriptionManager, receiptManager);
         final WebSocketClient webSocketClient = new JakartaWebsocketClient(endpoint, inboundChannel::handle);
         final OutboundChannel outboundChannel = createOutboundChannel(builder, webSocketClient, receiptManager);
+        final Executor executor = extractExecutor(builder);
 
-        return new Stomp1dot2Client(endpoint, messageConverter, subscriptionManager, webSocketClient, inboundChannel, outboundChannel);
+        return new Stomp1dot2Client(endpoint, messageConverter, subscriptionManager, webSocketClient,
+                inboundChannel, outboundChannel, executor);
+    }
+
+    private Executor extractExecutor(StompClientBuilder builder) {
+        Executor executor = builder.executor();
+        if (executor != null) {
+            log.debug("Using user-provided Executor: {}", executor.getClass().getName());
+            return executor;
+        }
+
+        log.debug("Creating new Executor");
+        Thread.Builder.OfVirtual virtualThreadBuilder = Thread.ofVirtual()
+                .name("zis-stomp-client-", 0);
+        return Executors.newThreadPerTaskExecutor(virtualThreadBuilder::unstarted);
     }
 
     private URI extractEndpoint(StompClientBuilder builder) {
