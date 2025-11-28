@@ -13,8 +13,8 @@
     <description>A STOMP client and annotation processor.</description>
     <licenses>
         <license>
-            <name>GPL-3.0</name>
-            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/MIT</url>
         </license>
     </licenses>
     <developers>
@@ -62,7 +62,7 @@
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>3.0.1</version>
+                <version>3.0.2</version>
             </dependency>
 
             <dependency>
@@ -139,7 +139,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.4.2</version>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

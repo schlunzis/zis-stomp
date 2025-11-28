@@ -197,4 +197,4 @@ See [here](https://maven.apache.org/guides/mini/guide-reproducible-builds.html) 
 
 ## License
 
-zis-stomp is released under the GNU General Public License v3.0
+zis-stomp is released under the MIT License.
