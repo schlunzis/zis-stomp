@@ -40,7 +40,7 @@
     <properties>
         <revision>1.0.0-SNAPSHOT</revision>
         <java.version>25</java.version>
-        <tyrus.version>2.2.1</tyrus.version>
+        <tyrus.version>2.2.2</tyrus.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
