@@ -1,7 +1,7 @@
 package org.schlunzis.zis.stomp.client.internal;
 
 import org.schlunzis.zis.stomp.client.Subscription;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

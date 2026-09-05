@@ -1,4 +1,4 @@
-package org.schlunzis.zis.stomp.client.protocol;
+package org.schlunzis.zis.stomp.common.protocol;
 
 import org.junit.jupiter.api.Test;
 

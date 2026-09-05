@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.client.MessageConverter;
 import org.schlunzis.zis.stomp.client.StringMessageConverter;
 import org.schlunzis.zis.stomp.client.Topic;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.util.Objects;
 import java.util.Optional;

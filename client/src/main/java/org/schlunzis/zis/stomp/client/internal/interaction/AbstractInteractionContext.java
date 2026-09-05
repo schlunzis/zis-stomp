@@ -1,9 +1,9 @@
 package org.schlunzis.zis.stomp.client.internal.interaction;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.internal.Receiptable;
-import org.schlunzis.zis.stomp.client.protocol.HeadersImpl;
+import org.schlunzis.zis.stomp.common.Headers;
+import org.schlunzis.zis.stomp.common.protocol.HeadersImpl;
 
 import java.util.Objects;
 

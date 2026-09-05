@@ -7,10 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.schlunzis.zis.stomp.client.internal.interaction.EmptyInteractionContext;
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 import static org.mockito.Mockito.verify;
 

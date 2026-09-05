@@ -1,4 +1,4 @@
-package org.schlunzis.zis.stomp.client;
+package org.schlunzis.zis.stomp.common;
 
 import org.jspecify.annotations.Nullable;
 

@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;

@@ -2,7 +2,7 @@ package org.schlunzis.zis.stomp.client.websocket;
 
 import org.schlunzis.zis.stomp.client.ConnectionException;
 import org.schlunzis.zis.stomp.client.SendException;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.util.List;
 import java.util.Map;

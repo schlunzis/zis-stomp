@@ -4,11 +4,12 @@ import org.schlunzis.zis.stomp.client.*;
 import org.schlunzis.zis.stomp.client.internal.channel.inbound.InboundChannel;
 import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundChannel;
 import org.schlunzis.zis.stomp.client.internal.interaction.EmptyInteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
-import org.schlunzis.zis.stomp.client.protocol.Frames;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
+import org.schlunzis.zis.stomp.common.Headers;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.protocol.Frames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

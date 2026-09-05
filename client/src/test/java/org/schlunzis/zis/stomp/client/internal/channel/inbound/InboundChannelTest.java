@@ -4,8 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.client.OnErrorConsumer;
 import org.schlunzis.zis.stomp.client.internal.SubscriptionManager;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -46,7 +47,7 @@ class InboundChannelTest {
 
         inboundChannel.handle(frame);
 
-        verify(consumer).accept(any(), any());
+        verify(consumer).accept(any(), any(), isNull());
     }
 
     @Test

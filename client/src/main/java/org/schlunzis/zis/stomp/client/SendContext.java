@@ -2,6 +2,7 @@ package org.schlunzis.zis.stomp.client;
 
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
 import org.schlunzis.zis.stomp.client.internal.interaction.SendContextImpl;
+import org.schlunzis.zis.stomp.common.Headers;
 
 /// Context for sending a STOMP message.
 ///

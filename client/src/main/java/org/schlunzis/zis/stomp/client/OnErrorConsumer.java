@@ -1,6 +1,7 @@
 package org.schlunzis.zis.stomp.client;
 
-import java.util.function.BiConsumer;
+import org.jspecify.annotations.Nullable;
+import org.schlunzis.zis.stomp.common.Headers;
 
 /// Consumer for handling STOMP `ERROR` frames.
 ///
@@ -13,7 +14,7 @@ import java.util.function.BiConsumer;
 ///
 /// @since 1.0.0
 @FunctionalInterface
-public interface OnErrorConsumer extends BiConsumer<String, Message<String>> {
+public interface OnErrorConsumer {
 
     /// Accepts an error that occurred during STOMP communication.
     ///
@@ -21,8 +22,9 @@ public interface OnErrorConsumer extends BiConsumer<String, Message<String>> {
     /// Usually, more information is provided in the body.
     ///
     /// @param m       the error message from the ERROR frame
-    /// @param message the complete ERROR frame message including headers and body
+    /// @param headers the headers of the ERROR frame
+    /// @param body    the body of the ERROR frame
     /// @since 1.0.0
-    void accept(String m, Message<String> message);
+    void accept(String m, Headers headers, @Nullable String body);
 
 }

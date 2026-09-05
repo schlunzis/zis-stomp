@@ -8,6 +8,7 @@ import org.jspecify.annotations.NullMarked;
 /// @since 1.0.0
 @NullMarked
 module org.schlunzis.zis.stomp.client {
+    requires org.schlunzis.zis.stomp.common;
     requires jakarta.websocket.client;
     requires org.slf4j;
     requires org.jspecify;

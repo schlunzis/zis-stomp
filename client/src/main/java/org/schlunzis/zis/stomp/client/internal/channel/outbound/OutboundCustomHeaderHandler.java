@@ -1,7 +1,7 @@
 package org.schlunzis.zis.stomp.client.internal.channel.outbound;
 
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 import java.util.List;
 import java.util.Map;

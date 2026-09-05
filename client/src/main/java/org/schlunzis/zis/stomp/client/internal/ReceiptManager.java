@@ -2,9 +2,9 @@ package org.schlunzis.zis.stomp.client.internal;
 
 import org.schlunzis.zis.stomp.client.ReceiptPolicy;
 import org.schlunzis.zis.stomp.client.StompClientBuilder;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

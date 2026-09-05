@@ -10,9 +10,9 @@ import org.schlunzis.zis.stomp.client.Subscription;
 import org.schlunzis.zis.stomp.client.Topic;
 import org.schlunzis.zis.stomp.client.internal.channel.inbound.InboundChannel;
 import org.schlunzis.zis.stomp.client.internal.channel.outbound.OutboundChannel;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.net.URI;
 import java.net.URISyntaxException;

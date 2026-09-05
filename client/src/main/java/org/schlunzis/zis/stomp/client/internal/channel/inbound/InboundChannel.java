@@ -1,7 +1,7 @@
 package org.schlunzis.zis.stomp.client.internal.channel.inbound;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
