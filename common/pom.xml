@@ -9,23 +9,12 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>client</artifactId>
+    <artifactId>common</artifactId>
 
-    <name>Ze Impressive Schwifty STOMP Client</name>
-    <description>A STOMP client implementation using Jakarta WebSockets.</description>
+    <name>Common Ze Impressive Schwifty STOMP</name>
+    <description>Common classes for the ZIS STOMP client and broker.</description>
 
     <dependencies>
-        <dependency>
-            <groupId>org.schlunzis.zis.stomp</groupId>
-            <artifactId>common</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.websocket</groupId>
-            <artifactId>jakarta.websocket-client-api</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -60,16 +49,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-jdk-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.schlunzis.zis.stomp.client.OnErrorConsumer;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,7 +29,7 @@ class InboundErrorChannelHandlerTest {
 
         handler.handle(errorFrame);
 
-        verify(consumer).accept("Test error message", errorFrame);
+        verify(consumer).accept("Test error message", errorFrame.headers(), errorFrame.body().orElse(null));
     }
 
     @Test
@@ -41,7 +41,7 @@ class InboundErrorChannelHandlerTest {
 
         handler.handle(errorFrame);
 
-        verify(consumer).accept("Unknown error", errorFrame);
+        verify(consumer).accept("Unknown error", errorFrame.headers(), errorFrame.body().orElse(null));
     }
 
     @Test
@@ -53,7 +53,7 @@ class InboundErrorChannelHandlerTest {
 
         handler.handle(messageFrame);
 
-        verify(consumer, never()).accept(any(), any());
+        verify(consumer, never()).accept(any(), any(), anyString());
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -65,7 +65,7 @@ class InboundErrorChannelHandlerTest {
     @Test
     void testHandleThrowsExceptionInConsumer() {
         RuntimeException exception = new RuntimeException("Test exception");
-        doThrow(exception).when(consumer).accept(any(), any());
+        doThrow(exception).when(consumer).accept(any(), any(), isNull());
         InboundErrorChannelHandler handler = new InboundErrorChannelHandler(consumer);
         Frame errorFrame = Frame.builder()
                 .command(Command.ERROR)

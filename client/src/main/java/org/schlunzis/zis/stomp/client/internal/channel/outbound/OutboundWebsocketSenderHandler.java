@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.client.internal.channel.outbound;
 
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 /// Outbound channel handler for sending STOMP frames over a WebSocket connection.
 ///

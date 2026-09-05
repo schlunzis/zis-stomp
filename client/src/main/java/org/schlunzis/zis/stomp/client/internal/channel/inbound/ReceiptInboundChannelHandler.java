@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.client.internal.channel.inbound;
 
 import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 /// Inbound channel handler for processing RECEIPT frames.
 ///

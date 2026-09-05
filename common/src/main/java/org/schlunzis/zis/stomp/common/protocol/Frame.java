@@ -1,7 +1,6 @@
-package org.schlunzis.zis.stomp.client.protocol;
+package org.schlunzis.zis.stomp.common.protocol;
 
-import org.schlunzis.zis.stomp.client.Headers;
-import org.schlunzis.zis.stomp.client.Message;
+import org.schlunzis.zis.stomp.common.Headers;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -21,7 +20,7 @@ public record Frame(
         Command command,
         Headers headers,
         Optional<String> body
-) implements Message<String> {
+) {
 
     /// Do not use this constructor directly. Use the FrameBuilder instead.
     ///

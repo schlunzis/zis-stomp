@@ -1,13 +1,20 @@
-package org.schlunzis.zis.stomp.client.protocol;
+package org.schlunzis.zis.stomp.common.protocol;
 
-import org.schlunzis.zis.stomp.client.Headers;
+import org.schlunzis.zis.stomp.common.Headers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+/// Decodes from a [Reader] to a [Frame].
+///
+/// Instances can be reused.
 public final class FrameDecoder {
+
+    /// Creates a new FrameDecoder.
+    public FrameDecoder() {
+    }
 
     /// Decodes a STOMP frame from the given Reader.
     /// The reader must provide a valid STOMP frame according to the STOMP protocol specification.

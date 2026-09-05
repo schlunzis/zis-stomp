@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.client.internal.channel.inbound;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.util.Objects;
 import java.util.function.Consumer;

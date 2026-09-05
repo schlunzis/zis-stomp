@@ -2,9 +2,9 @@ package org.schlunzis.zis.stomp.client.websocket.jakarta;
 
 import jakarta.websocket.DecodeException;
 import jakarta.websocket.Decoder;
-import org.schlunzis.zis.stomp.client.protocol.DecodingException;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameDecoder;
+import org.schlunzis.zis.stomp.common.protocol.DecodingException;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameDecoder;
 
 import java.io.Reader;
 

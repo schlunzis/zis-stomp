@@ -2,12 +2,12 @@ package org.schlunzis.zis.stomp.client.internal.channel.outbound;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.internal.interaction.EmptyInteractionContext;
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.Headers;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

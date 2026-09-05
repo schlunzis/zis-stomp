@@ -3,11 +3,11 @@ package org.schlunzis.zis.stomp.client.internal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.ReceiptPolicy;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.Headers;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 import java.time.Duration;
 import java.util.Optional;

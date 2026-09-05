@@ -2,6 +2,7 @@ package org.schlunzis.zis.stomp.client;
 
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
 import org.schlunzis.zis.stomp.client.internal.interaction.SubscribeContextImpl;
+import org.schlunzis.zis.stomp.common.Headers;
 
 import java.util.function.Consumer;
 

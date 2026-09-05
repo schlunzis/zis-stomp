@@ -1,4 +1,4 @@
-package org.schlunzis.zis.stomp.client.protocol;
+package org.schlunzis.zis.stomp.common.protocol;
 
 /// Enum representing STOMP commands used in the STOMP protocol.
 ///
@@ -8,22 +8,39 @@ package org.schlunzis.zis.stomp.client.protocol;
 public enum Command {
 
     // Client Commands
+
+    /// SEND
     SEND,
+    /// SUBSCRIBE
     SUBSCRIBE,
+    /// UNSUBSCRIBE
     UNSUBSCRIBE,
+    /// BEGIN
     BEGIN,
+    /// COMMIT
     COMMIT,
+    /// ABORT
     ABORT,
+    /// ACK
     ACK,
+    /// NACK
     NACK,
+    /// DISCONNECT
     DISCONNECT,
+    /// CONNECT
     CONNECT,
+    /// STOMP
     STOMP,
 
     // Server Commands
+
+    /// CONNECTED
     CONNECTED,
+    /// MESSAGE
     MESSAGE,
+    /// RECEIPT
     RECEIPT,
+    /// ERROR
     ERROR
 
 }

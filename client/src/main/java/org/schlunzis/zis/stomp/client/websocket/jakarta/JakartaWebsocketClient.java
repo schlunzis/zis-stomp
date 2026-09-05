@@ -4,8 +4,8 @@ import jakarta.websocket.*;
 import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.client.ConnectionException;
 import org.schlunzis.zis.stomp.client.SendException;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
 import org.schlunzis.zis.stomp.client.websocket.WebSocketClient;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,8 +1,15 @@
-package org.schlunzis.zis.stomp.client.protocol;
+package org.schlunzis.zis.stomp.common.protocol;
 
 import java.nio.charset.StandardCharsets;
 
+/// Encodes [Frame]s to [String]s.
+///
+/// Instances can be reused.
 public final class FrameEncoder {
+
+    /// Creates a new FrameEncoder.
+    public FrameEncoder() {
+    }
 
     /// Encodes a Frame into its STOMP string representation.
     ///

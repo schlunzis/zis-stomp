@@ -9,9 +9,9 @@ import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
 import org.schlunzis.zis.stomp.client.internal.Receiptable;
 import org.schlunzis.zis.stomp.client.internal.interaction.EmptyInteractionContext;
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 import java.time.Duration;
 import java.util.Optional;

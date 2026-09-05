@@ -1,10 +1,10 @@
 package org.schlunzis.zis.stomp.client.internal.interaction;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.client.Headers;
 import org.schlunzis.zis.stomp.client.SendContext;
 import org.schlunzis.zis.stomp.client.SubscribeContext;
 import org.schlunzis.zis.stomp.client.internal.Receiptable;
+import org.schlunzis.zis.stomp.common.Headers;
 
 /// This internal interface defines the contract for interaction contexts used in STOMP client operations.
 ///

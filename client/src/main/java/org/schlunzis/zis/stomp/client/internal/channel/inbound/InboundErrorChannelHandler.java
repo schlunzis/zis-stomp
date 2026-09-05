@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.client.internal.channel.inbound;
 
 import org.schlunzis.zis.stomp.client.OnErrorConsumer;
-import org.schlunzis.zis.stomp.client.protocol.Command;
-import org.schlunzis.zis.stomp.client.protocol.Frame;
+import org.schlunzis.zis.stomp.common.protocol.Command;
+import org.schlunzis.zis.stomp.common.protocol.Frame;
 
 import java.util.Objects;
 
@@ -30,7 +30,7 @@ public final class InboundErrorChannelHandler extends AbstractInboundChannelHand
             if (message == null) {
                 message = "Unknown error";
             }
-            onErrorConsumer.accept(message, frame);
+            onErrorConsumer.accept(message, frame.headers(), frame.body().orElse(null));
         }
 
         super.handle(frame);

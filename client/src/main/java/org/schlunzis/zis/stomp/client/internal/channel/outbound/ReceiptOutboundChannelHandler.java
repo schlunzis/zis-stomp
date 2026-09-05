@@ -3,7 +3,7 @@ package org.schlunzis.zis.stomp.client.internal.channel.outbound;
 import org.schlunzis.zis.stomp.client.internal.ReceiptManager;
 import org.schlunzis.zis.stomp.client.internal.Receiptable;
 import org.schlunzis.zis.stomp.client.internal.interaction.InteractionContext;
-import org.schlunzis.zis.stomp.client.protocol.FrameBuilder;
+import org.schlunzis.zis.stomp.common.protocol.FrameBuilder;
 
 import java.util.Optional;
 
