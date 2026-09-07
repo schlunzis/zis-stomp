@@ -1,9 +1,8 @@
 # zis-stomp
 
-A STOMP client written in Java and built on Jakarta WebSockets.
-This library aims to provide a STOMP 1.2 client for Java applications, with support for programmatic and
-annotation-driven publishers and subscribers.
-It was created due to a need for a STOMP client with a real `module-info` and JLink support.
+A STOMP client written in Java and built on Jakarta WebSockets. This library aims to provide a STOMP 1.2 client for Java
+applications, with support for programmatic and annotation-driven publishers and subscribers. It was created due to a
+need for a STOMP client with a real `module-info` and JLink support.
 
 Currently, the following features are implemented:
 
@@ -29,8 +28,7 @@ This project is part of [Ze Impressive Schwifty](https://github.com/schlunzis/Ze
 
 ### Maven
 
-This library is not published to Maven Central at this time.
-It will be published, when it is in a ready enough state.
+This library is not published to Maven Central at this time. It will be published, when it is in a ready enough state.
 You can use the snapshot build to include it in your project.
 
 #### Snapshot
@@ -64,6 +62,13 @@ Then, add the dependency:
     <artifactId>client</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 </dependency>
+
+<!-- Or any other Jakarta WebSocket implementation. -->
+<dependency>
+    <groupId>org.glassfish.tyrus</groupId>
+    <artifactId>tyrus-container-jdk-client</artifactId>
+    <version>2.2.2</version>
+</dependency>
 ```
 <!-- @formatter:on -->
 
@@ -76,13 +81,13 @@ void main() {
     StompClient client = StompClient.builder()
             .endpoint(new URI("ws://localhost:8080/ws"))
             .build();
-    client.connect();
+    client.connect().join();
 
-    client.send("/app/hello", "Hello, World!");
+    client.send("/app/hello", "Hello, World!").join();
     Subscription sub = client.subscribe("/topic/greetings", String.class,
-            message -> log.info("Received: " + message));
+            message -> log.info("Received: " + message)).get();
     // Do other stuff and listen for messages...
-    client.unsubscribe(sub);
+    client.unsubscribe(sub).join();
 
     client.close();
 }
@@ -98,7 +103,7 @@ listen to specific topics.
 <!-- @formatter:off -->
 ```java
 @StompSubscriber(destinationPrefix = "/topic")
-public class MainController {
+public class Controller {
 
     @Topic("/greetings")
     public void onMessage(String message) {
@@ -121,9 +126,9 @@ void main() {
     StompClient client = StompClient.builder()
             .endpoint(new URI("ws://localhost:8080/ws"))
             .build();
-    client.connect();
+    client.connect().join();
 
-    MainController controller = new MainController();
+    Controller controller = new Controller();
     client.subscribe(controller);
     // Do other stuff and listen for messages...
     client.unsubscribe(controller);
@@ -159,7 +164,7 @@ void main() {
     StompClient client = StompClient.builder()
             .endpoint(new URI("ws://localhost:8080/ws"))
             .build();
-    client.connect();
+    client.connect().join();
 
     MainPublisher publisher = new MainPublisherImpl(client);
     publisher.sendGreeting("Hello, World!");
@@ -171,8 +176,8 @@ This allows for a clean definition of topics to send messages to and receive mes
 
 ## Building
 
-To build the project, make sure you have Java 25 or higher installed.
-If you do not skip the tests, you have the mock server running in the background.
+To build the project, make sure you have Java 25 or higher installed. If you do not skip the tests, you have the mock
+server running in the background.
 
 You can build the project using Maven:
 
@@ -190,10 +195,10 @@ To run the integration tests, you can use the following Maven command:
 
 ### Reproducible Builds
 
-Maven is configured to produce reproducible builds.
-If you want to verify that the build you have is correct, you have to set the `project.build.outputTimestamp` property
-to the time of the commit you want to check against and of course check out the correct commit.
-See [here](https://maven.apache.org/guides/mini/guide-reproducible-builds.html) for more information.
+Maven is configured to produce reproducible builds. If you want to verify that the build you have is correct, you have
+to set the `project.build.outputTimestamp` property to the time of the commit you want to check against and of course
+check out the correct commit. See [here](https://maven.apache.org/guides/mini/guide-reproducible-builds.html) for more
+information.
 
 ## License
 
