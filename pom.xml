@@ -33,6 +33,7 @@
     <url>https://docs.schlunzis.org/zis-stomp/site</url>
 
     <modules>
+        <module>broker</module>
         <module>client</module>
         <module>common</module>
         <module>annotation-processor</module>
@@ -53,6 +54,11 @@
             <dependency>
                 <groupId>jakarta.websocket</groupId>
                 <artifactId>jakarta.websocket-client-api</artifactId>
+                <version>2.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-api</artifactId>
                 <version>2.2.0</version>
             </dependency>
             <dependency>
@@ -106,6 +112,16 @@
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-container-jdk-client</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-server</artifactId>
+                <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-container-jdk-server</artifactId>
                 <version>${tyrus.version}</version>
             </dependency>
         </dependencies>
