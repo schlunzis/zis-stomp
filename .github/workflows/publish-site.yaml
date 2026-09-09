@@ -40,7 +40,7 @@ jobs:
           cache: "maven"
 
       - name: Build and generate Site
-        run: ./mvnw clean install site site:stage -DskipTests -Dproject.build.outputTimestamp=${{ steps.commit_time.outputs.COMMIT_TIME }}
+        run: ./mvnw clean install site site:stage -DskipTests -DskipITs -Dproject.build.outputTimestamp=${{ steps.commit_time.outputs.COMMIT_TIME }}
 
       - name: Publish Site via FTP
         run: |
