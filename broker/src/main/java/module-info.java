@@ -6,7 +6,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 module org.schlunzis.zis.stomp.broker {
     requires org.schlunzis.zis.stomp.common;
-    requires jakarta.websocket;
     requires org.slf4j;
     requires org.jspecify;
 
@@ -15,9 +14,6 @@ module org.schlunzis.zis.stomp.broker {
     uses com.fasterxml.jackson.core.ObjectCodec;
     uses tools.jackson.databind.ObjectMapper;
 
-    // Has to be open to everything, because different jakarta websocket implementations
-    // use reflection to access the endpoint classes and have different module names
-    opens org.schlunzis.zis.stomp.broker.websocket.jakarta;
-
     exports org.schlunzis.zis.stomp.broker;
+    exports org.schlunzis.zis.stomp.broker.websocket;
 }

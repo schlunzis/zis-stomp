@@ -6,5 +6,5 @@ module org.schlunzis.zis.stomp.common {
     requires org.jspecify;
 
     exports org.schlunzis.zis.stomp.common;
-    exports org.schlunzis.zis.stomp.common.protocol to org.schlunzis.zis.stomp.client;
+    exports org.schlunzis.zis.stomp.common.protocol to org.schlunzis.zis.stomp.client, org.schlunzis.zis.stomp.broker;
 }
