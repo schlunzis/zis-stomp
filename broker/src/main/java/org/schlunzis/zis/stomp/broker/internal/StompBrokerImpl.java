@@ -1,35 +1,23 @@
 package org.schlunzis.zis.stomp.broker.internal;
 
+import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.broker.StompBroker;
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketServer;
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketServerFactory;
-import org.schlunzis.zis.stomp.common.protocol.DecodingException;
-import org.schlunzis.zis.stomp.common.protocol.Frame;
-import org.schlunzis.zis.stomp.common.protocol.FrameDecoder;
-import org.schlunzis.zis.stomp.common.protocol.FrameEncoder;
+import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
+import org.schlunzis.zis.stomp.common.protocol.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Reader;
+import java.util.Optional;
 
-public class StompBrokerImpl implements StompBroker {
+public class StompBrokerImpl<SESSION extends WebsocketSession> implements StompBroker<SESSION> {
 
     private static final Logger log = LoggerFactory.getLogger(StompBrokerImpl.class);
 
-    private final WebsocketServer server;
     private final FrameEncoder frameEncoder = new FrameEncoder();
     private final FrameDecoder frameDecoder = new FrameDecoder();
 
-    public StompBrokerImpl(WebsocketServerFactory serverFactory) {
-        this.server = serverFactory.create(this::handleFrame);
-    }
-
-    private void handleFrame(Reader frameReader) { // FIXME add some kind of session id
-        try {
-            Frame frame = frameDecoder.decode(frameReader);
-        } catch (DecodingException e) {
-            log.error("Could not decode received frame!", e);
-        }
+    public StompBrokerImpl() {
     }
 
     @Override
@@ -37,8 +25,42 @@ public class StompBrokerImpl implements StompBroker {
     }
 
     @Override
+    public void onOpen(SESSION session) {
+        log.info(session.toString());
+    }
+
+    @Override
+    public void onMessage(SESSION session, Reader message) {
+        log.info(session.toString());
+    }
+
+    @Override
+    public void onError(SESSION session, @Nullable Throwable t) {
+        log.info(session.toString());
+    }
+
+    @Override
+    public void onClose(SESSION session) {
+        log.info(session.toString());
+    }
+
+    @Override
     public void close() {
-        server.close();
+    }
+
+    private Optional<Frame> decodeOrSendError(SESSION session, Reader message) {
+        try {
+            Frame frame = frameDecoder.decode(message);
+            return Optional.of(frame);
+        } catch (DecodingException e) {
+            Frame errorFrame = Frame.builder()
+                    .command(Command.ERROR)
+                    .body("Line: " + e.getLine() + ": " + e.getMessage())
+                    .build();
+            String errorMessage = frameEncoder.encode(errorFrame);
+            session.send(errorMessage);
+            return Optional.empty();
+        }
     }
 
 }

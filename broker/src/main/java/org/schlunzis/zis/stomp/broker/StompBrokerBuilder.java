@@ -1,37 +1,18 @@
 package org.schlunzis.zis.stomp.broker;
 
-import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.broker.internal.StompBrokerFactory;
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketServerFactory;
+import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
 
-public class StompBrokerBuilder {
-
-    @Nullable
-    private WebsocketServerFactory websocketServerFactory;
+/// A stomp broker builder
+///
+/// @param <SESSION> the type of session handled by the broker
+public class StompBrokerBuilder<SESSION extends WebsocketSession> {
 
     /// Creates a new STOMP broker builder.
     ///
     /// @see StompBroker#builder()
     /// @since 1.0.0
     StompBrokerBuilder() {
-    }
-
-    /// Sets the websocket server factory. This parameter is required.
-    ///
-    /// @param websocketServerFactory the websocket server factory
-    /// @return the builder instance
-    /// @since 1.0.0
-    public StompBrokerBuilder websocketServerFactory(WebsocketServerFactory websocketServerFactory) {
-        this.websocketServerFactory = websocketServerFactory;
-        return this;
-    }
-
-    /// Returns the configured websocket server factory.
-    ///
-    /// @return the websocket server, or null if not set
-    /// @since 1.0.0
-    public @Nullable WebsocketServerFactory websocketServerFactory() {
-        return websocketServerFactory;
     }
 
     /// Builds the [StompBroker] instance.
@@ -41,8 +22,8 @@ public class StompBrokerBuilder {
     /// @return the STOMP broker
     /// @throws IllegalStateException if the websocket server is not set
     /// @since 1.0.0
-    public StompBroker build() throws IllegalStateException {
-        StompBrokerFactory factory = new StompBrokerFactory();
+    public StompBroker<SESSION> build() throws IllegalStateException {
+        StompBrokerFactory<SESSION> factory = new StompBrokerFactory<>();
         return factory.create(this);
     }
 
