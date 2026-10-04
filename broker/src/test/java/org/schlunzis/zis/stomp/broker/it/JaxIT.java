@@ -3,6 +3,7 @@ package org.schlunzis.zis.stomp.broker.it;
 import io.avaje.jex.Jex;
 import io.avaje.jex.websocket.WebSocketPlugin;
 import io.avaje.jex.websocket.WsContext;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.broker.StompBroker;
 import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
@@ -61,7 +62,7 @@ public class JaxIT {
 
     private record JaxSession(WsContext context) implements WebsocketSession {
         @Override
-        public void send(String message) {
+        public void send(@NonNull String message) {
             context.send(message);
         }
 
