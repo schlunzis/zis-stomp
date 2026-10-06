@@ -10,7 +10,7 @@
     <packaging>jlink</packaging>
 
     <properties>
-        <java.version>25</java.version>
+        <maven.compiler.release>25</maven.compiler.release>
         <zis.stomp.version>@project.version@</zis.stomp.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -24,32 +24,25 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-jdk-client</artifactId>
-            <version>2.2.2</version>
+            <version>@tyrus.version@</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.22.2</version>
+            <version>@fasterxml.jackson.version@</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>2.26.1</version>
+            <version>@log4j.version@</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
-                <configuration>
-                    <release>${java.version}</release>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-jlink-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>@jlink.plugin.version@</version>
                 <extensions>true</extensions>
                 <configuration>
                     <launcher>
@@ -65,7 +58,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.6.3</version>
+                <version>@exec.plugin.version@</version>
                 <executions>
                     <execution>
                         <id>run-jlink-main</id>
