@@ -176,7 +176,6 @@
                     <artifactId>central-publishing-maven-plugin</artifactId>
                     <version>0.11.0</version>
                 </plugin>
-
             </plugins>
         </pluginManagement>
 
