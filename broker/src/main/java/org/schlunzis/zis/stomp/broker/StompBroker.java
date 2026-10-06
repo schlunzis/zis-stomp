@@ -2,7 +2,6 @@ package org.schlunzis.zis.stomp.broker;
 
 import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.broker.connection.StompSession;
-import org.schlunzis.zis.stomp.broker.connection.jax.JaxConfigurationConsumer;
 
 import java.io.Reader;
 
@@ -51,7 +50,8 @@ import java.io.Reader;
 ///
 /// Default implementations are provided for the following frameworks:
 ///
-/// - [Jex](https://avaje.io/jex/) with [org.schlunzis.zis.stomp.broker.connection.jax.JaxSession], [JaxConfigurationConsumer]
+/// - [Jex](https://avaje.io/jex/) with [org.schlunzis.zis.stomp.broker.connection.jax.JaxSession], [org.schlunzis.zis.stomp.broker.connection.jax.JaxConfigurationConsumer]
+/// - [Helidon v4](https://helidon.io/docs/v4/se/websocket) with [org.schlunzis.zis.stomp.broker.connection.helidon.HelidonSession], [org.schlunzis.zis.stomp.broker.connection.helidon.HelidonWebsocketListener]
 ///
 /// The stomp broker is thread-safe.
 ///
