@@ -10,6 +10,7 @@ module org.schlunzis.zis.stomp.broker {
     requires org.jspecify;
 
     requires static io.avaje.jex.websocket;
+    requires static io.helidon.websocket;
 
     exports org.schlunzis.zis.stomp.broker;
     exports org.schlunzis.zis.stomp.broker.connection;

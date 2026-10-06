@@ -27,6 +27,12 @@
             <version>3.6</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.helidon.webserver</groupId>
+            <artifactId>helidon-webserver-websocket</artifactId>
+            <version>4.5.5</version>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>

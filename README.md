@@ -205,7 +205,6 @@ void main() {
     StompBroker<Session> broker = StompBroker.<SessionImpl>builder()
             .hosts("localhost")
             .build();
-
     Server server = Server.builder()
             .configureWebsocket(ws -> ws
                     .onOpen(ctx -> broker.onOpen(new SessionImpl(ctx)))
@@ -227,11 +226,26 @@ void main() {
 void main() {
     StompBroker<JaxSession> broker = StompBroker.<JaxSession>builder()
             .build();
-
     WebSocketPlugin wsPlugin = WebSocketPlugin.create()
             .ws("/ws", new JaxConfigurationConsumer(broker));
     Jex.Server server = Jex.create()
             .plugin(wsPlugin)
+            .start();
+    broker.start();
+}
+```
+
+#### Helidon
+
+```java
+void main() {
+    StompBroker<HelidonSession> broker = StompBroker.<HelidonSession>builder()
+            .build();
+    WebServer server = WebServer.builder()
+            .port(36941)
+            .addRouting(WsRouting.builder()
+                    .endpoint("/ws", new HelidonWebsocketListener(broker)))
+            .build()
             .start();
     broker.start();
 }
