@@ -3,7 +3,7 @@ package org.schlunzis.zis.stomp.broker.internal;
 import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.broker.Authenticator;
 import org.schlunzis.zis.stomp.broker.StompBroker;
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
+import org.schlunzis.zis.stomp.broker.connection.StompSession;
 import org.schlunzis.zis.stomp.common.Headers;
 import org.schlunzis.zis.stomp.common.protocol.*;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class StompBrokerImpl<SESSION extends WebsocketSession> implements StompBroker<SESSION> {
+public class StompBrokerImpl<SESSION extends StompSession> implements StompBroker<SESSION> {
 
     private static final Logger log = LoggerFactory.getLogger(StompBrokerImpl.class);
     private static final String STOMP_VERSION = "1.2";
@@ -46,15 +46,18 @@ public class StompBrokerImpl<SESSION extends WebsocketSession> implements StompB
 
     @Override
     public void onOpen(SESSION session) {
-        log.info("Opened Session: {}", session);
+        Objects.requireNonNull(session);
+        log.debug("Opened Session: {}", session);
     }
 
     @Override
     public void onMessage(SESSION session, Reader message) {
+        Objects.requireNonNull(session);
+        Objects.requireNonNull(message);
         Optional<Frame> optFrame = decodeOrSendError(session, message);
         if (optFrame.isEmpty()) return;
         Frame frame = optFrame.get();
-        log.info("Received Message: {}", frame);
+        log.debug("Received Message: {}", frame);
 
         switch (frame.command()) {
             case STOMP, CONNECT -> onConnect(session, frame);
@@ -196,11 +199,14 @@ public class StompBrokerImpl<SESSION extends WebsocketSession> implements StompB
     }
 
     private void onDisconnect(SESSION session, Frame disconnectFrame) {
+        Objects.requireNonNull(session);
+        Objects.requireNonNull(disconnectFrame);
         // TODO send receipt frame
     }
 
     @Override
     public void onError(SESSION session, @Nullable Throwable t) {
+        Objects.requireNonNull(session);
         log.info("Error: {}", session, t);
         wLock.lock();
         try {
@@ -213,7 +219,8 @@ public class StompBrokerImpl<SESSION extends WebsocketSession> implements StompB
 
     @Override
     public void onClose(SESSION session) {
-        log.info("Closed Session: {}", session);
+        Objects.requireNonNull(session);
+        log.debug("Closed Session: {}", session);
         wLock.lock();
         try {
             authenticatedSessions.remove(session);

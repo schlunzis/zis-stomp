@@ -1,8 +1,8 @@
 package org.schlunzis.zis.stomp.broker.internal;
 
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
+import org.schlunzis.zis.stomp.broker.connection.StompSession;
 
-public record Subscription<SESSION extends WebsocketSession>(
+public record Subscription<SESSION extends StompSession>(
         SESSION session,
         String id
 ) {

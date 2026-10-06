@@ -2,17 +2,15 @@ package org.schlunzis.zis.stomp.broker.it;
 
 import io.avaje.jex.Jex;
 import io.avaje.jex.websocket.WebSocketPlugin;
-import io.avaje.jex.websocket.WsContext;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.broker.StompBroker;
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
+import org.schlunzis.zis.stomp.broker.connection.jax.JaxConfigurationConsumer;
+import org.schlunzis.zis.stomp.broker.connection.jax.JaxSession;
 import org.schlunzis.zis.stomp.client.StompClient;
 import org.schlunzis.zis.stomp.client.Subscription;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,12 +27,7 @@ public class JaxIT {
                 .build();
 
         WebSocketPlugin wsPlugin = WebSocketPlugin.create()
-                .ws("/ws", ws -> ws
-                        .onOpen(ctx -> broker.onOpen(new JaxSession(ctx)))
-                        .onMessage(ctx -> broker.onMessage(new JaxSession(ctx), new StringReader(ctx.message())))
-                        .onClose(ctx -> broker.onClose(new JaxSession(ctx)))
-                        .onError(ctx -> broker.onError(new JaxSession(ctx), ctx.error()))
-                );
+                .ws("/ws", new JaxConfigurationConsumer(broker));
         Jex.Server server = Jex.create()
                 .plugin(wsPlugin)
                 .port(36941)
@@ -121,30 +114,6 @@ public class JaxIT {
         assertTrue(bool.get());
         broker.close();
         server.shutdown();
-    }
-
-
-    private record JaxSession(WsContext context) implements WebsocketSession {
-        @Override
-        public void send(@NonNull String message) {
-            context.send(message);
-        }
-
-        @Override
-        public void close() {
-            context.closeSession();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof JaxSession(WsContext c))) return false;
-            return Objects.equals(context.ws(), c.ws());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(context.ws());
-        }
     }
 
 }

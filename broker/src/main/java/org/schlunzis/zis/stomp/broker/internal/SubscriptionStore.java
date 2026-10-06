@@ -1,6 +1,6 @@
 package org.schlunzis.zis.stomp.broker.internal;
 
-import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
+import org.schlunzis.zis.stomp.broker.connection.StompSession;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class SubscriptionStore<SESSION extends WebsocketSession> {
+public class SubscriptionStore<SESSION extends StompSession> {
 
     private final Map<String, Collection<Subscription<SESSION>>> subscriptions = new HashMap<>();
 
