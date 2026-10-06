@@ -105,11 +105,6 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-client</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-container-jdk-client</artifactId>
                 <version>${tyrus.version}</version>
             </dependency>
