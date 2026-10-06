@@ -4,6 +4,10 @@ import io.helidon.websocket.WsCloseCodes;
 import io.helidon.websocket.WsSession;
 import org.schlunzis.zis.stomp.broker.connection.StompSession;
 
+/// Simple wrapper implementation for [WsSession] as a [StompSession].
+///
+/// @param session the Helidon websocket session
+/// @since 1.0.0
 public record HelidonSession(WsSession session) implements StompSession {
 
     @Override

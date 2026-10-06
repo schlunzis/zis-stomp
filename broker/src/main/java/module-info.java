@@ -2,6 +2,7 @@ import org.jspecify.annotations.NullMarked;
 
 /// This module provides a STOMP broker implementation.
 ///
+/// @see org.schlunzis.zis.stomp.broker.StompBroker
 /// @since 1.0.0
 @NullMarked
 module org.schlunzis.zis.stomp.broker {

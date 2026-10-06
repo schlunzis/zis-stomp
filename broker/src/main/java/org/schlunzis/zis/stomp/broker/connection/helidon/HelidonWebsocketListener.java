@@ -6,10 +6,17 @@ import org.schlunzis.zis.stomp.broker.StompBroker;
 
 import java.io.StringReader;
 
+/// A [WsListener] implementation that passes all events to the given [StompBroker].
+///
+/// @since 1.0.0
 public class HelidonWebsocketListener implements WsListener {
 
     private final StompBroker<HelidonSession> broker;
 
+    /// Creates a listener that passes all events to the given [StompBroker].
+    ///
+    /// @param broker the broker to pass events to
+    /// @since 1.0.0
     public HelidonWebsocketListener(StompBroker<HelidonSession> broker) {
         this.broker = broker;
     }
