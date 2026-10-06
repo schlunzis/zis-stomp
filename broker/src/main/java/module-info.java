@@ -16,4 +16,5 @@ module org.schlunzis.zis.stomp.broker {
     exports org.schlunzis.zis.stomp.broker;
     exports org.schlunzis.zis.stomp.broker.connection;
     exports org.schlunzis.zis.stomp.broker.connection.jax;
+    exports org.schlunzis.zis.stomp.broker.connection.helidon;
 }

@@ -44,10 +44,10 @@
         <java.version>25</java.version>
         <tyrus.version>2.2.2</tyrus.version>
         <log4j.version>2.26.1</log4j.version>
-        <fasterxml.jackson.version>2.22.2</fasterxml.jackson.version>
+        <fasterxml.jackson.version>2.22.3</fasterxml.jackson.version>
         <tools.jackson.version>3.2.3</tools.jackson.version>
         <jlink.plugin.version>3.3.0</jlink.plugin.version>
-        <exec.plugin.version>3.6.3</exec.plugin.version>
+        <exec.plugin.version>3.6.4</exec.plugin.version>
         <spring.version>7.0.9</spring.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
@@ -198,6 +198,21 @@
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>${exec.plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>3.9.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.11.0</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -299,7 +314,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.9.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -375,7 +389,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
                         <configuration>
                             <gpgArguments>
                                 <argument>--pinentry-mode</argument>
@@ -395,7 +408,6 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.11.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
