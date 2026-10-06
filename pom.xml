@@ -33,6 +33,7 @@
     <url>https://docs.schlunzis.org/zis-stomp/site</url>
 
     <modules>
+        <module>broker</module>
         <module>client</module>
         <module>common</module>
         <module>annotation-processor</module>
@@ -47,6 +48,7 @@
         <tools.jackson.version>3.2.3</tools.jackson.version>
         <jlink.plugin.version>3.3.0</jlink.plugin.version>
         <exec.plugin.version>3.6.4</exec.plugin.version>
+        <spring.version>7.0.9</spring.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -58,6 +60,11 @@
             <dependency>
                 <groupId>jakarta.websocket</groupId>
                 <artifactId>jakarta.websocket-client-api</artifactId>
+                <version>2.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-api</artifactId>
                 <version>2.2.0</version>
             </dependency>
             <dependency>
@@ -107,6 +114,36 @@
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-container-jdk-client</artifactId>
                 <version>${tyrus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.avaje</groupId>
+                <artifactId>avaje-jex-websocket</artifactId>
+                <version>3.6</version>
+            </dependency>
+            <dependency>
+                <groupId>io.avaje</groupId>
+                <artifactId>avaje-applog-slf4j</artifactId>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>io.helidon.webserver</groupId>
+                <artifactId>helidon-webserver-websocket</artifactId>
+                <version>4.5.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.robaho</groupId>
+                <artifactId>httpserver</artifactId>
+                <version>1.0.29</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-websocket</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-messaging</artifactId>
+                <version>${spring.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
