@@ -73,9 +73,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.schlunzis.zis.stomp</groupId>
-            <artifactId>client</artifactId>
-            <version>${revision}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

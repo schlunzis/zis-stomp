@@ -48,6 +48,7 @@
         <tools.jackson.version>3.2.3</tools.jackson.version>
         <jlink.plugin.version>3.3.0</jlink.plugin.version>
         <exec.plugin.version>3.6.3</exec.plugin.version>
+        <spring.version>7.0.9</spring.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -133,6 +134,16 @@
                 <groupId>io.github.robaho</groupId>
                 <artifactId>httpserver</artifactId>
                 <version>1.0.29</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-websocket</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-messaging</artifactId>
+                <version>${spring.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
