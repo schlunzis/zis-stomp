@@ -1,6 +1,5 @@
 package org.schlunzis.zis.stomp.mock_server;
 
-import lombok.RequiredArgsConstructor;
 import org.schlunzis.zis.stomp.mock_server.it.common.Model;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -10,10 +9,13 @@ import java.util.UUID;
 
 @Controller
 @MessageMapping("/simple")
-@RequiredArgsConstructor
 public class SimpleController {
 
     private final SimpMessagingTemplate template;
+
+    public SimpleController(SimpMessagingTemplate template) {
+        this.template = template;
+    }
 
     @MessageMapping("/echo")
     public void echo(Model message) {

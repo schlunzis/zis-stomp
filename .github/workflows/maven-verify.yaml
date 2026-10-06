@@ -20,21 +20,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 25 ]
+        java: [ 25, 27 ]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           java-version: ${{ matrix.java }}
-          distribution: 'zulu'
+          distribution: 'temurin'
           cache: "maven"
       - name: Start Mock Server
         run: |
           cd test/mock-server
-          nohup ../../mvnw -B -DskipTests spring-boot:run > mock-server.log 2>&1 &
+          nohup ../../mvnw -B -DskipTests -DskipITs spring-boot:run > mock-server.log 2>&1 &
           echo $! > mock-server.pid
           sleep 10
       - name: Build and Test
@@ -47,5 +47,5 @@ jobs:
           rm mock-server.pid || true
       - name: Test Reproducibility
         run: |
-          ./mvnw clean install -DskipTests --batch-mode
-          ./mvnw clean verify artifact:compare -DskipTests --batch-mode
+          ./mvnw clean install -DskipTests -DskipITs --batch-mode
+          ./mvnw clean verify artifact:compare -DskipTests -DskipITs --batch-mode
