@@ -115,14 +115,24 @@
                 <version>${tyrus.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-server</artifactId>
-                <version>${tyrus.version}</version>
+                <groupId>io.avaje</groupId>
+                <artifactId>avaje-jex-websocket</artifactId>
+                <version>3.6</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-jdk-server</artifactId>
-                <version>${tyrus.version}</version>
+                <groupId>io.avaje</groupId>
+                <artifactId>avaje-applog-slf4j</artifactId>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>io.helidon.webserver</groupId>
+                <artifactId>helidon-webserver-websocket</artifactId>
+                <version>4.5.5</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.robaho</groupId>
+                <artifactId>httpserver</artifactId>
+                <version>1.0.29</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
