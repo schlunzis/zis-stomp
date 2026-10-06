@@ -45,7 +45,7 @@
         <log4j.version>2.26.1</log4j.version>
         <fasterxml.jackson.version>2.22.2</fasterxml.jackson.version>
         <tools.jackson.version>3.2.2</tools.jackson.version>
-        <jlink.plugin.version>3.2.0</jlink.plugin.version>
+        <jlink.plugin.version>3.3.0</jlink.plugin.version>
         <exec.plugin.version>3.6.3</exec.plugin.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
