@@ -6,6 +6,8 @@ import org.schlunzis.zis.stomp.broker.StompBroker;
 import org.schlunzis.zis.stomp.broker.StompBrokerBuilder;
 import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
 
+import java.util.Arrays;
+
 /// Factory for the broker
 ///
 /// @param <SESSION> the type of session handled by the broker
@@ -17,7 +19,10 @@ public class StompBrokerFactory<SESSION extends WebsocketSession> {
         if (authenticator == null) {
             authenticator = new NoopAuthenticator();
         }
-        return new StompBrokerImpl<>(authenticator);
+        return new StompBrokerImpl<>(
+                Arrays.copyOf(builder.hosts(), builder.hosts().length),
+                authenticator
+        );
     }
 
 }

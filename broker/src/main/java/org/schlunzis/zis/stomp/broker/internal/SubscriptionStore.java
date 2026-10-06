@@ -12,13 +12,13 @@ public class SubscriptionStore<SESSION extends WebsocketSession> {
 
     private final Map<String, Collection<Subscription<SESSION>>> subscriptions = new HashMap<>();
 
-    public void add(SESSION session, String topic) {
-        Collection<Subscription<SESSION>> subs = subscriptions.computeIfAbsent(topic, _ -> new HashSet<>());
-        subs.add(new Subscription<>(session));
+    public void add(SESSION session, String destination, String id) {
+        Collection<Subscription<SESSION>> subs = subscriptions.computeIfAbsent(destination, _ -> new HashSet<>());
+        subs.add(new Subscription<>(session, id));
     }
 
-    public void forEachWithTopic(String topic, Consumer<Subscription<SESSION>> consumer) {
-        Collection<Subscription<SESSION>> subs = subscriptions.computeIfAbsent(topic, _ -> new HashSet<>());
+    public void forEachWithDestination(String destination, Consumer<Subscription<SESSION>> consumer) {
+        Collection<Subscription<SESSION>> subs = subscriptions.computeIfAbsent(destination, _ -> new HashSet<>());
         subs.forEach(consumer);
     }
 
@@ -26,6 +26,14 @@ public class SubscriptionStore<SESSION extends WebsocketSession> {
         subscriptions.values().forEach(topicList ->
                 topicList.removeIf(s ->
                         s.session().equals(session)
+                )
+        );
+    }
+
+    public void remove(SESSION session, String id) {
+        subscriptions.values().forEach(topicList ->
+                topicList.removeIf(s ->
+                        s.session().equals(session) && s.id().equals(id)
                 )
         );
     }

@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.broker;
 
+import org.jspecify.annotations.Nullable;
+
 /// TODO
 @FunctionalInterface
 public interface Authenticator {
@@ -9,6 +11,6 @@ public interface Authenticator {
     /// @param login    asdkjh
     /// @param passcode asgj
     /// @return sgfjkb
-    boolean authenticate(String login, String passcode);
+    boolean authenticate(@Nullable String login, @Nullable String passcode);
 
 }

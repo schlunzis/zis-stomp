@@ -8,22 +8,24 @@ import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.broker.StompBroker;
 import org.schlunzis.zis.stomp.broker.websocket.WebsocketSession;
 import org.schlunzis.zis.stomp.client.StompClient;
+import org.schlunzis.zis.stomp.client.Subscription;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class JaxIT {
 
     @Test
-    void test() throws URISyntaxException, InterruptedException, ExecutionException, TimeoutException {
+    void testSubscribe() throws InterruptedException {
         StompBroker<JaxSession> broker = StompBroker.<JaxSession>builder()
+                .hosts("localhost")
                 .build();
 
         WebSocketPlugin wsPlugin = WebSocketPlugin.create()
@@ -40,25 +42,87 @@ public class JaxIT {
 
         broker.start();
 
-
-        StompClient client = StompClient.builder()
-                .endpoint(new URI("ws://localhost:36941/ws"))
-                .build();
-        client.connect().get(5, TimeUnit.SECONDS);
+        Thread.sleep(1000);
 
         CountDownLatch latch = new CountDownLatch(1);
-        client.subscribe("/topic/test", String.class, message -> {
-            System.out.println(message);
-            latch.countDown();
-        }).get(5, TimeUnit.SECONDS);
+        Thread thread = Thread.ofVirtual().start(() -> {
+            try {
+                StompClient client = StompClient.builder()
+                        .endpoint(new URI("ws://localhost:36941/ws"))
+                        .onError((m, _, _) -> fail(m))
+                        .build();
+                client.connect().get(5, TimeUnit.SECONDS);
 
-        client.send("/topic/test", "Test").get(5, TimeUnit.SECONDS);
-        assertTrue(latch.await(5, TimeUnit.SECONDS));
+                client.subscribe("/topic/test", String.class, message -> {
+                    System.out.println(message);
+                    latch.countDown();
+                }).get(5, TimeUnit.SECONDS);
 
-        client.close();
+                client.send("/topic/test", "Test").get(5, TimeUnit.SECONDS);
+                assertTrue(latch.await(1, TimeUnit.SECONDS));
+                client.close();
+            } catch (Throwable t) {
+                fail(t);
+            }
+        });
+
+        thread.join(5000);
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
         broker.close();
         server.shutdown();
     }
+
+    @Test
+    void testUnsubscribe() throws InterruptedException {
+        StompBroker<JaxSession> broker = StompBroker.<JaxSession>builder()
+                .hosts("localhost")
+                .build();
+
+        WebSocketPlugin wsPlugin = WebSocketPlugin.create()
+                .ws("/ws", ws -> ws
+                        .onOpen(ctx -> broker.onOpen(new JaxSession(ctx)))
+                        .onMessage(ctx -> broker.onMessage(new JaxSession(ctx), new StringReader(ctx.message())))
+                        .onClose(ctx -> broker.onClose(new JaxSession(ctx)))
+                        .onError(ctx -> broker.onError(new JaxSession(ctx), ctx.error()))
+                );
+        Jex.Server server = Jex.create()
+                .plugin(wsPlugin)
+                .port(36941)
+                .start();
+
+        broker.start();
+
+        Thread.sleep(1000);
+
+        AtomicBoolean bool = new AtomicBoolean(true);
+        Thread thread = Thread.ofVirtual().start(() -> {
+            try {
+                StompClient client = StompClient.builder()
+                        .endpoint(new URI("ws://localhost:36941/ws"))
+                        .onError((m, _, _) -> fail(m))
+                        .build();
+                client.connect().get(5, TimeUnit.SECONDS);
+
+                Subscription subscription = client.subscribe("/topic/test", String.class, _ -> {
+                    bool.set(false);
+                    fail();
+                }).get(5, TimeUnit.SECONDS);
+                client.unsubscribe(subscription).get(5, TimeUnit.SECONDS);
+
+                client.send("/topic/test", "Test").get(5, TimeUnit.SECONDS);
+                assertTrue(bool.get());
+                client.close();
+            } catch (Throwable t) {
+                fail(t);
+            }
+        });
+
+        thread.join(5000);
+        assertTrue(bool.get());
+        broker.close();
+        server.shutdown();
+    }
+
 
     private record JaxSession(WsContext context) implements WebsocketSession {
         @Override
@@ -69,6 +133,17 @@ public class JaxIT {
         @Override
         public void close() {
             context.closeSession();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof JaxSession(WsContext c))) return false;
+            return Objects.equals(context.ws(), c.ws());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(context.ws());
         }
     }
 

@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.common.protocol;
 
+import org.schlunzis.zis.stomp.common.Headers;
+
 import java.nio.charset.StandardCharsets;
 
 /// Encodes [Frame]s to [String]s.
@@ -36,7 +38,7 @@ public final class FrameEncoder {
                 (frame.command() == Command.SEND ||
                         frame.command() == Command.MESSAGE ||
                         frame.command() == Command.ERROR)) {
-            builder.append("content-length:").append(frame.body().get().getBytes(StandardCharsets.UTF_8).length).append('\n');
+            builder.append(Headers.CONTENT_LENGTH + ":").append(frame.body().get().getBytes(StandardCharsets.UTF_8).length).append('\n');
             builder.append('\n');
             builder.append(frame.body().get());
         } else {
