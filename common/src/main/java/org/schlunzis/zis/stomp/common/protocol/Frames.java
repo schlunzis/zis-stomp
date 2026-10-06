@@ -1,5 +1,7 @@
 package org.schlunzis.zis.stomp.common.protocol;
 
+import org.schlunzis.zis.stomp.common.Headers;
+
 import java.net.URI;
 
 /// Utility class for creating STOMP frames.
@@ -22,8 +24,8 @@ public final class Frames {
         final String host = endpoint.getHost();
         return Frame.builder()
                 .command(Command.CONNECT)
-                .header("accept-version", "1.2")
-                .header("host", host);
+                .header(Headers.ACCEPT_VERSION, "1.2")
+                .header(Headers.HOST, host);
     }
 
     /// Creates a FrameBuilder with the following preset values:
@@ -42,10 +44,10 @@ public final class Frames {
         final String host = endpoint.getHost();
         return Frame.builder()
                 .command(Command.CONNECT)
-                .header("accept-version", "1.2")
-                .header("host", host)
-                .header("login", login)
-                .header("passcode", passcode);
+                .header(Headers.ACCEPT_VERSION, "1.2")
+                .header(Headers.HOST, host)
+                .header(Headers.LOGIN, login)
+                .header(Headers.PASSCODE, passcode);
     }
 
     /// Creates a FrameBuilder with the following preset values:
@@ -62,8 +64,8 @@ public final class Frames {
     public static FrameBuilder send(String destination, String body, String contentType) {
         return Frame.builder()
                 .command(Command.SEND)
-                .header("destination", destination)
-                .header("content-type", contentType)
+                .header(Headers.DESTINATION, destination)
+                .header(Headers.CONTENT_TYPE, contentType)
                 .body(body);
     }
 
@@ -81,9 +83,9 @@ public final class Frames {
     public static FrameBuilder subscribe(String destination, String id, String ackMode) {
         return Frame.builder()
                 .command(Command.SUBSCRIBE)
-                .header("destination", destination)
-                .header("id", id)
-                .header("ack", ackMode);
+                .header(Headers.DESTINATION, destination)
+                .header(Headers.ID, id)
+                .header(Headers.ACK, ackMode);
     }
 
     /// Creates a FrameBuilder with the following preset values:
@@ -96,7 +98,7 @@ public final class Frames {
     public static FrameBuilder unsubscribe(String id) {
         return Frame.builder()
                 .command(Command.UNSUBSCRIBE)
-                .header("id", id);
+                .header(Headers.ID, id);
     }
 
     /// Creates a FrameBuilder with the following preset values:

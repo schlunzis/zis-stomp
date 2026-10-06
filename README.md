@@ -72,6 +72,8 @@ Then, add the dependency:
 ```
 <!-- @formatter:on -->
 
+## Client
+
 ### Programmatic Usage
 
 Here is a simple example of how to use the STOMP client:
@@ -173,6 +175,81 @@ void main() {
 ```
 
 This allows for a clean definition of topics to send messages to and receive messages from.
+
+## Broker
+
+To use the broker, you need a session class that represents a session.
+It may look like this:
+
+```java
+record SessionImpl(FrameworkSession ctx) implements StompSession {
+    @Override
+    public void send(String message) {
+        ctx.send(message);
+    }
+
+    @Override
+    public void close() {
+        ctx.close();
+    }
+}
+```
+
+You need to make sure that different instances representing the same connection represent that in their `equals`
+and `hashCode` methods.
+
+After that you can build and use the `StompBroker` as shown below (using a generic server implementation).
+
+```java
+void main() {
+    StompBroker<Session> broker = StompBroker.<SessionImpl>builder()
+            .hosts("localhost")
+            .build();
+    Server server = Server.builder()
+            .configureWebsocket(ws -> ws
+                    .onOpen(ctx -> broker.onOpen(new SessionImpl(ctx)))
+                    .onMessage(ctx -> broker.onMessage(new SessionImpl(ctx), ctx.reader()))
+                    .onClose(ctx -> broker.onClose(new SessionImpl(ctx)))
+                    .onError(ctx -> broker.onError(new SessionImpl(ctx), ctx.error()))
+            )
+            .build();
+    broker.start();
+    server.start();
+}
+```
+
+### Included Implementations
+
+#### Jax
+
+```java
+void main() {
+    StompBroker<JaxSession> broker = StompBroker.<JaxSession>builder()
+            .build();
+    WebSocketPlugin wsPlugin = WebSocketPlugin.create()
+            .ws("/ws", new JaxConfigurationConsumer(broker));
+    Jex.Server server = Jex.create()
+            .plugin(wsPlugin)
+            .start();
+    broker.start();
+}
+```
+
+#### Helidon
+
+```java
+void main() {
+    StompBroker<HelidonSession> broker = StompBroker.<HelidonSession>builder()
+            .build();
+    WebServer server = WebServer.builder()
+            .port(36941)
+            .addRouting(WsRouting.builder()
+                    .endpoint("/ws", new HelidonWebsocketListener(broker)))
+            .build()
+            .start();
+    broker.start();
+}
+```
 
 ## Building
 

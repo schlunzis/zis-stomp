@@ -18,6 +18,43 @@ import java.util.Map;
 /// @since 1.0.0
 public interface Headers extends Map<String, List<String>> {
 
+    /// Protocol related header
+    String ACCEPT_VERSION = "accept-version";
+    /// Protocol related header
+    String ACK = "ack";
+    /// Protocol related header
+    String CONTENT_LENGTH = "content-length";
+    /// Protocol related header
+    String CONTENT_TYPE = "content-type";
+    /// Protocol related header
+    String DESTINATION = "destination";
+    /// Protocol related header
+    String HEART_BEAT = "heart-beat";
+    /// Protocol related header
+    String HOST = "host";
+    /// Protocol related header
+    String ID = "id";
+    /// Protocol related header
+    String LOGIN = "login";
+    /// Protocol related header
+    String MESSAGE_ID = "message-id";
+    /// Protocol related header
+    String PASSCODE = "passcode";
+    /// Protocol related header
+    String RECEIPT = "receipt";
+    /// Protocol related header
+    String RECEIPT_ID = "receipt-id";
+    /// Protocol related header
+    String SERVER = "server";
+    /// Protocol related header
+    String SESSION = "session";
+    /// Protocol related header
+    String SUBSCRIPTION = "subscription";
+    /// Protocol related header
+    String TRANSACTION = "transaction";
+    /// Protocol related header
+    String VERSION = "version";
+
     /// Adds a header with the specified key and value.
     /// If the key already exists, the new value is added as the first value for that key
     /// Meaning it takes precedence over existing values.
