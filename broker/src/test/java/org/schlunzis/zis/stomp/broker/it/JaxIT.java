@@ -15,24 +15,27 @@ import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.lang.reflect.Type;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class JaxIT {
 
     private StompBroker<WsContext> broker;
     private Jex.Server server;
     private WebSocketStompClient stompClient;
+    private StandardWebSocketClient webSocketClient;
 
     @BeforeEach
     void setup() {
@@ -50,9 +53,10 @@ public class JaxIT {
 
         broker.start();
 
-        WebSocketClient webSocketClient = new StandardWebSocketClient();
+        webSocketClient = new StandardWebSocketClient();
         stompClient = new WebSocketStompClient(webSocketClient);
         stompClient.setMessageConverter(new StringMessageConverter());
+        stompClient.setTaskScheduler(new SimpleAsyncTaskScheduler());
         stompClient.start();
     }
 
@@ -64,76 +68,73 @@ public class JaxIT {
     }
 
     @Test
-    void testSubscribe() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        Thread thread = Thread.ofVirtual().start(() -> {
-            try {
-                StompHeaders headers = new StompHeaders();
-                headers.setHost("localhost");
-                stompClient.connectAsync("ws://localhost:36941/ws", (WebSocketHttpHeaders) null, headers, new StompSessionHandlerAdapter() {
+    void testSubscribe() throws InterruptedException, ExecutionException, TimeoutException {
+        AtomicReference<StompSession> s = new AtomicReference<>(null);
+        CountDownLatch latch = new CountDownLatch(2);
+        StompHeaders headers = new StompHeaders();
+        headers.setHost("localhost");
+        stompClient.connectAsync("ws://localhost:36941/ws", (WebSocketHttpHeaders) null, headers, new StompSessionHandlerAdapter() {
+            @Override
+            public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+                s.set(session);
+                session.setAutoReceipt(true);
+                session.subscribe("/topic/test", new StompFrameHandler() {
                     @Override
-                    public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-                        session.subscribe("/topic/test", new StompFrameHandler() {
-                            @Override
-                            public Type getPayloadType(StompHeaders headers) {
-                                return String.class;
-                            }
-
-                            @Override
-                            public void handleFrame(StompHeaders headers, @Nullable Object payload) {
-                                latch.countDown();
-                            }
-                        });
-                        session.send("/topic/test", "Test");
+                    public Type getPayloadType(StompHeaders headers) {
+                        return String.class;
                     }
-                }).get(5, TimeUnit.SECONDS);
 
-                assertTrue(latch.await(1, TimeUnit.SECONDS));
-                stompClient.stop();
-            } catch (Throwable t) {
-                fail(t);
+                    @Override
+                    public void handleFrame(StompHeaders headers, @Nullable Object payload) {
+                        latch.countDown();
+                    }
+                }).addReceiptTask(() ->
+                        session.send("/topic/test", "Test")
+                                .addReceiptTask(latch::countDown)
+                );
             }
-        });
+        }).get(1, TimeUnit.SECONDS);
 
-        thread.join(5000);
-        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertTrue(latch.await(2, TimeUnit.SECONDS));
+        s.get().disconnect();
     }
 
     @Test
-    void testUnsubscribe() throws InterruptedException {
+    void testUnsubscribe() throws InterruptedException, ExecutionException, TimeoutException {
+        AtomicReference<StompSession> s = new AtomicReference<>(null);
         AtomicBoolean bool = new AtomicBoolean(true);
-        Thread thread = Thread.ofVirtual().start(() -> {
-            try {
-                StompHeaders headers = new StompHeaders();
-                headers.setHost("localhost");
-                stompClient.connectAsync("ws://localhost:36941/ws", (WebSocketHttpHeaders) null, headers, new StompSessionHandlerAdapter() {
+        CountDownLatch latch = new CountDownLatch(1);
+        StompHeaders headers = new StompHeaders();
+        headers.setHost("localhost");
+        stompClient.connectAsync("ws://localhost:36941/ws", (WebSocketHttpHeaders) null, headers, new StompSessionHandlerAdapter() {
+            @Override
+            public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+                s.set(session);
+                session.setAutoReceipt(true);
+                StompSession.Subscription subscription = session.subscribe("/topic/test", new StompFrameHandler() {
                     @Override
-                    public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-                        StompSession.Subscription subscription = session.subscribe("/topic/test", new StompFrameHandler() {
-                            @Override
-                            public Type getPayloadType(StompHeaders headers) {
-                                return String.class;
-                            }
-
-                            @Override
-                            public void handleFrame(StompHeaders headers, @Nullable Object payload) {
-                                bool.set(false);
-                            }
-                        });
-                        subscription.unsubscribe();
-                        session.send("/topic/test", "Test");
+                    public Type getPayloadType(StompHeaders headers) {
+                        return String.class;
                     }
-                }).get(5, TimeUnit.SECONDS);
 
-                assertTrue(bool.get());
-                stompClient.stop();
-            } catch (Throwable t) {
-                fail(t);
+                    @Override
+                    public void handleFrame(StompHeaders headers, @Nullable Object payload) {
+                        bool.set(false);
+                    }
+                });
+                subscription.addReceiptTask(() ->
+                        subscription.unsubscribe().addReceiptTask(() ->
+                                session.send("/topic/test", "Test")
+                                        .addReceiptTask(latch::countDown)
+                        )
+                );
             }
-        });
+        }).get(5, TimeUnit.SECONDS);
 
-        thread.join(5000);
+        Thread.sleep(500);
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertTrue(bool.get());
+        s.get().disconnect();
     }
 
 }

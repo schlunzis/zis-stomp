@@ -158,6 +158,7 @@ public class StompBrokerImpl<SESSION> implements StompBroker<SESSION> {
         } finally {
             rLock.unlock();
         }
+        sendReceiptIfRequested(session, sendFrame);
     }
 
     private void onSubscribe(SESSION session, Frame subscribeFrame) {
@@ -184,6 +185,7 @@ public class StompBrokerImpl<SESSION> implements StompBroker<SESSION> {
         } finally {
             wLock.unlock();
         }
+        sendReceiptIfRequested(session, subscribeFrame);
     }
 
     private void onUnsubscribe(SESSION session, Frame unsubscribeFrame) {
@@ -204,12 +206,13 @@ public class StompBrokerImpl<SESSION> implements StompBroker<SESSION> {
         } finally {
             wLock.unlock();
         }
+        sendReceiptIfRequested(session, unsubscribeFrame);
     }
 
     private void onDisconnect(SESSION session, Frame disconnectFrame) {
         Objects.requireNonNull(session);
         Objects.requireNonNull(disconnectFrame);
-        // TODO send receipt frame
+        sendReceiptIfRequested(session, disconnectFrame);
     }
 
     @Override
@@ -267,6 +270,20 @@ public class StompBrokerImpl<SESSION> implements StompBroker<SESSION> {
                 .build();
         send(session, errorFrame);
         close(session);
+    }
+
+    private void sendReceiptIfRequested(SESSION session, Frame clientFrame) {
+        String receiptId = clientFrame.headers().getFirst(Headers.RECEIPT);
+        if (receiptId != null) {
+            log.debug("Receipt requested by: {}", clientFrame);
+            Frame receiptFrame = Frame.builder()
+                    .command(Command.RECEIPT)
+                    .header(Headers.RECEIPT_ID, receiptId)
+                    .build();
+            send(session, receiptFrame);
+        } else {
+            log.debug("No receipt requested by: {}", clientFrame);
+        }
     }
 
     private void send(SESSION session, Frame frame) {
