@@ -49,6 +49,8 @@
         <jlink.plugin.version>3.3.0</jlink.plugin.version>
         <exec.plugin.version>3.6.4</exec.plugin.version>
         <spring.version>7.0.9</spring.version>
+        <avaje.jex.version>3.6</avaje.jex.version>
+        <avaje.jsonb.version>3.16</avaje.jsonb.version>
         <!-- Set to commit time in CI -->
         <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -76,6 +78,11 @@
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${tools.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.avaje</groupId>
+                <artifactId>avaje-jsonb</artifactId>
+                <version>${avaje.jsonb.version}</version>
             </dependency>
 
             <dependency>
@@ -118,7 +125,7 @@
             <dependency>
                 <groupId>io.avaje</groupId>
                 <artifactId>avaje-jex-websocket</artifactId>
-                <version>3.6</version>
+                <version>${avaje.jex.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.avaje</groupId>
@@ -167,11 +174,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.6.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
                     <version>3.6.0</version>
                 </plugin>
                 <plugin>
@@ -366,6 +368,7 @@
                                     <tools.jackson.version>${tools.jackson.version}</tools.jackson.version>
                                     <jlink.plugin.version>${jlink.plugin.version}</jlink.plugin.version>
                                     <exec.plugin.version>${exec.plugin.version}</exec.plugin.version>
+                                    <avaje.jsonb.version>${avaje.jsonb.version}</avaje.jsonb.version>
                                 </filterProperties>
                             </configuration>
                             <executions>

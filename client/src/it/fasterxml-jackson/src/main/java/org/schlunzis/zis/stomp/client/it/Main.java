@@ -20,24 +20,6 @@ public class Main {
         MessageConverter messageConverter = stompClient.messageConverter();
         if (!(messageConverter instanceof Jackson2MessageConverter))
             throw new IllegalStateException("messageConverter is not of type Jackson2MessageConverter");
-
-        CompletableFuture<Void> future = stompClient.connect();
-        future.get(1, TimeUnit.SECONDS);
-        CountDownLatch latch = new CountDownLatch(1);
-        Model model = new Model(UUID.randomUUID(), "Test");
-
-        stompClient.subscribe("/insight/simple/echo", Model.class, m -> {
-                    if (m.equals(model))
-                        latch.countDown();
-                }).
-                get(1, TimeUnit.SECONDS);
-        stompClient.send("/server/simple/echo", model)
-                .get(1, TimeUnit.SECONDS);
-
-        if (!latch.await(10, TimeUnit.SECONDS))
-            System.exit(1);
-
-        stompClient.close();
     }
 
 }

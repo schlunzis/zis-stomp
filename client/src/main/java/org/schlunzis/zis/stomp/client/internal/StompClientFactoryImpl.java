@@ -77,31 +77,39 @@ public class StompClientFactoryImpl implements StompClientFactory {
     }
 
     private MessageConverter findMessageConverter() {
-        Class<?> mapperClass;
-        boolean jackson3 = false;
         try {
-            mapperClass = Class.forName("tools.jackson.databind.ObjectMapper");
-            jackson3 = true;
+            Class<?> mapperClass = Class.forName("tools.jackson.databind.ObjectMapper");
             log.debug("Found Jackson 3 ObjectMapper");
-        } catch (ClassNotFoundException _) {
-            try {
-                mapperClass = Class.forName("com.fasterxml.jackson.core.ObjectCodec");
-                log.debug("Found Jackson 2 ObjectMapper");
-            } catch (ClassNotFoundException _) {
-                log.debug("No Jackson ObjectMapper found");
-                return new StringMessageConverter();
+            ServiceLoader<?> loader = ServiceLoader.load(mapperClass);
+            Optional<?> mapper = loader.findFirst();
+            if (mapper.isPresent()) {
+                return new Jackson3MessageConverter((tools.jackson.databind.ObjectMapper) mapper.get());
             }
+        } catch (ClassNotFoundException _) {
+            // ignore
         }
 
-        ServiceLoader<?> loader = ServiceLoader.load(mapperClass);
-        Optional<?> mapper = loader.findFirst();
-        if (mapper.isPresent()) {
-            log.debug("Found {} via ServiceLoader", mapperClass);
-            if (jackson3) return new Jackson3MessageConverter((tools.jackson.databind.ObjectMapper) mapper.get());
-            else return new Jackson2MessageConverter((com.fasterxml.jackson.databind.ObjectMapper) mapper.get());
+        try {
+            Class<?> mapperClass = Class.forName("com.fasterxml.jackson.core.ObjectCodec");
+            log.debug("Found Jackson 2 ObjectMapper");
+            ServiceLoader<?> loader = ServiceLoader.load(mapperClass);
+            Optional<?> mapper = loader.findFirst();
+            if (mapper.isPresent()) {
+                return new Jackson2MessageConverter((com.fasterxml.jackson.databind.ObjectMapper) mapper.get());
+            }
+        } catch (ClassNotFoundException _) {
+            // ignore
         }
 
-        log.debug("No MessageConverter found via ServiceLoader");
+        try {
+            Class.forName("io.avaje.jsonb.Jsonb");
+            log.debug("Found Jsonb");
+            return new AvajeJsonbMessageConverter();
+        } catch (ClassNotFoundException _) {
+            // ignore
+        }
+
+        log.debug("No MessageConverter found on path");
         return new StringMessageConverter();
     }
 
