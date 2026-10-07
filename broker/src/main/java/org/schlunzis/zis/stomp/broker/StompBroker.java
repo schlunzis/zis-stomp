@@ -1,7 +1,6 @@
 package org.schlunzis.zis.stomp.broker;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.broker.connection.StompSession;
 
 import java.io.Reader;
 
@@ -9,39 +8,42 @@ import java.io.Reader;
 ///
 /// This broker is mainly designed to work with WebSockets, but other full-duplex communication protocols may also work.
 ///
-/// To use the broker, you need a session class that represents a session.
+/// To use the broker, you need a session adapter class that allows the broker to call methods on the session passed by
+/// the framework.
 /// It may look like this:
 ///
 /// ```java
-/// record SessionImpl(FrameworkSession ctx) implements StompSession {
+/// class SessionAdapter implements StompSessionAdapter<FrameworkSession> {
 ///     @Override
-///     public void send(String message) {
-///         ctx.send(message);
+///     public void send(FrameworkSession session, String message) {
+///         session.send(message);
 ///     }
 ///
 ///     @Override
-///     public void close() {
-///         ctx.close();
+///     public void close(FrameworkSession session) {
+///         session.close();
 ///     }
 /// }
 /// ```
 ///
 /// You need to make sure that different instances representing the same connection represent that in their `equals`
-/// and `hashCode` methods.
+/// and `hashCode` implementations. If that is not the case for any given framework, you can implement the methods
+/// in the adapter to override their semantics.
 ///
 /// After that you can build and use the [StompBroker] as shown below (using a generic server implementation).
 ///
 /// ```java
-/// StompBroker<Session> broker = StompBroker.<SessionImpl>builder()
+/// StompBroker<Session> broker = StompBroker.<FrameworkSession>builder()
+///     .sessionAdapter(new StompSessionAdapter<FrameworkSession>{...})
 ///     .hosts("localhost")
 ///     .build();
 ///
 /// Server server = Server.builder()
 ///     .configureWebsocket(ws -> ws
-///         .onOpen(ctx -> broker.onOpen(new SessionImpl(ctx)))
-///         .onMessage(ctx -> broker.onMessage(new SessionImpl(ctx), ctx.reader()))
-///         .onClose(ctx -> broker.onClose(new SessionImpl(ctx)))
-///         .onError(ctx -> broker.onError(new SessionImpl(ctx), ctx.error()))
+///         .onOpen(session -> broker.onOpen(session))
+///         .onMessage(session -> broker.onMessage(session, session.reader()))
+///         .onClose(session -> broker.onClose(session))
+///         .onError(session -> broker.onError(session, session.error()))
 ///     )
 ///     .build();
 /// broker.start();
@@ -50,14 +52,14 @@ import java.io.Reader;
 ///
 /// Default implementations are provided for the following frameworks:
 ///
-/// - [Jex](https://avaje.io/jex/) with [org.schlunzis.zis.stomp.broker.connection.jax.JaxSession], [org.schlunzis.zis.stomp.broker.connection.jax.JaxConfigurationConsumer]
-/// - [Helidon v4](https://helidon.io/docs/v4/se/websocket) with [org.schlunzis.zis.stomp.broker.connection.helidon.HelidonSession], [org.schlunzis.zis.stomp.broker.connection.helidon.HelidonWebsocketListener]
+/// - [Jex](https://avaje.io/jex/) with [org.schlunzis.zis.stomp.broker.connection.jax.JaxSessionAdapter], [org.schlunzis.zis.stomp.broker.connection.jax.JaxConfigurationConsumer]
+/// - [Helidon v4](https://helidon.io/docs/v4/se/websocket) with [org.schlunzis.zis.stomp.broker.connection.helidon.HelidonSessionAdapter], [org.schlunzis.zis.stomp.broker.connection.helidon.HelidonWebsocketListener]
 ///
 /// The stomp broker is thread-safe.
 ///
 /// @param <SESSION> the type of session handled by this broker
 /// @since 1.0.0
-public interface StompBroker<SESSION extends StompSession> extends AutoCloseable {
+public interface StompBroker<SESSION> extends AutoCloseable {
 
     /// Creates a new [StompBrokerBuilder] for building a STOMP client.
     ///
@@ -66,7 +68,7 @@ public interface StompBroker<SESSION extends StompSession> extends AutoCloseable
     /// @param <SESSION> the type of session handled by the broker
     /// @return a new instance of [StompBrokerBuilder]
     /// @since 1.0.0
-    static <SESSION extends StompSession> StompBrokerBuilder<SESSION> builder() {
+    static <SESSION> StompBrokerBuilder<SESSION> builder() {
         return new StompBrokerBuilder<>();
     }
 

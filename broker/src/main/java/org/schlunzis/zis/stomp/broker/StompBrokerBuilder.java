@@ -1,7 +1,7 @@
 package org.schlunzis.zis.stomp.broker;
 
 import org.jspecify.annotations.Nullable;
-import org.schlunzis.zis.stomp.broker.connection.StompSession;
+import org.schlunzis.zis.stomp.broker.connection.StompSessionAdapter;
 import org.schlunzis.zis.stomp.broker.internal.StompBrokerFactory;
 
 import java.util.Objects;
@@ -10,10 +10,11 @@ import java.util.Objects;
 ///
 /// @param <SESSION> the type of session handled by the broker
 /// @since 1.0.0
-public class StompBrokerBuilder<SESSION extends StompSession> {
+public class StompBrokerBuilder<SESSION> {
 
     private String[] hosts = new String[0];
     private @Nullable Authenticator authenticator = null;
+    private @Nullable StompSessionAdapter<SESSION> sessionAdapter;
 
     /// Creates a new STOMP broker builder.
     ///
@@ -68,6 +69,25 @@ public class StompBrokerBuilder<SESSION extends StompSession> {
     /// @since 1.0.0
     public @Nullable Authenticator authenticator() {
         return this.authenticator;
+    }
+
+    /// Sets the session adapter to be used by the stomp broker.
+    ///
+    /// @param sessionAdapter the new session adapter
+    /// @return this builder
+    /// @throws NullPointerException if the session adapter is `null`
+    /// @since 1.0.0
+    public StompBrokerBuilder<SESSION> sessionAdapter(StompSessionAdapter<SESSION> sessionAdapter) {
+        this.sessionAdapter = Objects.requireNonNull(sessionAdapter);
+        return this;
+    }
+
+    /// Returns the session adapter set in this builder.
+    ///
+    /// @return the session adapter
+    /// @since 1.0.0
+    public @Nullable StompSessionAdapter<SESSION> sessionAdapter() {
+        return this.sessionAdapter;
     }
 
     /// Builds the [StompBroker] instance.

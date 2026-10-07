@@ -2,13 +2,14 @@ package org.schlunzis.zis.stomp.broker.it;
 
 import io.avaje.jex.Jex;
 import io.avaje.jex.websocket.WebSocketPlugin;
+import io.avaje.jex.websocket.WsContext;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.broker.StompBroker;
 import org.schlunzis.zis.stomp.broker.connection.jax.JaxConfigurationConsumer;
-import org.schlunzis.zis.stomp.broker.connection.jax.JaxSession;
+import org.schlunzis.zis.stomp.broker.connection.jax.JaxSessionAdapter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -29,13 +30,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class JaxIT {
 
-    private StompBroker<JaxSession> broker;
+    private StompBroker<WsContext> broker;
     private Jex.Server server;
     private WebSocketStompClient stompClient;
 
     @BeforeEach
     void setup() {
-        broker = StompBroker.<JaxSession>builder()
+        broker = StompBroker.<WsContext>builder()
+                .sessionAdapter(new JaxSessionAdapter())
                 .hosts("localhost")
                 .build();
 
