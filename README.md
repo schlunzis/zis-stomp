@@ -178,39 +178,42 @@ This allows for a clean definition of topics to send messages to and receive mes
 
 ## Broker
 
-To use the broker, you need a session class that represents a session.
+To use the broker, you need a session adapter class that allows the broker to call methods on the session passed by
+the framework.
 It may look like this:
 
 ```java
-record SessionImpl(FrameworkSession ctx) implements StompSession {
+class SessionAdapter implements StompSessionAdapter<FrameworkSession> {
     @Override
-    public void send(String message) {
-        ctx.send(message);
+    public void send(FrameworkSession session, String message) {
+        session.send(message);
     }
 
     @Override
-    public void close() {
-        ctx.close();
+    public void close(FrameworkSession session) {
+        session.close();
     }
 }
 ```
 
 You need to make sure that different instances representing the same connection represent that in their `equals`
-and `hashCode` methods.
+and `hashCode` implementations. If that is not the case for any given framework, you can implement the methods
+in the adapter to override their semantics.
 
 After that you can build and use the `StompBroker` as shown below (using a generic server implementation).
 
 ```java
 void main() {
-    StompBroker<Session> broker = StompBroker.<SessionImpl>builder()
+    StompBroker<Session> broker = StompBroker.<FrameworkSession>builder()
+            .sessionAdapter(new SessionAdapter())
             .hosts("localhost")
             .build();
     Server server = Server.builder()
             .configureWebsocket(ws -> ws
-                    .onOpen(ctx -> broker.onOpen(new SessionImpl(ctx)))
-                    .onMessage(ctx -> broker.onMessage(new SessionImpl(ctx), ctx.reader()))
-                    .onClose(ctx -> broker.onClose(new SessionImpl(ctx)))
-                    .onError(ctx -> broker.onError(new SessionImpl(ctx), ctx.error()))
+                    .onOpen(session -> broker.onOpen(session))
+                    .onMessage(session -> broker.onMessage(session, session.reader()))
+                    .onClose(session -> broker.onClose(session))
+                    .onError(session -> broker.onError(session, session.error()))
             )
             .build();
     broker.start();
@@ -224,7 +227,9 @@ void main() {
 
 ```java
 void main() {
-    StompBroker<JaxSession> broker = StompBroker.<JaxSession>builder()
+    StompBroker<WsContext> broker = StompBroker.<WsContext>builder()
+            .sessionAdapter(new JaxSessionAdapter())
+            .hosts("localhost")
             .build();
     WebSocketPlugin wsPlugin = WebSocketPlugin.create()
             .ws("/ws", new JaxConfigurationConsumer(broker));
@@ -239,7 +244,9 @@ void main() {
 
 ```java
 void main() {
-    StompBroker<HelidonSession> broker = StompBroker.<HelidonSession>builder()
+    StompBroker<WsSession> broker = StompBroker.<WsSession>builder()
+            .sessionAdapter(new HelidonSessionAdapter())
+            .hosts("localhost")
             .build();
     WebServer server = WebServer.builder()
             .port(36941)

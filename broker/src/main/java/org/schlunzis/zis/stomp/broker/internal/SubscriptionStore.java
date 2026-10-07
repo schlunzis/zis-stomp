@@ -1,14 +1,12 @@
 package org.schlunzis.zis.stomp.broker.internal;
 
-import org.schlunzis.zis.stomp.broker.connection.StompSession;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class SubscriptionStore<SESSION extends StompSession> {
+public class SubscriptionStore<SESSION> {
 
     private final Map<String, Collection<Subscription<SESSION>>> subscriptions = new HashMap<>();
 

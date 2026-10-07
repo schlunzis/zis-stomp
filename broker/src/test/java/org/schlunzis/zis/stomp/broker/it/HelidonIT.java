@@ -2,12 +2,13 @@ package org.schlunzis.zis.stomp.broker.it;
 
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.websocket.WsRouting;
+import io.helidon.websocket.WsSession;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.schlunzis.zis.stomp.broker.StompBroker;
-import org.schlunzis.zis.stomp.broker.connection.helidon.HelidonSession;
+import org.schlunzis.zis.stomp.broker.connection.helidon.HelidonSessionAdapter;
 import org.schlunzis.zis.stomp.broker.connection.helidon.HelidonWebsocketListener;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -29,13 +30,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class HelidonIT {
 
-    private StompBroker<HelidonSession> broker;
+    private StompBroker<WsSession> broker;
     private WebServer server;
     private WebSocketStompClient stompClient;
 
     @BeforeEach
     void setup() {
-        broker = StompBroker.<HelidonSession>builder()
+        broker = StompBroker.<WsSession>builder()
+                .sessionAdapter(new HelidonSessionAdapter())
                 .hosts("localhost")
                 .build();
 

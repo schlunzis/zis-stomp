@@ -3,19 +3,23 @@ package org.schlunzis.zis.stomp.broker.internal;
 import org.jspecify.annotations.Nullable;
 import org.schlunzis.zis.stomp.broker.Authenticator;
 import org.schlunzis.zis.stomp.broker.StompBroker;
-import org.schlunzis.zis.stomp.broker.connection.StompSession;
+import org.schlunzis.zis.stomp.broker.connection.StompSessionAdapter;
+import org.schlunzis.zis.stomp.broker.util.SessionSet;
 import org.schlunzis.zis.stomp.common.Headers;
 import org.schlunzis.zis.stomp.common.protocol.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Reader;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class StompBrokerImpl<SESSION extends StompSession> implements StompBroker<SESSION> {
+public class StompBrokerImpl<SESSION> implements StompBroker<SESSION> {
 
     private static final Logger log = LoggerFactory.getLogger(StompBrokerImpl.class);
     private static final String STOMP_VERSION = "1.2";
@@ -23,20 +27,24 @@ public class StompBrokerImpl<SESSION extends StompSession> implements StompBroke
 
     private final String[] hosts;
     private final Authenticator authenticator;
+    private final StompSessionAdapter<SESSION> sessionAdapter;
 
     private final FrameEncoder frameEncoder = new FrameEncoder();
     private final FrameDecoder frameDecoder = new FrameDecoder();
-    private final SubscriptionStore<SESSION> subscriptionStore = new SubscriptionStore<>();
+    private final SubscriptionStore<SESSION> subscriptionStore;
 
     private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final Lock rLock = rwLock.readLock();
     private final Lock wLock = rwLock.writeLock();
 
-    private final Collection<SESSION> authenticatedSessions = new HashSet<>();
+    private final SessionSet<SESSION> authenticatedSessions;
 
-    public StompBrokerImpl(String[] hosts, Authenticator authenticator) {
+    public StompBrokerImpl(String[] hosts, Authenticator authenticator, StompSessionAdapter<SESSION> sessionAdapter) {
         this.hosts = hosts;
         this.authenticator = authenticator;
+        this.sessionAdapter = sessionAdapter;
+        this.subscriptionStore = new SubscriptionStore<>();
+        this.authenticatedSessions = new SessionSet<>(sessionAdapter);
     }
 
     @Override
@@ -265,7 +273,7 @@ public class StompBrokerImpl<SESSION extends StompSession> implements StompBroke
         log.debug("Sending: {}", frame);
         try {
             String message = frameEncoder.encode(frame);
-            session.send(message);
+            sessionAdapter.send(session, message);
         } catch (Throwable t) {
             log.error("Could not send frame!", t);
         }
@@ -273,7 +281,7 @@ public class StompBrokerImpl<SESSION extends StompSession> implements StompBroke
 
     private void close(SESSION session) {
         try {
-            session.close();
+            sessionAdapter.close(session);
         } catch (Throwable t) {
             log.error("Could not close session!", t);
         }
