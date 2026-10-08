@@ -36,6 +36,11 @@
             <artifactId>jackson-databind</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.avaje</groupId>
+            <artifactId>avaje-jsonb</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>

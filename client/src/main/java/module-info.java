@@ -14,9 +14,10 @@ module org.schlunzis.zis.stomp.client {
     requires org.jspecify;
 
     requires static com.fasterxml.jackson.databind;
-    requires static tools.jackson.databind;
     uses com.fasterxml.jackson.core.ObjectCodec;
+    requires static tools.jackson.databind;
     uses tools.jackson.databind.ObjectMapper;
+    requires static io.avaje.jsonb;
 
     // Has to be open to everything, because different jakarta websocket implementations
     // use reflection to access the endpoint classes and have different module names

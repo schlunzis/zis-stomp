@@ -1,6 +1,6 @@
 package org.schlunzis.zis.stomp.client.it;
 
-import org.schlunzis.zis.stomp.client.Jackson3MessageConverter;
+import org.schlunzis.zis.stomp.client.AvajeJsonbMessageConverter;
 import org.schlunzis.zis.stomp.client.MessageConverter;
 import org.schlunzis.zis.stomp.client.StompClient;
 
@@ -18,8 +18,8 @@ public class Main {
                 .build();
 
         MessageConverter messageConverter = stompClient.messageConverter();
-        if (!(messageConverter instanceof Jackson3MessageConverter))
-            throw new IllegalStateException("messageConverter is not of type Jackson3MessageConverter");
+        if (!(messageConverter instanceof AvajeJsonbMessageConverter))
+            throw new IllegalStateException("messageConverter is not of type AvajeJsonbMessageConverter");
     }
 
 }
