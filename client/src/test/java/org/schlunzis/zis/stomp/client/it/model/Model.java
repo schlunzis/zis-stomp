@@ -1,4 +1,4 @@
-package org.schlunzis.zis.stomp.client.it;
+package org.schlunzis.zis.stomp.client.it.model;
 
 import java.util.UUID;
 
