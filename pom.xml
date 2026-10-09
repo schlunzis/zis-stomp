@@ -248,6 +248,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
