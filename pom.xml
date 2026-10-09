@@ -248,6 +248,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -415,6 +418,7 @@
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <deploymentName>zis-stomp:${project.version}</deploymentName>
+                            <autoPublish>false</autoPublish>
                         </configuration>
                     </plugin>
                 </plugins>

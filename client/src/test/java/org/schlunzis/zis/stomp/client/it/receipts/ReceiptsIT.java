@@ -1,22 +1,29 @@
-package org.schlunzis.zis.stomp.client.it;
+package org.schlunzis.zis.stomp.client.it.receipts;
 
+import org.junit.jupiter.api.Test;
+import org.schlunzis.zis.stomp.client.Jackson3MessageConverter;
 import org.schlunzis.zis.stomp.client.ReceiptPolicy;
 import org.schlunzis.zis.stomp.client.StompClient;
+import org.schlunzis.zis.stomp.client.it.model.Model;
 
 import java.net.URI;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.CompletableFuture;
 
-public class Main {
+import static org.junit.jupiter.api.Assertions.fail;
 
-    static void main() throws Exception {
+public class ReceiptsIT {
+
+    @Test
+    void test() throws Exception {
         StompClient stompClient = StompClient.builder()
                 .endpoint(new URI("ws://localhost:8080/ws"))
                 .receiptPolicy(ReceiptPolicy.all())
                 .receiptTimeout(Duration.ofSeconds(1))
+                .messageConverter(new Jackson3MessageConverter())
                 .build();
 
         CompletableFuture<Void> future = stompClient.connect();
@@ -33,11 +40,9 @@ public class Main {
                 .get(1, TimeUnit.SECONDS);
 
         if (!latch.await(10, TimeUnit.SECONDS))
-            System.exit(1);
+            fail("Message not received");
 
         stompClient.close();
-
-        Thread.sleep(2000);
     }
 
 }
