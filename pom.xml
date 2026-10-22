@@ -45,7 +45,7 @@
         <tyrus.version>2.2.2</tyrus.version>
         <log4j.version>2.26.1</log4j.version>
         <fasterxml.jackson.version>2.22.3</fasterxml.jackson.version>
-        <tools.jackson.version>3.2.3</tools.jackson.version>
+        <tools.jackson.version>3.2.4</tools.jackson.version>
         <jlink.plugin.version>3.3.0</jlink.plugin.version>
         <exec.plugin.version>3.6.4</exec.plugin.version>
         <spring.version>7.0.9</spring.version>
