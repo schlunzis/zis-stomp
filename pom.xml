@@ -135,7 +135,7 @@
             <dependency>
                 <groupId>io.helidon.webserver</groupId>
                 <artifactId>helidon-webserver-websocket</artifactId>
-                <version>4.5.5</version>
+                <version>27.0.1</version>
             </dependency>
             <dependency>
                 <groupId>io.github.robaho</groupId>
